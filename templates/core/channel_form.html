@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Configurar canal - Selectora{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <p class="eyebrow">Visibilitat i identitat</p>
+  <h1>Configurar canal</h1>
+  <p class="form-intro">
+    Fes public el canal perquè aparegui a la portada i tingui URL propia. La imatge de portada es mostra al capçal del canal.
+  </p>
+  <aside class="integration-panel">
+    <div>
+      <p class="eyebrow">Telegram</p>
+      <h2>Publicar compartint URLs</h2>
+      <p>
+        Escriu al bot de Selectora aquest comandament per vincular el teu Telegram amb aquest canal:
+      </p>
+      <code>/connect {{ object.telegram_link_code }}</code>
+      <p class="muted">
+        Despres podras enviar o compartir una URL al bot i es publicara automaticament al teu canal.
+      </p>
+    </div>
+  </aside>
+  <form method="post" enctype="multipart/form-data" class="form-panel">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-actions">
+      <button class="button" type="submit">Guardar canal</button>
+      <a href="{% url 'dashboard' %}">Cancel.lar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

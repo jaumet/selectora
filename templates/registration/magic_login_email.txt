@@ -1,0 +1,9 @@
+Hola,
+
+Fes servir aquest enllaç per entrar a Selectora:
+
+{{ magic_url }}
+
+L'enllaç caduca en {{ ttl_minutes }} minuts i només es pot fer servir una vegada.
+
+Si no l'has demanat tu, pots ignorar aquest correu.

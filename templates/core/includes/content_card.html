@@ -1,0 +1,30 @@
+<article class="visual-card">
+  <a class="card-image" href="{{ item.get_absolute_url }}" aria-label="{{ item.title }}">
+    {% if item.display_image_url %}
+      <img src="{{ item.display_image_url }}" alt="">
+    {% else %}
+      <div class="poster-placeholder poster-{{ item.content_type }}" aria-hidden="true">
+        <div class="poster-orbit"></div>
+        <span>{{ item.get_content_type_display }}</span>
+        <strong>{{ item.title }}</strong>
+        {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
+      </div>
+    {% endif %}
+    {% if item.embed_url %}
+      <span class="embed-badge">Embed</span>
+    {% endif %}
+  </a>
+  <div class="card-body">
+    <p class="meta">{{ item.get_content_type_display }}{% if item.display_source %} · {{ item.display_source }}{% endif %}</p>
+    <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
+    {% if item.description %}
+      <p>{{ item.description|truncatechars:120 }}</p>
+    {% endif %}
+    <div class="card-actions">
+      <a href="{{ item.url }}" target="_blank" rel="noopener">Obrir</a>
+      {% if is_owner %}
+        <a href="{% url 'contentitem_update' item.pk %}">Editar</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

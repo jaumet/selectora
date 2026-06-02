@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar contingut{% else %}Afegir contingut{% endif %} - Selectora{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <p class="eyebrow">Metadades automatiques</p>
+  <h1>{% if object %}Editar contingut{% else %}Afegir una URL{% endif %}</h1>
+  {% if not object %}
+    <p class="form-intro">Pots enganxar nomes la URL. Si Selectora troba Open Graph, Twitter Cards, JSON-LD o metadades HTML, emplenara els camps disponibles.</p>
+  {% endif %}
+  <form method="post" class="form-panel">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-actions">
+      <button class="button" type="submit">Guardar</button>
+      <a href="{% url 'dashboard' %}">Cancel.lar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

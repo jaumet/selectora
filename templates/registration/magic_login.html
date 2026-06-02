@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar - Selectora{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <p class="eyebrow">Entrada sense contrasenya</p>
+  <h1>Entrar o registrar-se</h1>
+  <p class="form-intro">
+    Escriu el teu email i t'enviarem un enllaç d'un sol ús per entrar a Selectora.
+  </p>
+  <form method="post" class="form-panel">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="button" type="submit">Enviar enllaç</button>
+  </form>
+</section>
+{% endblock %}

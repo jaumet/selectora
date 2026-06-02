@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - Selectora{% endblock %}
+
+{% block content %}
+<article class="detail-layout">
+  <div class="detail-media{% if item.is_vertical_embed %} vertical-embed{% endif %}">
+    {% if item.embed_url %}
+      <iframe
+        src="{{ item.embed_url }}"
+        title="{{ item.title }}"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+      <p class="embed-help">Si la reproduccio queda bloquejada per la plataforma, obre l'enllac original.</p>
+    {% elif item.display_image_url %}
+      <img src="{{ item.display_image_url }}" alt="">
+    {% else %}
+      <div class="placeholder large text-placeholder" aria-hidden="true">
+        <span>{{ item.get_content_type_display }}</span>
+        <strong>{{ item.title }}</strong>
+        {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="detail-content">
+    <p class="meta">{{ item.get_content_type_display }}{% if item.display_source %} · {{ item.display_source }}{% endif %}</p>
+    <h1>{{ item.title }}</h1>
+    {% if item.description %}
+      <p class="lead">{{ item.description }}</p>
+    {% endif %}
+    <dl class="metadata-list">
+      {% if item.author %}<div><dt>Autor</dt><dd>{{ item.author }}</dd></div>{% endif %}
+      {% if item.published_date %}<div><dt>Publicat</dt><dd>{{ item.published_date|date:"d/m/Y" }}</dd></div>{% endif %}
+      {% if item.language %}<div><dt>Idioma</dt><dd>{{ item.language }}</dd></div>{% endif %}
+      {% if item.duration %}<div><dt>Durada</dt><dd>{{ item.duration }}</dd></div>{% endif %}
+      {% if item.canonical_url %}<div><dt>URL canonica</dt><dd><a href="{{ item.canonical_url }}" target="_blank" rel="noopener">{{ item.canonical_url }}</a></dd></div>{% endif %}
+    </dl>
+    {% if item.tags.all %}
+      <div class="tag-cloud compact">
+        {% for tag in item.tags.all %}
+          <span>{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <div class="actions">
+      <a class="button" href="{{ item.url }}" target="_blank" rel="noopener">Obrir original</a>
+      {% if is_owner %}
+        <a class="button secondary" href="{% url 'contentitem_update' item.pk %}">Editar</a>
+      {% endif %}
+      {% if item.channel.is_public %}
+        <a class="text-link" href="{{ item.channel.get_absolute_url }}">Veure canal</a>
+      {% elif is_owner %}
+        <a class="text-link" href="{% url 'dashboard' %}">Tornar al dashboard</a>
+      {% endif %}
+    </div>
+    {% if item.metadata_json %}
+      <details class="raw-metadata">
+        <summary>Metadades disponibles</summary>
+        <pre>{{ item.metadata_json }}</pre>
+      </details>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}

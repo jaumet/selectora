@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Revisa el correu - Selectora{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <p class="eyebrow">Enllaç enviat</p>
+  <h1>Revisa el correu</h1>
+  <p class="form-intro">
+    Si aquest email existeix o és nou, rebràs un enllaç per entrar. L'enllaç caduca al cap de poca estona i només es pot fer servir una vegada.
+  </p>
+  {% if request.session.last_magic_login_url %}
+    <div class="dev-magic-link">
+      <p>En desenvolupament:</p>
+      <a href="{{ request.session.last_magic_login_url }}">{{ request.session.last_magic_login_url }}</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

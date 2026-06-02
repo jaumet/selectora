@@ -1,0 +1,32 @@
+from django.urls import path
+
+from .views import (
+    ContentItemCreateView,
+    ContentItemDetailView,
+    ContentItemUpdateView,
+    ChannelUpdateView,
+    DashboardView,
+    ExploreView,
+    HomeView,
+    MagicLoginConfirmView,
+    MagicLoginRequestView,
+    MagicLoginSentView,
+    PublicChannelView,
+    TelegramWebhookView,
+)
+
+
+urlpatterns = [
+    path("", HomeView.as_view(), name="home"),
+    path("explore/", ExploreView.as_view(), name="explore"),
+    path("accounts/login/", MagicLoginRequestView.as_view(), name="login"),
+    path("accounts/check-email/", MagicLoginSentView.as_view(), name="magic_login_sent"),
+    path("accounts/magic/<str:token>/", MagicLoginConfirmView.as_view(), name="magic_login_confirm"),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
+    path("dashboard/channel/", ChannelUpdateView.as_view(), name="channel_update"),
+    path("items/new/", ContentItemCreateView.as_view(), name="contentitem_create"),
+    path("items/<int:pk>/", ContentItemDetailView.as_view(), name="contentitem_detail"),
+    path("items/<int:pk>/edit/", ContentItemUpdateView.as_view(), name="contentitem_update"),
+    path("integrations/telegram/webhook/", TelegramWebhookView.as_view(), name="telegram_webhook"),
+    path("@<str:username>/", PublicChannelView.as_view(), name="public_channel"),
+]

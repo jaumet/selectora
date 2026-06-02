@@ -1,0 +1,212 @@
+<section class="channel-hero"{% if channel.display_cover_image_url %} style="--cover-image: url('{{ channel.display_cover_image_url }}');"{% endif %}>
+  <div class="channel-hero-content">
+    <div class="avatar" aria-hidden="true">{{ channel.owner.username|first|upper }}</div>
+    <div>
+      <p class="eyebrow">{% if private_view %}El teu canal{% else %}Canal cultural{% endif %}</p>
+      <h1>{{ channel.name }}</h1>
+      {% if channel.description %}
+        <p>{{ channel.description }}</p>
+      {% endif %}
+      <div class="actions">
+        {% if private_view %}
+          <a class="button" href="{% url 'contentitem_create' %}">Afegir URL</a>
+          <a class="button secondary" href="{% url 'channel_update' %}">Configurar canal</a>
+          {% if channel.is_public %}
+            <a class="button secondary" href="{{ channel.get_absolute_url }}">Veure public</a>
+          {% else %}
+            <span class="status-pill">Privat</span>
+          {% endif %}
+        {% elif is_owner %}
+          <a class="button" href="{% url 'dashboard' %}">Gestionar canal</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<form class="filters" method="get">
+  <label>
+    Cerca
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Titol, autor, etiqueta...">
+  </label>
+  <label>
+    Tipus
+    <select name="type">
+      <option value="">Tots</option>
+      {% for value, label in content_types %}
+        <option value="{{ value }}"{% if filters.type == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Plataforma
+    <select name="platform">
+      <option value="">Totes</option>
+      {% for platform in platforms %}
+        <option value="{{ platform }}"{% if filters.platform == platform %} selected{% endif %}>{{ platform }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Autor
+    <select name="author">
+      <option value="">Tots</option>
+      {% for author in authors %}
+        <option value="{{ author }}"{% if filters.author == author %} selected{% endif %}>{{ author }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Idioma
+    <select name="language">
+      <option value="">Tots</option>
+      {% for language in languages %}
+        <option value="{{ language }}"{% if filters.language == language %} selected{% endif %}>{{ language }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Ordre
+    <select name="sort">
+      <option value="-created_at"{% if filters.sort == "-created_at" or not filters.sort %} selected{% endif %}>Mes recent</option>
+      <option value="created_at"{% if filters.sort == "created_at" %} selected{% endif %}>Mes antic</option>
+      <option value="title"{% if filters.sort == "title" %} selected{% endif %}>Titol A-Z</option>
+      <option value="platform"{% if filters.sort == "platform" %} selected{% endif %}>Plataforma</option>
+      <option value="type"{% if filters.sort == "type" %} selected{% endif %}>Tipus</option>
+    </select>
+  </label>
+  <button class="button" type="submit">Filtrar</button>
+  <a class="text-link" href="{% if private_view %}{% url 'dashboard' %}{% else %}{{ channel.get_absolute_url }}{% endif %}">Netejar</a>
+</form>
+
+{% if tag_options %}
+  <section class="tag-filter-panel" aria-label="Filtre per etiquetes">
+    <div class="section-heading">
+      <h2>Temes</h2>
+      <p>Pots seleccionar-ne mes d'un</p>
+    </div>
+    <div class="tag-tools">
+      <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
+      <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
+      {% if selected_tags %}
+        <a href="{{ clear_tags_url }}">Desactiva totes</a>
+      {% endif %}
+    </div>
+    {% if selected_tags %}
+      <div class="active-tags" aria-label="Etiquetes actives">
+        {% for option in selected_tags %}
+          <a class="active-tag" href="{{ option.remove_url }}">{{ option.tag.name }} <span aria-hidden="true">x</span></a>
+        {% endfor %}
+        <a class="active-tag clear-all" href="{{ clear_tags_url }}">Totes <span aria-hidden="true">x</span></a>
+      </div>
+    {% endif %}
+    <div class="tag-cloud" aria-label="Etiquetes">
+      {% for option in tag_options %}
+        <a class="tag-link{% if option.active %} active{% endif %}" href="{{ option.toggle_url }}">{{ option.tag.name }}</a>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if items %}
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>Resultats</h2>
+      <p>{{ items|length }} continguts</p>
+    </div>
+    <div class="card-grid">
+      {% for item in items %}
+        {% include "core/includes/content_card.html" %}
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if recent_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>Afegits recentment</h2>
+    </div>
+    <div class="rail">
+      {% for item in recent_items %}
+        {% include "core/includes/content_card.html" %}
+      {% endfor %}
+    </div>
+  </section>
+{% elif not recent_items %}
+  <div class="empty-state">
+    <h2>Encara no hi ha continguts.</h2>
+    {% if private_view %}
+      <p>Comenca enganxant una URL. Selectora intentara completar-ne el titol, la imatge i la font.</p>
+      <a class="button" href="{% url 'contentitem_create' %}">Afegir el primer contingut</a>
+    {% else %}
+      <p>Aquest canal encara no ha publicat cap seleccio.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if video_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading"><h2>Videos</h2></div>
+    <div class="rail">
+      {% for item in video_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if article_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading"><h2>Articles i lectures</h2></div>
+    <div class="rail">
+      {% for item in article_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if podcast_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading"><h2>Podcasts</h2></div>
+    <div class="rail">
+      {% for item in podcast_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if music_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading"><h2>Musica</h2></div>
+    <div class="rail">
+      {% for item in music_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if recommended_items and not active_filters %}
+  <section class="section-block">
+    <div class="section-heading"><h2>Recomanats pel creador</h2></div>
+    <div class="rail">
+      {% for item in recommended_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if tag_options %}
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>Temes del canal</h2>
+      <p>{% if selected_tags %}Actius a dalt{% else %}Filtra per etiqueta{% endif %}</p>
+    </div>
+    <div class="tag-tools">
+      <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
+      <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
+      {% if selected_tags %}
+        <a href="{{ clear_tags_url }}">Desactiva totes</a>
+      {% endif %}
+    </div>
+    <div class="tag-cloud" aria-label="Etiquetes">
+      {% for option in tag_options %}
+        <a class="tag-link{% if option.active %} active{% endif %}" href="{{ option.toggle_url }}">{{ option.tag.name }}</a>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
