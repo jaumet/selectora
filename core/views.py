@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DetailView, FormView, ListView, RedirectView, TemplateView, UpdateView
 from django.conf import settings
 
 from .auth import consume_magic_token, send_magic_login_email
@@ -22,9 +22,6 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        view_mode = self.request.GET.get("view", "planet")
-        context["home_view_mode"] = "compact" if view_mode == "compact" else "planet"
-        context["show_home_view_switch"] = True
         public_channels = (
             Channel.objects.filter(is_public=True)
             .select_related("owner")
@@ -66,6 +63,11 @@ class HomeView(TemplateView):
         context["global_tags"] = context["global_tags"][:28]
         context.update(tag_sort_context(self.request.GET))
         return context
+
+
+class LegacyHtmlRedirectView(RedirectView):
+    pattern_name = "home"
+    permanent = False
 
 
 class MagicLoginRequestView(FormView):

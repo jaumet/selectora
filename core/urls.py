@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from .views import (
     ContentItemCreateView,
@@ -8,6 +8,7 @@ from .views import (
     DashboardView,
     ExploreView,
     HomeView,
+    LegacyHtmlRedirectView,
     MagicLoginConfirmView,
     MagicLoginRequestView,
     MagicLoginSentView,
@@ -29,4 +30,5 @@ urlpatterns = [
     path("items/<int:pk>/edit/", ContentItemUpdateView.as_view(), name="contentitem_update"),
     path("integrations/telegram/webhook/", TelegramWebhookView.as_view(), name="telegram_webhook"),
     path("@<str:username>/", PublicChannelView.as_view(), name="public_channel"),
+    re_path(r"^[\w-]+\.html$", LegacyHtmlRedirectView.as_view(), name="legacy_html_redirect"),
 ]

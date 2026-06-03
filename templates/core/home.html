@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Selectora - Planeta de canals{% endblock %}
+{% block title %}Selectora - Canals{% endblock %}
 
 {% block content %}
-{% if home_view_mode == "compact" %}
 <section class="compact-home">
   <div class="compact-hero">
     <div>
@@ -101,112 +100,5 @@
     </section>
   {% endif %}
 </section>
-{% else %}
-  <section class="home-planet">
-    <div class="planet-copy">
-      <p class="eyebrow">Curadoria humana en orbita</p>
-      <h1>Selectora</h1>
-      <p>
-        Un planeta de canals culturals fets per persones: videos, podcasts,
-        articles, musica, reels i peces que algu ha decidit conservar i compartir.
-      </p>
-      <div class="actions">
-        {% if user.is_authenticated %}
-          <a class="button" href="{% url 'dashboard' %}">Entrar al meu canal</a>
-        {% else %}
-          <a class="button" href="{% url 'login' %}">Entrar</a>
-        {% endif %}
-        {% if public_channels %}
-          <a class="button secondary" href="#canals">Explorar canals</a>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="planet-map" aria-label="Canals publics destacats">
-      <div class="planet-core">
-        <span>Selectora</span>
-        <strong>{{ public_channels|length }}</strong>
-        <em>canals publics</em>
-      </div>
-      {% for channel in public_channels %}
-        <a class="channel-node node-{{ forloop.counter }}" href="{{ channel.get_absolute_url }}">
-          <span>{{ channel.owner.username|first|upper }}</span>
-          <strong>{{ channel.name }}</strong>
-          <em>{{ channel.item_count }} peces</em>
-        </a>
-      {% empty %}
-        <div class="channel-node node-1 inert">
-          <span>S</span>
-          <strong>Primer canal</strong>
-          <em>pendent</em>
-        </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  {% if global_tags %}
-    <section class="section-block">
-      <div class="section-heading">
-        <h2>Temes en circulacio</h2>
-        <p>Etiqueta, explora, salta de canal</p>
-      </div>
-      <div class="tag-tools">
-        <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
-        <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
-      </div>
-      <div class="tag-cloud global-cloud" aria-label="Nuvol global d'etiquetes">
-        {% for tag in global_tags %}
-          <a class="tag-link weight-{{ tag.item_count|default:1 }}" href="{% url 'explore' %}?tag={{ tag.slug }}">{{ tag.name }}</a>
-        {% endfor %}
-      </div>
-    </section>
-  {% endif %}
-
-  {% if public_channels %}
-    <section class="section-block" id="canals">
-      <div class="section-heading">
-        <h2>Canals publics</h2>
-        <p>Espais culturals propis</p>
-      </div>
-      <div class="channel-grid">
-        {% for channel in public_channels %}
-          <a class="channel-tile" href="{{ channel.get_absolute_url }}">
-            <span class="channel-tile-visual"{% if channel.display_cover_image_url %} style="--channel-cover: url('{{ channel.display_cover_image_url }}');"{% endif %} aria-hidden="true">
-              <span class="avatar small">{{ channel.owner.username|first|upper }}</span>
-            </span>
-            <strong>{{ channel.name }}</strong>
-            {% if channel.description %}
-              <p>{{ channel.description|truncatechars:120 }}</p>
-            {% endif %}
-            <em>{{ channel.item_count }} continguts</em>
-          </a>
-        {% endfor %}
-      </div>
-    </section>
-  {% endif %}
-
-  {% if recent_public_items %}
-    <section class="section-block">
-      <div class="section-heading">
-        <h2>Ultimes seleccions</h2>
-        <p>Afegides recentment</p>
-      </div>
-      <div class="rail">
-        {% for item in recent_public_items %}
-          {% include "core/includes/content_card.html" %}
-        {% endfor %}
-      </div>
-    </section>
-  {% else %}
-    <section class="intro">
-      <h2>Canals culturals humans</h2>
-      <p>
-        Guarda una URL, deixa que Selectora n'extregui les metadades disponibles
-        i construeix un canal visual amb les peces que estàs mirant, llegint,
-        escoltant o recomanant.
-      </p>
-    </section>
-  {% endif %}
-{% endif %}
 
 {% endblock %}

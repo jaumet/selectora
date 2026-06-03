@@ -115,37 +115,6 @@ select:focus-visible {
   color: var(--danger);
 }
 
-.view-switch,
-.nav-view-switch {
-  display: inline-flex;
-  gap: 0.25rem;
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(21, 26, 34, 0.72);
-  padding: 0.25rem;
-}
-
-.view-switch a,
-.nav-view-switch a {
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 800;
-  padding: 0.45rem 0.8rem;
-  text-decoration: none;
-}
-
-.view-switch a.active,
-.nav-view-switch a.active {
-  background: var(--accent);
-  color: #06100d;
-}
-
-.nav-view-switch {
-  margin-bottom: 0;
-}
-
 .hero {
   max-width: 760px;
   padding: 5rem 0 3rem;
@@ -324,75 +293,6 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-.home-planet {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(24rem, 1.1fr);
-  gap: clamp(2rem, 6vw, 5rem);
-  align-items: center;
-  min-height: min(42rem, calc(100vh - 7rem));
-  padding: 2rem 0 4rem;
-}
-
-.planet-copy {
-  max-width: 650px;
-}
-
-.planet-copy h1 {
-  font-size: clamp(3.4rem, 10vw, 7.5rem);
-}
-
-.planet-copy p {
-  color: var(--muted);
-  font-size: 1.22rem;
-}
-
-.planet-map {
-  position: relative;
-  min-height: 35rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(55, 194, 154, 0.12), rgba(255, 255, 255, 0.03)),
-    rgba(21, 26, 34, 0.72);
-  overflow: hidden;
-}
-
-.planet-map::before,
-.planet-map::after {
-  content: "";
-  position: absolute;
-  inset: 12%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-}
-
-.planet-map::after {
-  inset: 25%;
-  border-color: rgba(55, 194, 154, 0.24);
-}
-
-.planet-core {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 2;
-  display: grid;
-  width: 11rem;
-  height: 11rem;
-  place-items: center;
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(55, 194, 154, 0.55);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18), transparent 35%),
-    #12352f;
-  box-shadow: 0 0 5rem rgba(55, 194, 154, 0.18);
-  text-align: center;
-}
-
-.planet-core span,
-.planet-core em,
-.channel-node em,
 .channel-tile em {
   color: var(--muted);
   font-size: 0.78rem;
@@ -401,59 +301,9 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-.planet-core strong {
-  font-size: 2.6rem;
-  line-height: 1;
-}
-
-.channel-node {
-  position: absolute;
-  z-index: 3;
-  display: grid;
-  gap: 0.2rem;
-  width: 10rem;
-  min-height: 7rem;
-  padding: 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  background: rgba(27, 34, 45, 0.92);
-  color: var(--text);
-  text-decoration: none;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
-}
-
-.channel-node:hover,
 .channel-tile:hover {
   border-color: rgba(55, 194, 154, 0.6);
   transform: translateY(-2px);
-}
-
-.channel-node span {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #06100d;
-  font-weight: 900;
-}
-
-.channel-node strong {
-  line-height: 1.15;
-}
-
-.node-1 { left: 9%; top: 13%; }
-.node-2 { right: 8%; top: 16%; }
-.node-3 { left: 7%; bottom: 15%; }
-.node-4 { right: 10%; bottom: 12%; }
-.node-5 { left: 38%; top: 5%; }
-.node-6 { right: 35%; bottom: 5%; }
-.node-7 { left: 3%; top: 45%; }
-.node-8 { right: 3%; top: 48%; }
-
-.channel-node.inert {
-  pointer-events: none;
 }
 
 .eyebrow,
@@ -1268,15 +1118,401 @@ select {
   padding: 1rem;
 }
 
+/* Dense layout pass: keep the visual language but reduce vertical footprint. */
+body {
+  line-height: 1.38;
+}
+
+.site-header {
+  gap: 0.75rem;
+  padding: 0.55rem clamp(0.75rem, 3vw, 1.4rem);
+}
+
+.brand {
+  font-size: 1rem;
+}
+
+.nav,
+.actions,
+.form-actions,
+.card-actions {
+  gap: 0.6rem;
+}
+
+.nav a,
+.nav button,
+.text-link {
+  font-size: 0.9rem;
+}
+
+.page {
+  width: min(1320px, calc(100% - 1rem));
+  padding: 0.85rem 0 1.5rem;
+}
+
+.message {
+  padding: 0.55rem 0.7rem;
+}
+
+.compact-home {
+  gap: 0.75rem;
+}
+
+.compact-hero {
+  align-items: center;
+  padding: 0.8rem 1rem;
+}
+
+.compact-hero h1 {
+  font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+  margin-bottom: 0.25rem;
+}
+
+.compact-hero p {
+  font-size: 0.95rem;
+}
+
+.compact-section {
+  gap: 0.45rem;
+}
+
+.compact-tag-drawer {
+  top: 3.4rem;
+}
+
+.compact-tag-drawer summary {
+  min-height: 2.05rem;
+  padding: 0.34rem 0.7rem;
+}
+
+.drawer-panel {
+  top: 3.6rem;
+  padding: 0.75rem;
+}
+
+.compact-rail,
+.compact-channel-rail,
+.rail {
+  gap: 0.55rem;
+  padding-bottom: 0.45rem;
+}
+
+.compact-rail {
+  grid-auto-columns: minmax(10rem, 12rem);
+}
+
+.compact-channel-rail {
+  grid-auto-columns: minmax(8.5rem, 10.5rem);
+}
+
+.compact-channel-card {
+  gap: 0.35rem;
+}
+
+.compact-channel-card strong,
+.compact-channel-card em {
+  padding-inline: 0.55rem;
+}
+
+.compact-channel-card em {
+  padding-bottom: 0.55rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.7rem);
+  margin-bottom: 0.55rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+}
+
+h3 {
+  font-size: 0.94rem;
+}
+
+.eyebrow,
+.meta {
+  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+}
+
+.hero p,
+.lead,
+.form-intro,
+.explore-header p {
+  font-size: 0.98rem;
+}
+
+.button,
+button.button,
+.status-pill {
+  min-height: 2.15rem;
+  padding: 0.42rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.intro,
+.empty-state,
+.form-panel,
+.tag-filter-panel,
+.global-cloud,
+.compact-cloud,
+.filters {
+  padding: 0.75rem;
+}
+
+.intro,
+.empty-state {
+  padding: 0.9rem;
+}
+
+.channel-hero {
+  min-height: 13rem;
+  margin-bottom: 0.8rem;
+}
+
+.channel-hero-content {
+  gap: 0.75rem;
+  max-width: 1000px;
+  padding: 1rem;
+}
+
+.channel-hero h1 {
+  font-size: clamp(1.75rem, 4.5vw, 3.4rem);
+}
+
+.channel-hero p {
+  max-width: 760px;
+  margin-bottom: 0.5rem;
+}
+
+.avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-basis: 2.75rem;
+  font-size: 1.1rem;
+}
+
+.explore-header {
+  max-width: none;
+  margin-bottom: 0.8rem;
+  padding: 0.8rem 0 0.2rem;
+}
+
+.explore-header h1 {
+  min-height: 0;
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  white-space: normal;
+}
+
+.filters {
+  grid-template-columns: minmax(11rem, 2fr) repeat(5, minmax(7rem, 1fr)) auto auto;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.filters label,
+.form-panel p {
+  gap: 0.22rem;
+  font-size: 0.78rem;
+}
+
+input,
+textarea,
+select {
+  padding: 0.48rem 0.58rem;
+  font-size: 0.92rem;
+}
+
+.section-block {
+  margin: 1rem 0;
+}
+
+.section-heading {
+  margin-bottom: 0.45rem;
+}
+
+.section-heading p {
+  font-size: 0.86rem;
+}
+
+.rail {
+  grid-auto-columns: minmax(11rem, 14rem);
+}
+
+.card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+.channel-grid {
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 15rem));
+  gap: 0.6rem;
+}
+
+.channel-tile {
+  gap: 0.45rem;
+  min-height: 9rem;
+  padding: 0.75rem;
+}
+
+.channel-tile-visual {
+  min-height: 5.6rem;
+  margin: -0.75rem -0.75rem 0;
+}
+
+.visual-card:hover,
+.channel-tile:hover {
+  transform: none;
+}
+
+.poster-placeholder {
+  min-height: 7rem;
+  padding: 0.7rem;
+}
+
+.poster-placeholder::before {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.poster-placeholder::after {
+  right: 1.82rem;
+  top: 1.7rem;
+  border-left-width: 0.65rem;
+  border-top-width: 0.42rem;
+  border-bottom-width: 0.42rem;
+}
+
+.poster-placeholder span,
+.text-placeholder span {
+  font-size: 0.68rem;
+}
+
+.poster-placeholder strong,
+.text-placeholder strong {
+  font-size: 0.9rem;
+  line-height: 1.12;
+  -webkit-line-clamp: 2;
+}
+
+.poster-placeholder em,
+.card-body p:not(.meta) {
+  font-size: 0.78rem;
+}
+
+.embed-badge {
+  right: 0.4rem;
+  bottom: 0.4rem;
+  font-size: 0.68rem;
+  padding: 0.18rem 0.42rem;
+}
+
+.card-body,
+.compact-rail .card-body {
+  padding: 0.55rem;
+}
+
+.card-body h3 {
+  margin-bottom: 0.32rem;
+}
+
+.card-actions {
+  margin-top: 0.45rem;
+}
+
+.tag-cloud {
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.tag-filter-panel {
+  margin-bottom: 0.9rem;
+}
+
+.tag-tools {
+  gap: 0.35rem;
+  margin-bottom: 0.45rem;
+}
+
+.tag-tools a,
+.tag-cloud span,
+.tag-link,
+.active-tag {
+  font-size: 0.76rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.active-tags {
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.global-cloud .tag-link:nth-child(n) {
+  font-size: 0.8rem;
+}
+
+.form-page {
+  max-width: 680px;
+}
+
+.form-page h1 {
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+}
+
+.integration-panel,
+.dev-magic-link {
+  margin: 0.7rem 0;
+  padding: 0.75rem;
+}
+
+.detail-layout {
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  gap: 1rem;
+}
+
+.detail-content h1 {
+  font-size: clamp(1.6rem, 3.8vw, 2.8rem);
+}
+
+.placeholder.large {
+  min-height: 16rem;
+}
+
+.detail-media.vertical-embed {
+  max-width: 24rem;
+}
+
+.detail-media.vertical-embed iframe {
+  min-height: min(72vh, 42rem);
+}
+
+.embed-help {
+  font-size: 0.78rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.metadata-list {
+  gap: 0.45rem;
+  margin: 0.9rem 0;
+}
+
+.metadata-list div {
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+}
+
+.raw-metadata,
+.tag-cloud.compact {
+  margin-top: 0.8rem;
+}
+
 @media (max-width: 980px) {
   .filters,
-  .detail-layout,
-  .home-planet {
+  .detail-layout {
     grid-template-columns: 1fr;
-  }
-
-  .planet-map {
-    min-height: 32rem;
   }
 
   .compact-hero {
@@ -1293,28 +1529,19 @@ select {
   }
 
   .channel-hero {
-    min-height: 28rem;
-  }
-
-  .planet-map {
-    min-height: auto;
-    padding: 1rem;
-  }
-
-  .planet-map::before,
-  .planet-map::after,
-  .planet-core {
-    display: none;
-  }
-
-  .channel-node {
-    position: static;
-    width: 100%;
-    margin-bottom: 0.75rem;
+    min-height: 15rem;
   }
 
   .rail {
-    grid-auto-columns: minmax(13rem, 78vw);
+    grid-auto-columns: minmax(10.5rem, 62vw);
+  }
+
+  .compact-rail {
+    grid-auto-columns: minmax(9.5rem, 56vw);
+  }
+
+  .compact-channel-rail {
+    grid-auto-columns: minmax(8.5rem, 48vw);
   }
 
   .metadata-list div {
@@ -1323,7 +1550,7 @@ select {
   }
 
   .explore-header h1 {
-    min-height: 2.25rem;
-    font-size: 2.25rem;
+    min-height: 0;
+    font-size: 1.9rem;
   }
 }

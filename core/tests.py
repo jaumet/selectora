@@ -220,6 +220,12 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Selectora")
 
+    def test_legacy_html_urls_redirect_to_home(self):
+        response = self.client.get("/el-mtode.html")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("home"))
+
     def test_home_page_shows_public_channels_and_global_tags(self):
         self.channel.is_public = True
         self.channel.save()
@@ -236,12 +242,13 @@ class CoreViewsTests(TestCase):
         response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Planeta")
+        self.assertContains(response, "compact-home")
+        self.assertNotContains(response, "Planeta")
         self.assertContains(response, "Canal de Jaume")
         self.assertContains(response, "Cinema")
         self.assertContains(response, reverse("explore") + "?tag=cinema")
 
-    def test_home_page_compact_view_loads(self):
+    def test_home_page_always_uses_compact_view(self):
         self.channel.is_public = True
         self.channel.save()
         ContentItem.objects.create(
@@ -252,12 +259,13 @@ class CoreViewsTests(TestCase):
             content_type=ContentItem.ContentType.VIDEO,
         )
 
-        response = self.client.get(reverse("home"), {"view": "compact"})
+        response = self.client.get(reverse("home"), {"view": "planet"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "compact-home")
         self.assertContains(response, "Video compacte")
         self.assertContains(response, "Canals publics")
+        self.assertNotContains(response, "Planeta")
 
     def test_explore_filters_by_global_tag(self):
         self.channel.is_public = True
