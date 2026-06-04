@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ channel.name }} - Selectora{% endblock %}
+
+{% block content %}
+<section class="channel-hero" data-darkreader-ignore{% if channel.display_cover_image_url %} style="--cover-image: url('{{ channel.display_cover_image_url }}');"{% endif %}>
+  <div class="channel-hero-content">
+    <div class="avatar" aria-hidden="true">{{ channel.owner.username|first|upper }}</div>
+    <div>
+      <p class="eyebrow">Selectora channel</p>
+      <h1>{{ channel.name }}</h1>
+      {% if channel.description %}
+        <p>{{ channel.description }}</p>
+      {% endif %}
+      <div class="actions">
+        <a class="button secondary" href="{{ channel.get_absolute_url }}">Open channel</a>
+        {% include "core/includes/share_menu.html" with share_label="Share channel" share_aria_label="Share channel" share_type="channel" share_title=channel.name share_url=request.path share_curator=channel.name %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if public_collections %}
+  <section class="section-block">
+    <div class="section-heading">
+      <h2>Public collections</h2>
+      <p>{{ public_collections|length }} collections</p>
+    </div>
+    <div class="collection-grid">
+      {% for collection in public_collections %}
+        <article class="collection-card">
+          {% include "core/includes/collection_collage.html" %}
+          <h3><a href="{{ collection.get_public_url }}">{{ collection.title }}</a></h3>
+          {% if collection.description %}<p>{{ collection.description|truncatechars:140 }}</p>{% endif %}
+          <div class="card-actions">
+            <a href="{{ collection.get_public_url }}">Open</a>
+            {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=channel.name %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+<section class="section-block">
+  <div class="section-heading">
+    <h2>Latest public items</h2>
+    <p>{{ items|length }} items</p>
+  </div>
+  {% if items %}
+    <div class="card-grid">
+      {% for item in items %}
+        {% include "core/includes/content_card.html" with public_links=True %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>This channel has no public items.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

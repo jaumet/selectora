@@ -61,6 +61,7 @@ class ContentItemForm(forms.ModelForm):
             "image_url",
             "source_platform",
             "content_type",
+            "visibility",
             "author",
             "language",
             "tag_list",
@@ -76,6 +77,8 @@ class ContentItemForm(forms.ModelForm):
         self.fields["description"].required = False
         self.fields["image_url"].required = False
         self.fields["source_platform"].required = False
+        self.fields["visibility"].required = False
+        self.fields["visibility"].initial = ContentItem.Visibility.PUBLIC
         self.fields["author"].required = False
         self.fields["language"].required = False
         if self.instance and self.instance.pk:

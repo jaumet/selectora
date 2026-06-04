@@ -100,6 +100,10 @@ class TelegramAccount(models.Model):
 
 
 class ContentItem(models.Model):
+    class Visibility(models.TextChoices):
+        PRIVATE = "private", "Private"
+        PUBLIC = "public", "Public"
+
     class ContentType(models.TextChoices):
         VIDEO = "video", "Video"
         PODCAST = "podcast", "Podcast"
@@ -138,6 +142,11 @@ class ContentItem(models.Model):
     duration = models.CharField(max_length=80, blank=True)
     language = models.CharField(max_length=32, blank=True)
     embed_url = models.URLField(max_length=500, blank=True)
+    visibility = models.CharField(
+        max_length=20,
+        choices=Visibility.choices,
+        default=Visibility.PUBLIC,
+    )
     tags = models.ManyToManyField(Tag, blank=True, related_name="content_items")
     metadata_json = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -151,6 +160,13 @@ class ContentItem(models.Model):
 
     def get_absolute_url(self):
         return reverse("contentitem_detail", kwargs={"pk": self.pk})
+
+    def get_public_url(self):
+        return reverse("public_item", kwargs={"pk": self.pk})
+
+    @property
+    def is_publicly_visible(self):
+        return self.visibility == self.Visibility.PUBLIC and self.channel.is_public
 
     @property
     def display_image_url(self):
@@ -174,3 +190,68 @@ class ContentItem(models.Model):
     @property
     def is_instagram_embed(self):
         return "instagram.com" in (self.embed_url or self.canonical_url or self.url)
+
+
+class ContentItemVisit(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="content_item_visits",
+    )
+    item = models.ForeignKey(
+        ContentItem,
+        on_delete=models.CASCADE,
+        related_name="visits",
+    )
+    visit_count = models.PositiveIntegerField(default=0)
+    first_visited_at = models.DateTimeField(auto_now_add=True)
+    last_visited_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-last_visited_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "item"], name="unique_content_item_visit"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} visited {self.item}"
+
+
+class Collection(models.Model):
+    class Visibility(models.TextChoices):
+        PRIVATE = "private", "Private"
+        PUBLIC = "public", "Public"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="collections",
+    )
+    channel = models.ForeignKey(
+        Channel,
+        on_delete=models.CASCADE,
+        related_name="collections",
+    )
+    title = models.CharField(max_length=160)
+    description = models.TextField(blank=True)
+    visibility = models.CharField(
+        max_length=20,
+        choices=Visibility.choices,
+        default=Visibility.PRIVATE,
+    )
+    items = models.ManyToManyField(ContentItem, blank=True, related_name="collections")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at", "title"]
+
+    def __str__(self):
+        return self.title
+
+    def get_public_url(self):
+        return reverse("public_collection", kwargs={"pk": self.pk})
+
+    @property
+    def is_publicly_visible(self):
+        return self.visibility == self.Visibility.PUBLIC and self.channel.is_public

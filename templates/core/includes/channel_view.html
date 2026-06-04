@@ -1,4 +1,4 @@
-<section class="channel-hero"{% if channel.display_cover_image_url %} style="--cover-image: url('{{ channel.display_cover_image_url }}');"{% endif %}>
+<section class="channel-hero" data-darkreader-ignore{% if channel.display_cover_image_url %} style="--cover-image: url('{{ channel.display_cover_image_url }}');"{% endif %}>
   <div class="channel-hero-content">
     <div class="avatar" aria-hidden="true">{{ channel.owner.username|first|upper }}</div>
     <div>
@@ -18,6 +18,9 @@
           {% endif %}
         {% elif is_owner %}
           <a class="button" href="{% url 'dashboard' %}">Gestionar canal</a>
+        {% endif %}
+        {% if not private_view %}
+          {% include "core/includes/share_menu.html" with share_label="Share channel" share_aria_label="Share channel" share_type="channel" share_title=channel.name share_url=channel.get_absolute_url share_curator=channel.name %}
         {% endif %}
       </div>
     </div>
@@ -122,18 +125,7 @@
   </section>
 {% endif %}
 
-{% if recent_items and not active_filters %}
-  <section class="section-block">
-    <div class="section-heading">
-      <h2>Afegits recentment</h2>
-    </div>
-    <div class="rail">
-      {% for item in recent_items %}
-        {% include "core/includes/content_card.html" %}
-      {% endfor %}
-    </div>
-  </section>
-{% elif not recent_items %}
+{% if not recent_items %}
   <div class="empty-state">
     <h2>Encara no hi ha continguts.</h2>
     {% if private_view %}
@@ -145,49 +137,40 @@
   </div>
 {% endif %}
 
-{% if video_items and not active_filters %}
+{% if not active_filters %}
+  {% for section in item_sections %}
   <section class="section-block">
-    <div class="section-heading"><h2>Videos</h2></div>
-    <div class="rail">
-      {% for item in video_items %}{% include "core/includes/content_card.html" %}{% endfor %}
+    <div class="section-heading">
+      <h2>{{ section.title }}</h2>
+      {% if section.type == "collections" %}
+        <p>{{ section.collections|length }} publiques</p>
+      {% else %}
+        <p>{{ section.items|length }} items</p>
+      {% endif %}
     </div>
+    {% if section.type == "collections" %}
+      <div class="collection-grid">
+        {% for collection in section.collections %}
+          <article class="collection-card">
+            {% include "core/includes/collection_collage.html" %}
+            <h3><a href="{{ collection.get_public_url }}">{{ collection.title }}</a></h3>
+            {% if collection.description %}
+              <p>{{ collection.description|truncatechars:140 }}</p>
+            {% endif %}
+            <div class="card-actions">
+              <a href="{{ collection.get_public_url }}">Obrir</a>
+              {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=collection.channel.name %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="rail">
+        {% for item in section.items %}{% include "core/includes/content_card.html" %}{% endfor %}
+      </div>
+    {% endif %}
   </section>
-{% endif %}
-
-{% if article_items and not active_filters %}
-  <section class="section-block">
-    <div class="section-heading"><h2>Articles i lectures</h2></div>
-    <div class="rail">
-      {% for item in article_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-    </div>
-  </section>
-{% endif %}
-
-{% if podcast_items and not active_filters %}
-  <section class="section-block">
-    <div class="section-heading"><h2>Podcasts</h2></div>
-    <div class="rail">
-      {% for item in podcast_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-    </div>
-  </section>
-{% endif %}
-
-{% if music_items and not active_filters %}
-  <section class="section-block">
-    <div class="section-heading"><h2>Musica</h2></div>
-    <div class="rail">
-      {% for item in music_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-    </div>
-  </section>
-{% endif %}
-
-{% if recommended_items and not active_filters %}
-  <section class="section-block">
-    <div class="section-heading"><h2>Recomanats pel creador</h2></div>
-    <div class="rail">
-      {% for item in recommended_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-    </div>
-  </section>
+  {% endfor %}
 {% endif %}
 
 {% if tag_options %}

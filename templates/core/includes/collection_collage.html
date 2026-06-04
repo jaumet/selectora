@@ -1,0 +1,8 @@
+<a class="collection-collage" href="{{ collection.get_public_url }}" aria-label="{{ collection.title }}">
+  {% for item in collection.public_preview_items|slice:":4" %}
+    {% if item.display_image_url %}
+      <span class="collection-collage-tile" data-darkreader-ignore style="--collage-image: url('{{ item.display_image_url }}');"></span>
+    {% endif %}
+  {% endfor %}
+  <span class="collection-collage-overlay" aria-hidden="true"></span>
+</a>

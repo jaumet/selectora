@@ -1,45 +1,96 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Selectora - Canals{% endblock %}
 
 {% block content %}
 <section class="compact-home">
-  <div class="compact-hero">
-    <div>
-      <p class="eyebrow">Canals humans, lectura rapida</p>
-      <h1>Selectora</h1>
-      <p>Explora seleccions culturals en format compacte, amb més contingut visible a cada pantalla.</p>
-    </div>
-    <div class="actions">
-      {% if user.is_authenticated %}
-        <a class="button" href="{% url 'dashboard' %}">El meu canal</a>
-      {% else %}
-        <a class="button" href="{% url 'login' %}">Entrar</a>
-      {% endif %}
-      <a class="button secondary" href="{% url 'explore' %}">Explorar tot</a>
-    </div>
-  </div>
+  <div class="compact-tools">
+    {% if global_tags %}
+      <details class="compact-drawer compact-tag-drawer">
+        <summary>Temes</summary>
+        <div class="drawer-panel">
+          <div class="drawer-heading">
+            <h2>Temes en circulacio</h2>
+            <span>Selecciona per explorar</span>
+          </div>
+          <div class="tag-tools">
+            <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
+            <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
+          </div>
+          <div class="tag-cloud drawer-tags" aria-label="Temes en circulacio">
+            {% for tag in global_tags %}
+              <a class="tag-link" href="{% url 'explore' %}?tag={{ tag.slug }}">{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+    {% endif %}
 
-  {% if global_tags %}
-    <details class="compact-tag-drawer">
-      <summary>Temes</summary>
-      <div class="drawer-panel">
+    <details class="compact-drawer compact-search-drawer">
+      <summary>Cerca</summary>
+      <div class="drawer-panel search-drawer-panel">
         <div class="drawer-heading">
-          <h2>Temes en circulacio</h2>
-          <span>Selecciona per explorar</span>
+          <h2>Cerca amb filtres</h2>
+          <span>Exploracio global</span>
         </div>
-        <div class="tag-tools">
-          <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
-          <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
-        </div>
-        <div class="tag-cloud drawer-tags" aria-label="Temes en circulacio">
-          {% for tag in global_tags %}
-            <a class="tag-link" href="{% url 'explore' %}?tag={{ tag.slug }}">{{ tag.name }}</a>
-          {% endfor %}
-        </div>
+        <form class="filters drawer-search-form" method="get" action="{% url 'explore' %}">
+          <label>
+            Cerca
+            <input type="search" name="q" placeholder="Titol, autor, etiqueta...">
+          </label>
+          <label>
+            Tipus
+            <select name="type">
+              <option value="">Tots</option>
+              {% for value, label in content_types %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Plataforma
+            <select name="platform">
+              <option value="">Totes</option>
+              {% for platform in platforms %}
+                <option value="{{ platform }}">{{ platform }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Autor
+            <select name="author">
+              <option value="">Tots</option>
+              {% for author in authors %}
+                <option value="{{ author }}">{{ author }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Idioma
+            <select name="language">
+              <option value="">Tots</option>
+              {% for language in languages %}
+                <option value="{{ language }}">{{ language }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            Ordre
+            <select name="sort">
+              <option value="-created_at">Mes recent</option>
+              <option value="created_at">Mes antic</option>
+              <option value="title">Titol A-Z</option>
+              <option value="platform">Plataforma</option>
+              <option value="type">Tipus</option>
+            </select>
+          </label>
+          <button class="button" type="submit">Filtrar</button>
+          <a class="text-link" href="{% url 'explore' %}">Netejar</a>
+        </form>
       </div>
     </details>
-  {% endif %}
+  </div>
 
   {% if public_channels %}
     <section class="compact-section" id="canals">
@@ -50,7 +101,7 @@
       <div class="compact-channel-rail">
         {% for channel in public_channels %}
           <a class="compact-channel-card" href="{{ channel.get_absolute_url }}">
-            <span class="compact-channel-image"{% if channel.display_cover_image_url %} style="--channel-cover: url('{{ channel.display_cover_image_url }}');"{% endif %}></span>
+            <span class="compact-channel-image" data-darkreader-ignore{% if channel.display_cover_image_url %} style="--channel-cover: url('{{ channel.display_cover_image_url }}');"{% endif %}></span>
             <strong>{{ channel.name }}</strong>
             <em>{{ channel.item_count }} peces</em>
           </a>
@@ -59,46 +110,43 @@
     </section>
   {% endif %}
 
-  {% if recent_public_items %}
+  {% for section in home_sections %}
     <section class="compact-section">
       <div class="section-heading">
-        <h2>Ultimes seleccions</h2>
-        <a class="text-link" href="{% url 'explore' %}">Veure tot</a>
+        <h2>{{ section.title }}</h2>
+        {% if section.type == "collections" %}
+          <p>{{ section.collections|length }} publiques</p>
+        {% else %}
+          <p>{{ section.items|length }} items</p>
+        {% endif %}
+        {% if section.link_url %}
+          <a class="text-link" href="{{ section.link_url }}">{{ section.link_label }}</a>
+        {% endif %}
       </div>
-      <div class="compact-rail">
-        {% for item in recent_public_items %}
-          {% include "core/includes/content_card.html" %}
-        {% endfor %}
-      </div>
+      {% if section.type == "collections" %}
+        <div class="collection-grid">
+          {% for collection in section.collections %}
+            <article class="collection-card">
+              {% include "core/includes/collection_collage.html" %}
+              <p class="meta">{{ collection.channel.name }}</p>
+              <h3><a href="{{ collection.get_public_url }}">{{ collection.title }}</a></h3>
+              {% if collection.description %}
+                <p>{{ collection.description|truncatechars:120 }}</p>
+              {% endif %}
+              <div class="card-actions">
+                <a href="{{ collection.get_public_url }}">Obrir</a>
+                {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=collection.channel.name %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="compact-rail">
+          {% for item in section.items %}{% include "core/includes/content_card.html" %}{% endfor %}
+        </div>
+      {% endif %}
     </section>
-  {% endif %}
-
-  {% if video_public_items %}
-    <section class="compact-section">
-      <div class="section-heading"><h2>Videos i socials</h2></div>
-      <div class="compact-rail">
-        {% for item in video_public_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-      </div>
-    </section>
-  {% endif %}
-
-  {% if podcast_public_items %}
-    <section class="compact-section">
-      <div class="section-heading"><h2>Podcasts</h2></div>
-      <div class="compact-rail">
-        {% for item in podcast_public_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-      </div>
-    </section>
-  {% endif %}
-
-  {% if article_public_items %}
-    <section class="compact-section">
-      <div class="section-heading"><h2>Articles</h2></div>
-      <div class="compact-rail">
-        {% for item in article_public_items %}{% include "core/includes/content_card.html" %}{% endfor %}
-      </div>
-    </section>
-  {% endif %}
+  {% endfor %}
 </section>
 
 {% endblock %}

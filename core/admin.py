@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Channel, ContentItem, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
 @admin.register(Channel)
@@ -34,9 +34,27 @@ class TelegramAccountAdmin(admin.ModelAdmin):
 
 @admin.register(ContentItem)
 class ContentItemAdmin(admin.ModelAdmin):
-    list_display = ("title", "user", "channel", "content_type", "display_source", "author", "created_at")
-    list_filter = ("content_type", "source_platform", "site_name", "language", "created_at")
+    list_display = ("title", "user", "channel", "visibility", "content_type", "display_source", "author", "created_at")
+    list_filter = ("visibility", "content_type", "source_platform", "site_name", "language", "created_at")
     search_fields = ("title", "url", "description", "source_platform", "site_name", "author", "user__username")
     autocomplete_fields = ("user", "channel")
     filter_horizontal = ("tags",)
     readonly_fields = ("metadata_json", "created_at", "updated_at")
+
+
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ("title", "user", "channel", "visibility", "updated_at")
+    list_filter = ("visibility", "created_at", "updated_at")
+    search_fields = ("title", "description", "user__username", "channel__name")
+    autocomplete_fields = ("user", "channel")
+    filter_horizontal = ("items",)
+
+
+@admin.register(ContentItemVisit)
+class ContentItemVisitAdmin(admin.ModelAdmin):
+    list_display = ("item", "user", "visit_count", "last_visited_at")
+    list_filter = ("last_visited_at",)
+    search_fields = ("item__title", "user__username", "user__email")
+    autocomplete_fields = ("item", "user")
+    readonly_fields = ("first_visited_at", "last_visited_at")

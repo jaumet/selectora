@@ -1,19 +1,20 @@
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.contrib.auth import login
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import CreateView, DetailView, FormView, ListView, RedirectView, TemplateView, UpdateView
+from django.views.generic import CreateView, DetailView, FormView, ListView, RedirectView, TemplateView, UpdateView, View
 from django.conf import settings
 
 from .auth import consume_magic_token, send_magic_login_email
 from .content_services import create_content_item_from_url, get_or_create_channel
 from .forms import ChannelForm, ContentItemForm, MagicLoginRequestForm
-from .models import Channel, ContentItem, Tag
+from .models import Channel, Collection, ContentItem, ContentItemVisit, Tag
 from .telegram import process_telegram_update
 
 
@@ -22,6 +23,7 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        public_items = ContentItem.objects.filter(channel__is_public=True, visibility=ContentItem.Visibility.PUBLIC)
         public_channels = (
             Channel.objects.filter(is_public=True)
             .select_related("owner")
@@ -30,37 +32,70 @@ class HomeView(TemplateView):
             .order_by("-updated_at")
         )
         context["public_channels"] = public_channels[:8]
-        context["recent_public_items"] = (
-            ContentItem.objects.filter(channel__is_public=True)
+        public_collections = list(
+            public_collections_queryset()
+            .select_related("channel", "user")
+            .prefetch_related(public_collection_items_prefetch())
+            .order_by("-updated_at")[:8]
+        )
+        context["public_collections"] = public_collections
+        pending_public_items = []
+        if self.request.user.is_authenticated:
+            pending_public_items = list(
+                public_items.exclude(visits__user=self.request.user)
+                .select_related("channel", "user")
+                .prefetch_related("tags")
+                .order_by("-created_at")[:12]
+            )
+        context["pending_public_items"] = pending_public_items
+        recent_public_items = list(
+            public_items
             .select_related("channel", "user")
             .prefetch_related("tags")
             .order_by("-created_at")[:10]
         )
-        context["video_public_items"] = (
-            ContentItem.objects.filter(channel__is_public=True, content_type=ContentItem.ContentType.VIDEO)
+        video_public_items = list(
+            public_items.filter(content_type=ContentItem.ContentType.VIDEO)
             .select_related("channel", "user")
             .prefetch_related("tags")
             .order_by("-created_at")[:12]
         )
-        context["podcast_public_items"] = (
-            ContentItem.objects.filter(channel__is_public=True, content_type=ContentItem.ContentType.PODCAST)
+        podcast_public_items = list(
+            public_items.filter(content_type=ContentItem.ContentType.PODCAST)
             .select_related("channel", "user")
             .prefetch_related("tags")
             .order_by("-created_at")[:12]
         )
-        context["article_public_items"] = (
-            ContentItem.objects.filter(channel__is_public=True, content_type=ContentItem.ContentType.ARTICLE)
+        article_public_items = list(
+            public_items.filter(content_type=ContentItem.ContentType.ARTICLE)
             .select_related("channel", "user")
             .prefetch_related("tags")
             .order_by("-created_at")[:12]
+        )
+        context["home_sections"] = ordered_sections(
+            [
+                {"title": "Col.leccions", "type": "collections", "collections": public_collections},
+                {"title": "Items pendents de veure", "type": "items", "items": pending_public_items},
+                {"title": "Ultimes seleccions", "type": "items", "items": recent_public_items, "link_url": reverse("explore"), "link_label": "Veure tot"},
+                {"title": "Videos i socials", "type": "items", "items": video_public_items},
+                {"title": "Articles", "type": "items", "items": article_public_items},
+                {"title": "Podcasts", "type": "items", "items": podcast_public_items},
+            ]
         )
         context["global_tags"] = ordered_tags(
             Tag.objects.filter(content_items__channel__is_public=True)
+            .filter(content_items__visibility=ContentItem.Visibility.PUBLIC)
             .annotate(item_count=Count("content_items", distinct=True))
             .filter(item_count__gt=0),
             self.request.GET,
         )
         context["global_tags"] = context["global_tags"][:28]
+        context["content_types"] = ContentItem.ContentType.choices
+        context["platforms"] = (
+            public_items.exclude(source_platform="").order_by("source_platform").values_list("source_platform", flat=True).distinct()
+        )
+        context["authors"] = public_items.exclude(author="").order_by("author").values_list("author", flat=True).distinct()
+        context["languages"] = public_items.exclude(language="").order_by("language").values_list("language", flat=True).distinct()
         context.update(tag_sort_context(self.request.GET))
         return context
 
@@ -204,11 +239,100 @@ def filtered_items(queryset, params):
     return queryset.order_by(allowed_ordering.get(ordering, "-created_at"))
 
 
-def channel_context(channel, items, params):
+def public_items_queryset():
+    return ContentItem.objects.filter(
+        channel__is_public=True,
+        visibility=ContentItem.Visibility.PUBLIC,
+    )
+
+
+def public_collections_queryset():
+    return Collection.objects.filter(
+        channel__is_public=True,
+        visibility=Collection.Visibility.PUBLIC,
+    )
+
+
+def public_collection_items_prefetch():
+    return Prefetch(
+        "items",
+        queryset=public_items_queryset().select_related("channel", "user").order_by("-created_at"),
+        to_attr="public_preview_items",
+    )
+
+
+def absolute_url(request, path):
+    return request.build_absolute_uri(path)
+
+
+def item_share_text(item, url):
+    parts = ["I found this on Selectora:", "", item.title]
+    if item.description:
+        parts.extend(["", item.description])
+    parts.extend(["", url])
+    return "\n".join(parts)
+
+
+def collection_share_text(collection, url):
+    parts = ["A human-curated collection on Selectora:", "", collection.title]
+    if collection.description:
+        parts.extend(["", collection.description])
+    parts.extend(["", url])
+    return "\n".join(parts)
+
+
+def channel_share_text(channel, url):
+    return f"{channel.name}'s Selectora channel:\n\n{url}"
+
+
+def share_context(title, url, text):
+    return {
+        "share_title": title,
+        "share_url": url,
+        "share_text": text,
+    }
+
+
+def mark_item_visited(user, item):
+    visit, _ = ContentItemVisit.objects.get_or_create(user=user, item=item)
+    ContentItemVisit.objects.filter(pk=visit.pk).update(
+        visit_count=visit.visit_count + 1,
+        last_visited_at=timezone.now(),
+    )
+
+
+def can_view_item_queryset(user):
+    queryset = ContentItem.objects.filter(channel__is_public=True, visibility=ContentItem.Visibility.PUBLIC)
+    if user.is_authenticated:
+        return ContentItem.objects.filter(
+            Q(channel__is_public=True, visibility=ContentItem.Visibility.PUBLIC)
+            | Q(user=user)
+        )
+    return queryset
+
+
+def section_size(section):
+    if section.get("type") == "collections":
+        return len(section.get("collections", []))
+    return len(section.get("items", []))
+
+
+def ordered_sections(sections):
+    return sorted(
+        [section for section in sections if section_size(section)],
+        key=lambda section: (-section_size(section), section["title"]),
+    )
+
+
+def channel_context(channel, items, params, include_private=True, viewer_user=None):
     all_items = channel.items.select_related("channel", "user").prefetch_related("tags")
+    if not include_private:
+        all_items = all_items.filter(visibility=ContentItem.Visibility.PUBLIC)
+    tag_queryset = Tag.objects.filter(content_items__channel=channel)
+    if not include_private:
+        tag_queryset = tag_queryset.filter(content_items__visibility=ContentItem.Visibility.PUBLIC)
     tags = ordered_tags(
-        Tag.objects.filter(content_items__channel=channel)
-        .annotate(item_count=Count("content_items", filter=Q(content_items__channel=channel), distinct=True))
+        tag_queryset.annotate(item_count=Count("content_items", filter=Q(content_items__channel=channel), distinct=True))
         .distinct(),
         params,
     )
@@ -217,15 +341,35 @@ def channel_context(channel, items, params):
         for key in ("q", "type", "platform", "author", "language", "tag", "sort")
         if key != "sort"
     )
+    video_items = list(all_items.filter(content_type=ContentItem.ContentType.VIDEO)[:12])
+    article_items = list(all_items.filter(content_type=ContentItem.ContentType.ARTICLE)[:12])
+    podcast_items = list(all_items.filter(content_type=ContentItem.ContentType.PODCAST)[:12])
+    music_items = list(all_items.filter(content_type=ContentItem.ContentType.MUSIC)[:12])
+    recommended_items = list(all_items.filter(tags__slug="recomanat")[:12])
+    recent_items = list(all_items.order_by("-created_at")[:12])
+    pending_items = []
+    if viewer_user and viewer_user.is_authenticated:
+        pending_items = list(all_items.exclude(visits__user=viewer_user).order_by("-created_at")[:12])
     return {
         "channel": channel,
         "items": items,
-        "recent_items": all_items.order_by("-created_at")[:12],
-        "video_items": all_items.filter(content_type=ContentItem.ContentType.VIDEO)[:12],
-        "article_items": all_items.filter(content_type=ContentItem.ContentType.ARTICLE)[:12],
-        "podcast_items": all_items.filter(content_type=ContentItem.ContentType.PODCAST)[:12],
-        "music_items": all_items.filter(content_type=ContentItem.ContentType.MUSIC)[:12],
-        "recommended_items": all_items.filter(tags__slug="recomanat")[:12],
+        "recent_items": recent_items,
+        "video_items": video_items,
+        "article_items": article_items,
+        "podcast_items": podcast_items,
+        "music_items": music_items,
+        "recommended_items": recommended_items,
+        "item_sections": ordered_sections(
+            [
+                {"title": "Items pendents de veure", "type": "items", "items": pending_items},
+                {"title": "Ultimes seleccions", "type": "items", "items": recent_items},
+                {"title": "Videos", "type": "items", "items": video_items},
+                {"title": "Articles i lectures", "type": "items", "items": article_items},
+                {"title": "Podcasts", "type": "items", "items": podcast_items},
+                {"title": "Musica", "type": "items", "items": music_items},
+                {"title": "Recomanats pel creador", "type": "items", "items": recommended_items},
+            ]
+        ),
         "platforms": all_items.exclude(source_platform="").values_list("source_platform", flat=True).distinct(),
         "authors": all_items.exclude(author="").values_list("author", flat=True).distinct(),
         "languages": all_items.exclude(language="").values_list("language", flat=True).distinct(),
@@ -251,7 +395,7 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(channel_context(self.channel, context["items"], self.request.GET))
+        context.update(channel_context(self.channel, context["items"], self.request.GET, viewer_user=self.request.user))
         context["is_owner"] = True
         return context
 
@@ -279,7 +423,7 @@ class ExploreView(ListView):
 
     def get_queryset(self):
         queryset = (
-            ContentItem.objects.filter(channel__is_public=True)
+            public_items_queryset()
             .select_related("channel", "user")
             .prefetch_related("tags")
         )
@@ -287,13 +431,14 @@ class ExploreView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        public_items = ContentItem.objects.filter(channel__is_public=True)
+        public_items = public_items_queryset()
         context["content_types"] = ContentItem.ContentType.choices
         context["platforms"] = public_items.exclude(source_platform="").values_list("source_platform", flat=True).distinct()
         context["authors"] = public_items.exclude(author="").values_list("author", flat=True).distinct()
         context["languages"] = public_items.exclude(language="").values_list("language", flat=True).distinct()
         context["tags"] = ordered_tags(
             Tag.objects.filter(content_items__channel__is_public=True)
+            .filter(content_items__visibility=ContentItem.Visibility.PUBLIC)
             .annotate(item_count=Count("content_items", distinct=True))
             .filter(item_count__gt=0),
             self.request.GET,
@@ -317,6 +462,7 @@ class ContentItemCreateView(LoginRequiredMixin, CreateView):
             "image_url": form.cleaned_data.get("image_url", ""),
             "source_platform": form.cleaned_data.get("source_platform", ""),
             "content_type": form.cleaned_data.get("content_type", ""),
+            "visibility": form.cleaned_data.get("visibility") or ContentItem.Visibility.PUBLIC,
             "author": form.cleaned_data.get("author", ""),
             "language": form.cleaned_data.get("language", ""),
         }
@@ -359,14 +505,34 @@ class ContentItemDetailView(DetailView):
 
     def get_queryset(self):
         queryset = ContentItem.objects.select_related("channel", "user").prefetch_related("tags")
-        if self.request.user.is_authenticated:
-            return queryset.filter(Q(channel__is_public=True) | Q(user=self.request.user))
-        return queryset.filter(channel__is_public=True)
+        return queryset.filter(pk__in=can_view_item_queryset(self.request.user).values("pk"))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_owner"] = self.request.user.is_authenticated and self.object.user == self.request.user
+        context["is_item_visited"] = (
+            self.request.user.is_authenticated
+            and ContentItemVisit.objects.filter(user=self.request.user, item=self.object).exists()
+        )
         return context
+
+
+class ContentItemVisitedView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(can_view_item_queryset(request.user), pk=kwargs["pk"])
+        mark_item_visited(request.user, item)
+        return JsonResponse({"ok": True})
+
+
+class ContentItemVisitToggleView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(can_view_item_queryset(request.user), pk=kwargs["pk"])
+        visited = request.POST.get("visited") == "1"
+        if visited:
+            mark_item_visited(request.user, item)
+        else:
+            ContentItemVisit.objects.filter(user=request.user, item=item).delete()
+        return redirect(item.get_absolute_url())
 
 
 class PublicChannelView(ListView):
@@ -379,13 +545,112 @@ class PublicChannelView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = self.channel.items.select_related("channel", "user").prefetch_related("tags")
+        queryset = self.channel.items.filter(visibility=ContentItem.Visibility.PUBLIC).select_related("channel", "user").prefetch_related("tags")
         return filtered_items(queryset, self.request.GET)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(channel_context(self.channel, context["items"], self.request.GET))
+        context.update(
+            channel_context(
+                self.channel,
+                context["items"],
+                self.request.GET,
+                include_private=False,
+                viewer_user=self.request.user,
+            )
+        )
         context["is_owner"] = self.request.user.is_authenticated and self.channel.owner == self.request.user
+        public_collections = list(
+            public_collections_queryset()
+            .filter(channel=self.channel)
+            .prefetch_related(public_collection_items_prefetch())
+        )
+        context["public_collections"] = public_collections
+        context["item_sections"] = ordered_sections(
+            [
+                {"title": "Col.leccions", "type": "collections", "collections": public_collections},
+                *context["item_sections"],
+            ]
+        )
+        url = absolute_url(self.request, self.channel.get_absolute_url())
+        context.update(share_context(self.channel.name, url, channel_share_text(self.channel, url)))
+        return context
+
+
+def unavailable(request, message):
+    return render(request, "core/public_unavailable.html", {"message": message}, status=404)
+
+
+class PublicItemShareView(TemplateView):
+    template_name = "core/public_item.html"
+
+    def get(self, request, *args, **kwargs):
+        item = (
+            ContentItem.objects.select_related("channel", "user")
+            .prefetch_related("collections")
+            .filter(pk=kwargs["pk"])
+            .first()
+        )
+        if not item or not item.is_publicly_visible:
+            return unavailable(request, "This content is private or unavailable.")
+        collection = item.collections.filter(
+            visibility=Collection.Visibility.PUBLIC,
+            channel__is_public=True,
+        ).first()
+        url = absolute_url(request, item.get_public_url())
+        context = {
+            "item": item,
+            "collection": collection,
+            **share_context(item.title, url, item_share_text(item, url)),
+        }
+        return render(request, self.template_name, context)
+
+
+class PublicCollectionShareView(TemplateView):
+    template_name = "core/public_collection.html"
+
+    def get(self, request, *args, **kwargs):
+        collection = (
+            Collection.objects.select_related("channel", "user")
+            .filter(pk=kwargs["pk"])
+            .first()
+        )
+        if not collection or not collection.is_publicly_visible:
+            return unavailable(request, "This collection is private or unavailable.")
+        items = collection.items.filter(
+            channel__is_public=True,
+            visibility=ContentItem.Visibility.PUBLIC,
+        ).select_related("channel", "user")
+        url = absolute_url(request, collection.get_public_url())
+        context = {
+            "collection": collection,
+            "items": items,
+            **share_context(collection.title, url, collection_share_text(collection, url)),
+        }
+        return render(request, self.template_name, context)
+
+
+class PublicUserChannelShareView(ListView):
+    model = ContentItem
+    template_name = "core/public_user_channel.html"
+    context_object_name = "items"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user_object = get_object_or_404(get_user_model(), pk=kwargs["pk"])
+        self.channel = Channel.objects.filter(owner=self.user_object, is_public=True).first()
+        if not self.channel:
+            return unavailable(request, "This channel is private or unavailable.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return public_items_queryset().filter(channel=self.channel).select_related("channel", "user").prefetch_related("tags")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["channel"] = self.channel
+        context["public_collections"] = public_collections_queryset().filter(channel=self.channel).prefetch_related(public_collection_items_prefetch())
+        url = absolute_url(self.request, reverse("public_user_channel", kwargs={"pk": self.user_object.pk}))
+        context.update(share_context(self.channel.name, url, channel_share_text(self.channel, url)))
         return context
 
 

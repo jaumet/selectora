@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.title }} - Selectora{% endblock %}
+
+{% block content %}
+<section class="section-block public-share-page">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Collection by {{ collection.channel.name }}</p>
+      <h1>{{ collection.title }}</h1>
+      {% if collection.description %}
+        <p class="lead">{{ collection.description }}</p>
+      {% endif %}
+    </div>
+    {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=collection.channel.name %}
+  </div>
+  <div class="actions">
+    <a class="button secondary" href="{{ collection.channel.get_absolute_url }}">Open curator channel</a>
+  </div>
+
+  {% if items %}
+    <div class="card-grid">
+      {% for item in items %}
+        {% include "core/includes/content_card.html" with public_links=True %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>This collection has no public items.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

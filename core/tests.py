@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from .metadata_fetcher import extract_metadata, fetch_url_metadata
 from .auth import create_magic_login
-from .models import Channel, ContentItem, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
 HTML_WITH_METADATA = """
@@ -218,7 +218,16 @@ class CoreViewsTests(TestCase):
         response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Selectora")
+        self.assertContains(response, "selectora.cc")
+        self.assertContains(response, "curated content by humans")
+        self.assertContains(response, "/media/channel_covers/selectora_icon_dark.svg")
+        self.assertContains(response, "/media/channel_covers/selectora_compact_dark.svg")
+        self.assertContains(response, "/media/channel_covers/selectora_horizontal_dark.svg")
+        self.assertContains(response, "/media/channel_covers/Log-2.detail.svg")
+        self.assertNotContains(response, "compact-hero")
+        self.assertNotContains(response, "Canals humans, lectura rapida")
+        self.assertNotContains(response, "/media/channel_covers/Log-2.detail.jpg")
+        self.assertNotContains(response, "/media/channel_covers/logo2-V-open.png")
 
     def test_legacy_html_urls_redirect_to_home(self):
         response = self.client.get("/el-mtode.html")
@@ -238,6 +247,13 @@ class CoreViewsTests(TestCase):
             content_type=ContentItem.ContentType.VIDEO,
         )
         item.tags.add(tag)
+        collection = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Portada collection",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection.items.add(item)
 
         response = self.client.get(reverse("home"))
 
@@ -245,7 +261,15 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "compact-home")
         self.assertNotContains(response, "Planeta")
         self.assertContains(response, "Canal de Jaume")
+        self.assertContains(response, "Portada collection")
+        self.assertContains(response, "collection-collage")
+        self.assertContains(response, "data-darkreader-ignore")
+        self.assertContains(response, 'aria-label="Share collection"')
         self.assertContains(response, "Cinema")
+        self.assertContains(response, "Cerca amb filtres")
+        self.assertContains(response, 'name="platform"')
+        self.assertContains(response, 'name="author"')
+        self.assertContains(response, 'name="language"')
         self.assertContains(response, reverse("explore") + "?tag=cinema")
 
     def test_home_page_always_uses_compact_view(self):
@@ -266,6 +290,70 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Video compacte")
         self.assertContains(response, "Canals publics")
         self.assertNotContains(response, "Planeta")
+
+    def test_home_item_sections_are_ordered_by_item_count(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Video 1",
+            url="https://example.com/v1",
+            content_type=ContentItem.ContentType.VIDEO,
+        )
+        ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Video 2",
+            url="https://example.com/v2",
+            content_type=ContentItem.ContentType.VIDEO,
+        )
+        ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Podcast 1",
+            url="https://example.com/p1",
+            content_type=ContentItem.ContentType.PODCAST,
+        )
+        collection_1 = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Collection 1",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection_2 = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Collection 2",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection_1.items.add(item)
+        collection_2.items.add(item)
+
+        response = self.client.get(reverse("home"))
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Items pendents de veure")
+        self.assertLess(
+            content.find("Col.leccions"),
+            content.find("Podcasts"),
+        )
+        self.assertLess(
+            content.find("Videos i socials"),
+            content.find("Podcasts"),
+        )
+        self.assertNotContains(response, "Articles")
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("home"))
+        content = response.content.decode()
+
+        self.assertContains(response, "Items pendents de veure")
+        self.assertLess(
+            content.find("Items pendents de veure"),
+            content.find("Podcasts"),
+        )
 
     def test_explore_filters_by_global_tag(self):
         self.channel.is_public = True
@@ -544,10 +632,108 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_item_detail_does_not_mark_authenticated_item_as_visited(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Public visited item",
+            url="https://example.com/visited",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+        self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertFalse(ContentItemVisit.objects.filter(user=self.user, item=item).exists())
+
+    def test_item_detail_shows_visit_toggle_state(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Toggle item",
+            url="https://example.com/toggle",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertContains(response, "Marcar com a visitat")
+        self.assertNotContains(response, "Marcar com a pendent")
+
+        ContentItemVisit.objects.create(user=self.user, item=item, visit_count=1)
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertContains(response, "Marcar com a pendent")
+        self.assertNotContains(response, "Marcar com a visitat")
+
+    def test_item_visit_toggle_updates_visit_state(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Toggle state item",
+            url="https://example.com/toggle-state",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("contentitem_visit_toggle", kwargs={"pk": item.pk}), {"visited": "1"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(ContentItemVisit.objects.filter(user=self.user, item=item).exists())
+
+        response = self.client.post(reverse("contentitem_visit_toggle", kwargs={"pk": item.pk}), {"visited": "0"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(ContentItemVisit.objects.filter(user=self.user, item=item).exists())
+
+    def test_item_visited_endpoint_marks_authenticated_item_as_visited(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Opened origin item",
+            url="https://example.com/origin",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("contentitem_visited", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"ok": True})
+        self.assertTrue(ContentItemVisit.objects.filter(user=self.user, item=item).exists())
+
+    def test_item_detail_marks_embed_interaction_url_but_not_entry_links(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Playable item",
+            url="https://example.com/playable",
+            embed_url="https://www.youtube.com/embed/example",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertContains(response, 'data-mark-visited-on-interaction')
+        self.assertContains(response, reverse("contentitem_visited", kwargs={"pk": item.pk}), html=False)
+
     def test_public_channel_loads_when_enabled(self):
         self.channel.is_public = True
         self.channel.save()
-        ContentItem.objects.create(
+        item = ContentItem.objects.create(
             user=self.user,
             channel=self.channel,
             title="Public",
@@ -561,6 +747,205 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Canal de Jaume")
         self.assertContains(response, "Public")
+        self.assertContains(response, "Share channel")
+        self.assertContains(response, reverse("contentitem_visited", kwargs={"pk": item.pk}), html=False)
+
+    def test_public_channel_item_sections_are_ordered_by_item_count(self):
+        self.channel.is_public = True
+        self.channel.save()
+        article = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Article 1",
+            url="https://example.com/a1",
+            content_type=ContentItem.ContentType.ARTICLE,
+        )
+        ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Article 2",
+            url="https://example.com/a2",
+            content_type=ContentItem.ContentType.ARTICLE,
+        )
+        ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Podcast 1",
+            url="https://example.com/p1",
+            content_type=ContentItem.ContentType.PODCAST,
+        )
+        collection_1 = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Channel collection 1",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection_2 = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Channel collection 2",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection_1.items.add(article)
+        collection_2.items.add(article)
+
+        response = self.client.get(reverse("public_channel", kwargs={"username": self.user.username}))
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Items pendents de veure")
+        self.assertLess(
+            content.find("Col.leccions"),
+            content.find("Podcasts"),
+        )
+        self.assertLess(
+            content.find("Articles i lectures"),
+            content.find("Podcasts"),
+        )
+        self.assertNotContains(response, "Musica")
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("public_channel", kwargs={"username": self.user.username}))
+        content = response.content.decode()
+
+        self.assertContains(response, "Items pendents de veure")
+        self.assertLess(
+            content.find("Items pendents de veure"),
+            content.find("Podcasts"),
+        )
+
+    def test_public_item_share_page_loads_for_public_item(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Shareable item",
+            description="Human note.",
+            url="https://example.com/shareable",
+            source_platform="Example",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(reverse("public_item", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Shareable item")
+        self.assertContains(response, "Human note.")
+        self.assertContains(response, "https://example.com/shareable")
+        self.assertContains(response, "Open curator channel")
+        self.assertContains(response, 'aria-label="Share item"')
+
+    def test_private_item_share_page_is_not_exposed(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Private item",
+            url="https://example.com/private",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+
+        response = self.client.get(reverse("public_item", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "This content is private or unavailable", status_code=404)
+        self.assertNotContains(response, "https://example.com/private", status_code=404)
+
+    def test_public_collection_share_page_hides_private_items(self):
+        self.channel.is_public = True
+        self.channel.save()
+        public_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Public collection item",
+            url="https://example.com/public-item",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        private_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Private collection item",
+            url="https://example.com/private-item",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+        collection = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Public collection",
+            description="A curated set.",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        collection.items.add(public_item, private_item)
+
+        response = self.client.get(reverse("public_collection", kwargs={"pk": collection.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Public collection")
+        self.assertContains(response, "A curated set.")
+        self.assertContains(response, "Public collection item")
+        self.assertContains(response, public_item.get_public_url())
+        self.assertNotContains(response, "Private collection item")
+        self.assertContains(response, 'aria-label="Share collection"')
+
+    def test_private_collection_share_page_is_not_exposed(self):
+        self.channel.is_public = True
+        self.channel.save()
+        collection = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Private collection",
+            visibility=Collection.Visibility.PRIVATE,
+        )
+
+        response = self.client.get(reverse("public_collection", kwargs={"pk": collection.pk}))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "This collection is private or unavailable", status_code=404)
+        self.assertNotContains(response, "Private collection", status_code=404)
+
+    def test_public_user_channel_share_page_shows_public_collections_and_items(self):
+        self.channel.is_public = True
+        self.channel.save()
+        public_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Latest public item",
+            url="https://example.com/latest-public",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        private_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Latest private item",
+            url="https://example.com/latest-private",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+        public_collection = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Visible collection",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+        private_collection = Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Hidden collection",
+            visibility=Collection.Visibility.PRIVATE,
+        )
+        public_collection.items.add(public_item)
+        private_collection.items.add(private_item)
+
+        response = self.client.get(reverse("public_user_channel", kwargs={"pk": self.user.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Canal de Jaume")
+        self.assertContains(response, "Visible collection")
+        self.assertContains(response, "Latest public item")
+        self.assertNotContains(response, "Hidden collection")
+        self.assertNotContains(response, "Latest private item")
+        self.assertContains(response, 'aria-label="Share channel"')
 
     def test_dashboard_filters_by_content_type(self):
         self.client.force_login(self.user)

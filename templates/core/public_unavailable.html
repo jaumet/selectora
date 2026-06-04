@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Unavailable - Selectora{% endblock %}
+
+{% block content %}
+<section class="empty-state">
+  <h1>Unavailable</h1>
+  <p>{{ message }}</p>
+  <a class="button" href="{% url 'home' %}">Open Selectora</a>
+</section>
+{% endblock %}

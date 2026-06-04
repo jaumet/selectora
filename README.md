@@ -4,17 +4,17 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 
 ## Funcionalitat actual
 
-- Afegir una URL des del dashboard privat.
-- Registre i entrada sense contrasenya amb magic link per email.
-- Intent automatic d'obtenir metadades publiques: Open Graph, Twitter Cards, Schema.org JSON-LD, metadades HTML, imatges, favicon, autor, idioma, data, embed de YouTube quan es pot inferir.
-- Edicio manual dels camps principals quan les metadades no existeixen o no son bones.
-- Canal personal amb capcalera visual, targetes grans, rails horitzontals i seccions per tipus de contingut.
-- Filtres GET per text, tipus, plataforma, autor i idioma.
-- Ordenacio per mes recent, mes antic, titol, plataforma i tipus.
-- Pagina de detall de cada item.
-- Publicacio al canal propi des de Telegram mitjancant un bot i webhook.
-- Admin millorat per `Channel`, `ContentItem` i `Tag`.
-- Tests basics de metadades, creacio, filtres i acces public/privat.
+- Afegir una URL des del dashboard privat i enriquir-la automàticament amb metadades.
+- Registre i entrada sense contrasenya amb `magic link` per email.
+- Canal personal compacte amb capçalera visual, rails, seccions dinàmiques i filtres per text, tipus, plataforma, autor, idioma i ordre.
+- Col·leccions públiques i privades amb pàgina pròpia, collage de portada i suport per compartir.
+- Share module amb URL públiques per item, col·lecció i canal, botó de compartir, `copy link` i Web Share API quan existeix.
+- Visibilitat bàsica `public` / `private` per items, col·leccions i canals.
+- Seguiment d’items visitats per usuari, amb secció d’items pendents de veure quan hi ha login.
+- Fitxa d’item amb vista pública, enllaç a l’origen, accions de compartir i interruptor per marcar visitat o pendent.
+- Publicació al canal propi des de Telegram mitjançant bot i webhook.
+- Admin millorat per `Channel`, `ContentItem`, `Collection`, `Tag` i visites d’items.
+- Tests de metadades, creació, filtres, accés public/privat, share module i visites.
 
 ## Estructura
 

@@ -5,12 +5,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Selectora{% endblock %}</title>
+  <meta name="theme-color" content="#0e1116">
+  <meta property="og:site_name" content="Selectora">
+  <meta property="og:title" content="{% block og_title %}Selectora{% endblock %}">
+  <meta property="og:image" content="/media/channel_covers/selectora_horizontal_dark.svg?v=20260604">
+  <link rel="icon" type="image/svg+xml" href="/media/channel_covers/selectora_icon_dark.svg?v=20260604">
+  <link rel="apple-touch-icon" href="/media/channel_covers/selectora_compact_dark.svg?v=20260604">
+  <link rel="preload" as="image" href="/media/channel_covers/selectora_icon_dark.svg?v=20260604">
+  <link rel="preload" as="image" href="/media/channel_covers/selectora_horizontal_dark.svg?v=20260604">
+  <link rel="preload" as="image" href="/media/channel_covers/selectora_compact_dark.svg?v=20260604">
+  <link rel="preload" as="image" href="/media/channel_covers/Log-2.detail.svg?v=20260604">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <script src="{% static 'js/app.js' %}" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="{% url 'home' %}">Selectora</a>
+    <a class="brand" href="{% url 'home' %}" aria-label="selectora.cc">
+      <img src="/media/channel_covers/selectora_icon_dark.svg?v=20260604" alt="">
+      <span class="brand-copy">
+        <strong>selectora.cc</strong>
+        <em>curated content by humans</em>
+      </span>
+    </a>
     <nav class="nav">
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">Dashboard</a>

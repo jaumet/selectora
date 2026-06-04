@@ -1,5 +1,5 @@
 <article class="visual-card">
-  <a class="card-image" href="{{ item.get_absolute_url }}" aria-label="{{ item.title }}">
+  <a class="card-image" href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" aria-label="{{ item.title }}">
     {% if item.display_image_url %}
       <img src="{{ item.display_image_url }}" alt="">
     {% else %}
@@ -16,12 +16,13 @@
   </a>
   <div class="card-body">
     <p class="meta">{{ item.get_content_type_display }}{% if item.display_source %} · {{ item.display_source }}{% endif %}</p>
-    <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
+    <h3><a href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}">{{ item.title }}</a></h3>
     {% if item.description %}
       <p>{{ item.description|truncatechars:120 }}</p>
     {% endif %}
     <div class="card-actions">
-      <a href="{{ item.url }}" target="_blank" rel="noopener">Obrir</a>
+      <a href="{{ item.url }}" target="_blank" rel="noopener" data-mark-visited-url="{% url 'contentitem_visited' item.pk %}">Obrir</a>
+      {% include "core/includes/share_menu.html" with share_label="Share" share_aria_label="Share item" share_type="item" share_title=item.title share_description=item.description share_url=item.get_public_url share_curator=item.channel.name %}
       {% if is_owner %}
         <a href="{% url 'contentitem_update' item.pk %}">Editar</a>
       {% endif %}
