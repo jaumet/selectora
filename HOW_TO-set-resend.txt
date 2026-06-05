@@ -1,0 +1,87 @@
+HOW TO SET RESEND FOR SELECTORA MAGIC LINKS
+
+1. Verify the sending domain in Resend
+
+In Resend, add and verify the domain you want to send from.
+
+Example:
+
+  selectora.cc
+
+Resend will show DNS records that must be added to the domain DNS.
+Wait until Resend marks the domain as verified.
+
+2. Create a Resend API key
+
+In Resend, create an API key for sending emails.
+
+It will look like:
+
+  re_xxxxxxxxxxxxxxxxxxxxxxxxx
+
+Do not commit the real key to git.
+
+3. Set these environment variables on the production server
+
+Use an email address from the verified domain.
+
+Example:
+
+  EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+  EMAIL_HOST=smtp.resend.com
+  EMAIL_PORT=587
+  EMAIL_HOST_USER=resend
+  EMAIL_HOST_PASSWORD=re_xxxxxxxxxxxxxxxxxxxxxxxxx
+  EMAIL_USE_TLS=true
+  EMAIL_USE_SSL=false
+  EMAIL_TIMEOUT=10
+  DEFAULT_FROM_EMAIL=Selectora <noreply@selectora.cc>
+
+4. Restart the Django app
+
+After changing environment variables, restart the application process.
+
+Example, depending on your server:
+
+  systemctl restart selectora
+
+or restart the container/process manager that runs Django.
+
+5. Test from Django shell
+
+Run this on the production server with the production settings loaded:
+
+  .venv/bin/python manage.py shell
+
+Then:
+
+  from django.core.mail import send_mail
+  send_mail(
+      "Selectora email test",
+      "If this arrives, Resend SMTP is configured.",
+      None,
+      ["your-email@example.com"],
+      fail_silently=False,
+  )
+
+If SMTP fails, Django will raise an exception because fail_silently=False.
+
+6. Test the real magic link flow
+
+Open Selectora, go to login, enter an email address, and submit.
+
+Expected result:
+
+  - The page redirects to the check-email screen.
+  - The recipient receives the magic link email.
+  - Clicking the magic link logs the user in.
+
+Notes
+
+- Resend SMTP host: smtp.resend.com
+- SMTP username: resend
+- SMTP password: the Resend API key
+- Port 587 uses STARTTLS, so EMAIL_USE_TLS=true and EMAIL_USE_SSL=false.
+- For port 465, use EMAIL_USE_SSL=true and EMAIL_USE_TLS=false.
+- DEFAULT_FROM_EMAIL must use a domain verified in Resend.
+- Django already sends magic links with fail_silently=False, so failed SMTP delivery attempts are visible in logs.
