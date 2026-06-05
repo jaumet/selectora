@@ -104,6 +104,19 @@ class ContentItem(models.Model):
         PRIVATE = "private", "Private"
         PUBLIC = "public", "Public"
 
+    class ExpiryUnit(models.TextChoices):
+        YEARS = "years", "Any"
+        MONTHS = "months", "Mes"
+        WEEKS = "weeks", "Setmana"
+        DAYS = "days", "Dia"
+        HOURS = "hours", "Hora"
+        MINUTES = "minutes", "Minut"
+
+    class Priority(models.TextChoices):
+        LOW = "low", "Baixa"
+        NORMAL = "normal", "Normal"
+        HIGH = "high", "Alta"
+
     class ContentType(models.TextChoices):
         VIDEO = "video", "Video"
         PODCAST = "podcast", "Podcast"
@@ -141,6 +154,19 @@ class ContentItem(models.Model):
     published_date = models.DateTimeField(blank=True, null=True)
     duration = models.CharField(max_length=80, blank=True)
     language = models.CharField(max_length=32, blank=True)
+    personal_comment = models.TextField(blank=True)
+    priority = models.CharField(
+        max_length=16,
+        choices=Priority.choices,
+        default=Priority.NORMAL,
+    )
+    internal_context = models.TextField(blank=True)
+    expiry_amount = models.PositiveSmallIntegerField(blank=True, null=True)
+    expiry_unit = models.CharField(
+        max_length=16,
+        choices=ExpiryUnit.choices,
+        blank=True,
+    )
     embed_url = models.URLField(max_length=500, blank=True)
     visibility = models.CharField(
         max_length=20,
@@ -175,6 +201,33 @@ class ContentItem(models.Model):
     @property
     def display_source(self):
         return self.source_platform or self.site_name
+
+    @property
+    def priority_label(self):
+        return self.get_priority_display()
+
+    @property
+    def personal_expiry_label(self):
+        if not self.expiry_amount or not self.expiry_unit:
+            return ""
+        singular = {
+            self.ExpiryUnit.YEARS: "any",
+            self.ExpiryUnit.MONTHS: "mes",
+            self.ExpiryUnit.WEEKS: "setmana",
+            self.ExpiryUnit.DAYS: "dia",
+            self.ExpiryUnit.HOURS: "hora",
+            self.ExpiryUnit.MINUTES: "minut",
+        }[self.expiry_unit]
+        plural = {
+            self.ExpiryUnit.YEARS: "anys",
+            self.ExpiryUnit.MONTHS: "mesos",
+            self.ExpiryUnit.WEEKS: "setmanes",
+            self.ExpiryUnit.DAYS: "dies",
+            self.ExpiryUnit.HOURS: "hores",
+            self.ExpiryUnit.MINUTES: "minuts",
+        }[self.expiry_unit]
+        unit = singular if self.expiry_amount == 1 else plural
+        return f"{self.expiry_amount} {unit}"
 
     @property
     def is_vertical_embed(self):

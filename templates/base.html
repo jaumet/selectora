@@ -6,9 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Selectora{% endblock %}</title>
   <meta name="theme-color" content="#0e1116">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Selectora">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta property="og:site_name" content="Selectora">
   <meta property="og:title" content="{% block og_title %}Selectora{% endblock %}">
   <meta property="og:image" content="/media/channel_covers/selectora_horizontal_dark.svg?v=20260604">
+  <link rel="manifest" href="{% url 'pwa_manifest' %}">
   <link rel="icon" type="image/svg+xml" href="/media/channel_covers/selectora_icon_dark.svg?v=20260604">
   <link rel="apple-touch-icon" href="/media/channel_covers/selectora_compact_dark.svg?v=20260604">
   <link rel="preload" as="image" href="/media/channel_covers/selectora_icon_dark.svg?v=20260604">
@@ -28,6 +33,19 @@
       </span>
     </a>
     <nav class="nav">
+      <a class="nav-pill nav-pill-accent" href="{% url 'home' %}#temes" data-open-drawer="temes">Temes</a>
+      <a class="nav-pill" href="{% url 'home' %}#cerca" data-open-drawer="cerca">Cerca</a>
+      {% if user.is_authenticated %}
+        <a class="nav-plus" href="{% url 'contentitem_create' %}" aria-label="Afegir contingut">+</a>
+      {% else %}
+        <details class="nav-add-menu">
+          <summary class="nav-plus" aria-label="Afegir contingut">+</summary>
+          <div class="nav-add-panel">
+            <a href="{% url 'login' %}">Entrar</a>
+            <a href="{% url 'login' %}">Registrar-se</a>
+          </div>
+        </details>
+      {% endif %}
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">Dashboard</a>
         {% if user.channel.is_public %}
@@ -37,8 +55,6 @@
           {% csrf_token %}
           <button type="submit">Sortir</button>
         </form>
-      {% else %}
-        <a href="{% url 'login' %}">Entrar</a>
       {% endif %}
     </nav>
   </header>

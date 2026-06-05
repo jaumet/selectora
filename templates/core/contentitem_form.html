@@ -11,7 +11,87 @@
   {% endif %}
   <form method="post" class="form-panel">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
+    <p>
+      <label for="{{ form.url.id_for_label }}">{{ form.url.label }}</label>
+      {{ form.url }}
+      {{ form.url.errors }}
+      {% if form.url.help_text %}<span class="helptext">{{ form.url.help_text }}</span>{% endif %}
+    </p>
+    <p>
+      <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+      {{ form.title }}
+      {{ form.title.errors }}
+    </p>
+    <p>
+      <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+      {{ form.description }}
+      {{ form.description.errors }}
+    </p>
+    <p>
+      <label for="{{ form.image_url.id_for_label }}">{{ form.image_url.label }}</label>
+      {{ form.image_url }}
+      {{ form.image_url.errors }}
+    </p>
+    <p>
+      <label for="{{ form.source_platform.id_for_label }}">{{ form.source_platform.label }}</label>
+      {{ form.source_platform }}
+      {{ form.source_platform.errors }}
+    </p>
+    <p>
+      <label for="{{ form.content_type.id_for_label }}">{{ form.content_type.label }}</label>
+      {{ form.content_type }}
+      {{ form.content_type.errors }}
+    </p>
+    <p>
+      <label for="{{ form.visibility.id_for_label }}">{{ form.visibility.label }}</label>
+      {{ form.visibility }}
+      {{ form.visibility.errors }}
+    </p>
+    <p>
+      <label for="{{ form.author.id_for_label }}">{{ form.author.label }}</label>
+      {{ form.author }}
+      {{ form.author.errors }}
+    </p>
+    <p>
+      <label for="{{ form.language.id_for_label }}">{{ form.language.label }}</label>
+      {{ form.language }}
+      {{ form.language.errors }}
+    </p>
+    <p>
+      <label for="{{ form.personal_comment.id_for_label }}">{{ form.personal_comment.label }}</label>
+      {{ form.personal_comment }}
+      {{ form.personal_comment.errors }}
+      {% if form.personal_comment.help_text %}<span class="helptext">{{ form.personal_comment.help_text }}</span>{% endif %}
+    </p>
+    <p class="priority-inline">
+      <span class="priority-prefix">Prioritat -</span>
+      <label for="{{ form.priority.id_for_label }}">{{ form.priority.label }}</label>
+      {{ form.priority }}
+      {{ form.priority.errors }}
+    </p>
+    <p>
+      <label for="{{ form.internal_context.id_for_label }}">{{ form.internal_context.label }}</label>
+      {{ form.internal_context }}
+      {{ form.internal_context.errors }}
+      {% if form.internal_context.help_text %}<span class="helptext">{{ form.internal_context.help_text }}</span>{% endif %}
+    </p>
+    <p class="expiry-inline">
+      <span class="expiry-prefix">Caducitat -</span>
+      <label for="{{ form.expiry_amount.id_for_label }}">{{ form.expiry_amount.label }}</label>
+      {{ form.expiry_amount }}
+      <span class="expiry-joiner">i</span>
+      <label for="{{ form.expiry_unit.id_for_label }}">{{ form.expiry_unit.label }}</label>
+      {{ form.expiry_unit }}
+      {{ form.expiry_amount.errors }}
+      {{ form.expiry_unit.errors }}
+    </p>
+    <p>
+      <label for="{{ form.tag_list.id_for_label }}">{{ form.tag_list.label }}</label>
+      {{ form.tag_list }}
+      {{ form.tag_list.errors }}
+      {% if form.tag_list.help_text %}<span class="helptext">{{ form.tag_list.help_text }}</span>{% endif %}
+    </p>
     <div class="form-actions">
       <button class="button" type="submit">Guardar</button>
       <a href="{% url 'dashboard' %}">Cancel.lar</a>

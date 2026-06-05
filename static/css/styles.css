@@ -105,6 +105,66 @@ select:focus-visible {
   text-decoration: none;
 }
 
+.nav-pill,
+.nav-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.nav-pill-accent,
+.nav-plus {
+  background: var(--accent);
+  color: #06100d;
+}
+
+.nav-add-menu {
+  position: relative;
+}
+
+.nav-add-menu summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.nav-add-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-add-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.55rem);
+  display: grid;
+  gap: 0.25rem;
+  min-width: 11rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(14, 17, 22, 0.98);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.35);
+  z-index: 25;
+}
+
+.nav-add-panel a {
+  display: block;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  color: var(--text);
+}
+
+.nav-add-panel a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .nav form {
   margin: 0;
 }
@@ -156,6 +216,15 @@ select:focus-visible {
 .compact-section {
   display: grid;
   gap: 0.7rem;
+}
+
+.compact-section.compact-panel {
+  display: none;
+}
+
+.compact-section.compact-panel.is-open,
+.compact-section.compact-panel:target {
+  display: grid;
 }
 
 .compact-tools {
@@ -289,14 +358,23 @@ select:focus-visible {
 }
 
 .compact-channel-image {
+  position: relative;
   display: block;
+  overflow: hidden;
   aspect-ratio: 16 / 9;
   background:
-    linear-gradient(180deg, rgba(14, 17, 22, 0.05), rgba(14, 17, 22, 0.62)),
-    var(--channel-cover),
     linear-gradient(135deg, #17202b, #243646);
   background-position: center;
   background-size: cover;
+}
+
+.compact-channel-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none !important;
+  mix-blend-mode: normal !important;
 }
 
 .compact-channel-image,
@@ -1119,6 +1197,37 @@ select {
 .form-panel label {
   color: var(--text);
   font-weight: 800;
+}
+
+.form-panel p {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.expiry-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.priority-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.priority-inline label,
+.expiry-inline label {
+  margin-right: 0.15rem;
+}
+
+.priority-prefix,
+.expiry-prefix,
+.expiry-joiner {
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .dev-magic-link {

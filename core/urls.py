@@ -14,16 +14,22 @@ from .views import (
     MagicLoginConfirmView,
     MagicLoginRequestView,
     MagicLoginSentView,
+    PwaManifestView,
+    PwaShareTargetView,
     PublicChannelView,
     PublicCollectionShareView,
     PublicItemShareView,
     PublicUserChannelShareView,
+    ServiceWorkerView,
     TelegramWebhookView,
 )
 
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
+    path("manifest.webmanifest", PwaManifestView.as_view(), name="pwa_manifest"),
+    path("sw.js", ServiceWorkerView.as_view(), name="service_worker"),
+    path("share/", PwaShareTargetView.as_view(), name="pwa_share_target"),
     path("explore/", ExploreView.as_view(), name="explore"),
     path("accounts/login/", MagicLoginRequestView.as_view(), name="login"),
     path("accounts/check-email/", MagicLoginSentView.as_view(), name="magic_login_sent"),

@@ -46,6 +46,48 @@ class ChannelForm(forms.ModelForm):
 
 
 class ContentItemForm(forms.ModelForm):
+    priority = forms.ChoiceField(
+        label="Prioritat",
+        required=False,
+        choices=[
+            ("", "Normal"),
+            (ContentItem.Priority.LOW, "Baixa"),
+            (ContentItem.Priority.NORMAL, "Normal"),
+            (ContentItem.Priority.HIGH, "Alta"),
+        ],
+    )
+    expiry_amount = forms.TypedChoiceField(
+        label="Número",
+        required=False,
+        coerce=int,
+        empty_value=None,
+        choices=[("", "No")] + [(str(i), str(i)) for i in range(1, 61)],
+    )
+    expiry_unit = forms.ChoiceField(
+        label="Unitat",
+        required=False,
+        choices=[
+            ("", "No"),
+            (ContentItem.ExpiryUnit.YEARS, "Anys"),
+            (ContentItem.ExpiryUnit.MONTHS, "Mesos"),
+            (ContentItem.ExpiryUnit.WEEKS, "Setmanes"),
+            (ContentItem.ExpiryUnit.DAYS, "Dies"),
+            (ContentItem.ExpiryUnit.HOURS, "Hores"),
+            (ContentItem.ExpiryUnit.MINUTES, "Minuts"),
+        ],
+    )
+    personal_comment = forms.CharField(
+        label="Comentari personal",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Només tu el veus.",
+    )
+    internal_context = forms.CharField(
+        label="Context intern",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Per recordar per què l'has guardat o com vols usar-lo.",
+    )
     tag_list = forms.CharField(
         label="Etiquetes",
         required=False,
@@ -64,6 +106,11 @@ class ContentItemForm(forms.ModelForm):
             "visibility",
             "author",
             "language",
+            "personal_comment",
+            "priority",
+            "internal_context",
+            "expiry_amount",
+            "expiry_unit",
             "tag_list",
         ]
         widgets = {
@@ -81,8 +128,23 @@ class ContentItemForm(forms.ModelForm):
         self.fields["visibility"].initial = ContentItem.Visibility.PUBLIC
         self.fields["author"].required = False
         self.fields["language"].required = False
+        self.fields["priority"].required = False
+        self.fields["priority"].initial = ContentItem.Priority.NORMAL
+        self.fields["expiry_amount"].required = False
+        self.fields["expiry_unit"].required = False
+        self.fields["personal_comment"].required = False
+        self.fields["internal_context"].required = False
         if self.instance and self.instance.pk:
             self.fields["tag_list"].initial = ", ".join(self.instance.tags.values_list("name", flat=True))
+            self.fields["priority"].initial = self.instance.priority
+
+    def clean(self):
+        cleaned_data = super().clean()
+        amount = cleaned_data.get("expiry_amount")
+        unit = cleaned_data.get("expiry_unit")
+        if bool(amount) != bool(unit):
+            raise forms.ValidationError("La caducitat necessita número i unitat, o bé deixa-la buida.")
+        return cleaned_data
 
     def save_tags(self, item):
         names = [name.strip() for name in self.cleaned_data.get("tag_list", "").split(",") if name.strip()]

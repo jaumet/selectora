@@ -1,8 +1,11 @@
+import re
+from urllib.parse import urlencode
+
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Count, Prefetch, Q
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -16,6 +19,18 @@ from .content_services import create_content_item_from_url, get_or_create_channe
 from .forms import ChannelForm, ContentItemForm, MagicLoginRequestForm
 from .models import Channel, Collection, ContentItem, ContentItemVisit, Tag
 from .telegram import process_telegram_update
+
+
+URL_RE = re.compile(r"https?://[^\s<>\"]+")
+
+
+def first_url_from_share_payload(params):
+    for key in ("url", "text"):
+        value = params.get(key, "")
+        match = URL_RE.search(value)
+        if match:
+            return match.group(0).rstrip(".,;:)")
+    return ""
 
 
 class HomeView(TemplateView):
@@ -450,10 +465,85 @@ class ExploreView(ListView):
         return context
 
 
+class PwaManifestView(View):
+    def get(self, request, *args, **kwargs):
+        manifest = {
+            "name": "Selectora",
+            "short_name": "Selectora",
+            "description": "Curated content by humans.",
+            "id": "/",
+            "start_url": "/",
+            "scope": "/",
+            "display": "standalone",
+            "background_color": "#0e1116",
+            "theme_color": "#0e1116",
+            "lang": "ca",
+            "icons": [
+                {
+                    "src": "/media/channel_covers/selectora_icon_dark.svg?v=20260604",
+                    "sizes": "any",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable",
+                }
+            ],
+            "share_target": {
+                "action": "/share/",
+                "method": "GET",
+                "params": {
+                    "title": "title",
+                    "text": "text",
+                    "url": "url",
+                },
+            },
+        }
+        return JsonResponse(manifest, content_type="application/manifest+json")
+
+
+class ServiceWorkerView(View):
+    def get(self, request, *args, **kwargs):
+        script = """
+self.addEventListener("install", function (event) {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", function (event) {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener("fetch", function () {});
+""".strip()
+        return HttpResponse(script, content_type="text/javascript")
+
+
+class PwaShareTargetView(LoginRequiredMixin, RedirectView):
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        initial = {}
+        shared_url = first_url_from_share_payload(self.request.GET)
+        if shared_url:
+            initial["url"] = shared_url
+        title = self.request.GET.get("title", "").strip()
+        if title:
+            initial["title"] = title
+        query = f"?{urlencode(initial)}" if initial else ""
+        return f"{reverse('contentitem_create')}{query}"
+
+
 class ContentItemCreateView(LoginRequiredMixin, CreateView):
     model = ContentItem
     form_class = ContentItemForm
     template_name = "core/contentitem_form.html"
+
+    def get_initial(self):
+        initial = super().get_initial()
+        shared_url = first_url_from_share_payload(self.request.GET)
+        if shared_url:
+            initial["url"] = shared_url
+        title = self.request.GET.get("title", "").strip()
+        if title:
+            initial["title"] = title
+        return initial
 
     def form_valid(self, form):
         manual_data = {
@@ -465,6 +555,11 @@ class ContentItemCreateView(LoginRequiredMixin, CreateView):
             "visibility": form.cleaned_data.get("visibility") or ContentItem.Visibility.PUBLIC,
             "author": form.cleaned_data.get("author", ""),
             "language": form.cleaned_data.get("language", ""),
+            "personal_comment": form.cleaned_data.get("personal_comment", ""),
+            "priority": form.cleaned_data.get("priority") or ContentItem.Priority.NORMAL,
+            "internal_context": form.cleaned_data.get("internal_context", ""),
+            "expiry_amount": form.cleaned_data.get("expiry_amount"),
+            "expiry_unit": form.cleaned_data.get("expiry_unit", ""),
         }
         if manual_data["content_type"] == ContentItem.ContentType.OTHER:
             manual_data.pop("content_type")

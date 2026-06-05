@@ -5,92 +5,84 @@
 
 {% block content %}
 <section class="compact-home">
-  <div class="compact-tools">
-    {% if global_tags %}
-      <details class="compact-drawer compact-tag-drawer">
-        <summary>Temes</summary>
-        <div class="drawer-panel">
-          <div class="drawer-heading">
-            <h2>Temes en circulacio</h2>
-            <span>Selecciona per explorar</span>
-          </div>
-          <div class="tag-tools">
-            <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
-            <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
-          </div>
-          <div class="tag-cloud drawer-tags" aria-label="Temes en circulacio">
-            {% for tag in global_tags %}
-              <a class="tag-link" href="{% url 'explore' %}?tag={{ tag.slug }}">{{ tag.name }}</a>
-            {% endfor %}
-          </div>
-        </div>
-      </details>
-    {% endif %}
-
-    <details class="compact-drawer compact-search-drawer">
-      <summary>Cerca</summary>
-      <div class="drawer-panel search-drawer-panel">
-        <div class="drawer-heading">
-          <h2>Cerca amb filtres</h2>
-          <span>Exploracio global</span>
-        </div>
-        <form class="filters drawer-search-form" method="get" action="{% url 'explore' %}">
-          <label>
-            Cerca
-            <input type="search" name="q" placeholder="Titol, autor, etiqueta...">
-          </label>
-          <label>
-            Tipus
-            <select name="type">
-              <option value="">Tots</option>
-              {% for value, label in content_types %}
-                <option value="{{ value }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>
-            Plataforma
-            <select name="platform">
-              <option value="">Totes</option>
-              {% for platform in platforms %}
-                <option value="{{ platform }}">{{ platform }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>
-            Autor
-            <select name="author">
-              <option value="">Tots</option>
-              {% for author in authors %}
-                <option value="{{ author }}">{{ author }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>
-            Idioma
-            <select name="language">
-              <option value="">Tots</option>
-              {% for language in languages %}
-                <option value="{{ language }}">{{ language }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <label>
-            Ordre
-            <select name="sort">
-              <option value="-created_at">Mes recent</option>
-              <option value="created_at">Mes antic</option>
-              <option value="title">Titol A-Z</option>
-              <option value="platform">Plataforma</option>
-              <option value="type">Tipus</option>
-            </select>
-          </label>
-          <button class="button" type="submit">Filtrar</button>
-          <a class="text-link" href="{% url 'explore' %}">Netejar</a>
-        </form>
+  {% if global_tags %}
+    <section class="compact-section compact-panel" id="temes">
+      <div class="section-heading">
+        <h2>Temes</h2>
+        <span>Selecciona per explorar</span>
       </div>
-    </details>
-  </div>
+      <div class="tag-tools">
+        <a class="{% if tag_sort == 'count' %}active{% endif %}" href="{{ tag_sort_count_url }}">Mes items</a>
+        <a class="{% if tag_sort == 'alpha' %}active{% endif %}" href="{{ tag_sort_alpha_url }}">A-Z</a>
+      </div>
+      <div class="tag-cloud drawer-tags" aria-label="Temes en circulacio">
+        {% for tag in global_tags %}
+          <a class="tag-link" href="{% url 'explore' %}?tag={{ tag.slug }}">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="compact-section compact-panel" id="cerca">
+    <div class="section-heading">
+      <h2>Cerca</h2>
+      <span>Exploracio global</span>
+    </div>
+    <form class="filters drawer-search-form" method="get" action="{% url 'explore' %}">
+      <label>
+        Cerca
+        <input type="search" name="q" placeholder="Titol, autor, etiqueta...">
+      </label>
+      <label>
+        Tipus
+        <select name="type">
+          <option value="">Tots</option>
+          {% for value, label in content_types %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Plataforma
+        <select name="platform">
+          <option value="">Totes</option>
+          {% for platform in platforms %}
+            <option value="{{ platform }}">{{ platform }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Autor
+        <select name="author">
+          <option value="">Tots</option>
+          {% for author in authors %}
+            <option value="{{ author }}">{{ author }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Idioma
+        <select name="language">
+          <option value="">Tots</option>
+          {% for language in languages %}
+            <option value="{{ language }}">{{ language }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Ordre
+        <select name="sort">
+          <option value="-created_at">Mes recent</option>
+          <option value="created_at">Mes antic</option>
+          <option value="title">Titol A-Z</option>
+          <option value="platform">Plataforma</option>
+          <option value="type">Tipus</option>
+        </select>
+      </label>
+      <button class="button" type="submit">Filtrar</button>
+      <a class="text-link" href="{% url 'explore' %}">Netejar</a>
+    </form>
+  </section>
 
   {% if public_channels %}
     <section class="compact-section" id="canals">
@@ -101,7 +93,11 @@
       <div class="compact-channel-rail">
         {% for channel in public_channels %}
           <a class="compact-channel-card" href="{{ channel.get_absolute_url }}">
-            <span class="compact-channel-image" data-darkreader-ignore{% if channel.display_cover_image_url %} style="--channel-cover: url('{{ channel.display_cover_image_url }}');"{% endif %}></span>
+            <span class="compact-channel-image" data-darkreader-ignore>
+              {% if channel.display_cover_image_url %}
+                <img src="{{ channel.display_cover_image_url }}" alt="" loading="lazy" data-darkreader-ignore>
+              {% endif %}
+            </span>
             <strong>{{ channel.name }}</strong>
             <em>{{ channel.item_count }} peces</em>
           </a>

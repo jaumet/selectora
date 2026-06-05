@@ -1,4 +1,48 @@
 (function () {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+})();
+
+(function () {
+  function openDrawer(id) {
+    const drawer = document.getElementById(id);
+    if (!drawer) {
+      return false;
+    }
+    if (drawer.tagName === "DETAILS") {
+      drawer.open = true;
+    } else if (drawer.classList.contains("compact-panel")) {
+      document.querySelectorAll(".compact-panel.is-open").forEach(function (panel) {
+        if (panel !== drawer) {
+          panel.classList.remove("is-open");
+        }
+      });
+      drawer.classList.add("is-open");
+    } else {
+      return false;
+    }
+    drawer.scrollIntoView({ block: "start", behavior: "smooth" });
+    return true;
+  }
+
+  document.addEventListener("click", function (event) {
+    const trigger = event.target.closest("[data-open-drawer]");
+    if (!trigger) {
+      return;
+    }
+    const targetId = trigger.dataset.openDrawer;
+    const samePage = new URL(trigger.href, window.location.href).pathname === window.location.pathname;
+    if (!samePage) {
+      return;
+    }
+    if (openDrawer(targetId)) {
+      event.preventDefault();
+    }
+  });
+
   function cookieValue(name) {
     const cookies = document.cookie ? document.cookie.split(";") : [];
     for (const cookie of cookies) {
@@ -140,12 +184,24 @@
   document.addEventListener("DOMContentLoaded", function () {
     const savedPosition = sessionStorage.getItem(scrollKey);
     if (!savedPosition) {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "temes" || hash === "cerca") {
+        window.requestAnimationFrame(function () {
+          openDrawer(hash);
+        });
+      }
       return;
     }
     sessionStorage.removeItem(scrollKey);
     window.requestAnimationFrame(function () {
       window.scrollTo({ top: Number(savedPosition), left: 0, behavior: "instant" });
     });
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "temes" || hash === "cerca") {
+      window.requestAnimationFrame(function () {
+        openDrawer(hash);
+      });
+    }
   });
 })();
 

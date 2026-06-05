@@ -219,11 +219,17 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "selectora.cc")
+        self.assertContains(response, "Temes")
+        self.assertContains(response, "Cerca")
+        self.assertContains(response, 'aria-label="Afegir contingut"')
+        self.assertNotContains(response, 'summary>Temes<')
+        self.assertNotContains(response, 'summary>Cerca<')
         self.assertContains(response, "curated content by humans")
         self.assertContains(response, "/media/channel_covers/selectora_icon_dark.svg")
         self.assertContains(response, "/media/channel_covers/selectora_compact_dark.svg")
         self.assertContains(response, "/media/channel_covers/selectora_horizontal_dark.svg")
         self.assertContains(response, "/media/channel_covers/Log-2.detail.svg")
+        self.assertContains(response, reverse("pwa_manifest"))
         self.assertNotContains(response, "compact-hero")
         self.assertNotContains(response, "Canals humans, lectura rapida")
         self.assertNotContains(response, "/media/channel_covers/Log-2.detail.jpg")
@@ -237,6 +243,7 @@ class CoreViewsTests(TestCase):
 
     def test_home_page_shows_public_channels_and_global_tags(self):
         self.channel.is_public = True
+        self.channel.cover_image_url = "https://example.com/channel-cover.png"
         self.channel.save()
         tag = Tag.objects.create(name="Cinema", slug="cinema")
         item = ContentItem.objects.create(
@@ -261,12 +268,14 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "compact-home")
         self.assertNotContains(response, "Planeta")
         self.assertContains(response, "Canal de Jaume")
+        self.assertContains(response, '<img src="https://example.com/channel-cover.png"', html=False)
+        self.assertNotContains(response, "--channel-cover")
         self.assertContains(response, "Portada collection")
         self.assertContains(response, "collection-collage")
         self.assertContains(response, "data-darkreader-ignore")
         self.assertContains(response, 'aria-label="Share collection"')
         self.assertContains(response, "Cinema")
-        self.assertContains(response, "Cerca amb filtres")
+        self.assertContains(response, "Cerca")
         self.assertContains(response, 'name="platform"')
         self.assertContains(response, 'name="author"')
         self.assertContains(response, 'name="language"')
@@ -290,6 +299,15 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Video compacte")
         self.assertContains(response, "Canals publics")
         self.assertNotContains(response, "Planeta")
+
+    def test_authenticated_home_nav_add_button_links_to_create_form(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("contentitem_create"))
+        self.assertContains(response, 'aria-label="Afegir contingut"')
 
     def test_home_item_sections_are_ordered_by_item_count(self):
         self.channel.is_public = True
@@ -386,6 +404,64 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+    def test_contentitem_form_shows_expiry_phrase_inline(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Prioritat -")
+        self.assertContains(response, "Caducitat -")
+        self.assertContains(response, "i")
+        self.assertContains(response, "Número")
+        self.assertContains(response, "Unitat")
+
+    def test_pwa_manifest_exposes_share_target(self):
+        response = self.client.get(reverse("pwa_manifest"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/manifest+json")
+        manifest = response.json()
+        self.assertEqual(manifest["display"], "standalone")
+        self.assertEqual(manifest["start_url"], "/")
+        self.assertEqual(manifest["share_target"]["action"], "/share/")
+        self.assertEqual(manifest["share_target"]["params"]["url"], "url")
+
+    def test_service_worker_is_served_from_root_scope(self):
+        response = self.client.get(reverse("service_worker"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/javascript")
+        self.assertIn('self.addEventListener("fetch"', response.content.decode())
+
+    def test_contentitem_create_prefills_shared_url(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("contentitem_create"),
+            {"url": "https://example.com/shared", "title": "Shared title"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="https://example.com/shared"')
+        self.assertContains(response, 'value="Shared title"')
+
+    def test_pwa_share_target_redirects_to_prefilled_create_form(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("pwa_share_target"),
+            {
+                "title": "Shared title",
+                "text": "Mira aixo https://example.com/from-text",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith(reverse("contentitem_create")))
+        self.assertIn("url=https%3A%2F%2Fexample.com%2Ffrom-text", response.url)
+        self.assertIn("title=Shared+title", response.url)
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_magic_link_request_creates_user_token_and_sends_email(self):
@@ -579,6 +655,11 @@ class CoreViewsTests(TestCase):
                 "content_type": ContentItem.ContentType.OTHER,
                 "author": "",
                 "language": "",
+                "personal_comment": "Per llegir amb calma",
+                "priority": ContentItem.Priority.HIGH,
+                "internal_context": "Important per a la propera selecció.",
+                "expiry_amount": "6",
+                "expiry_unit": ContentItem.ExpiryUnit.MONTHS,
                 "tag_list": "",
             },
         )
@@ -586,6 +667,11 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         item = ContentItem.objects.get(user=self.user, title="Titol enriquit")
         self.assertEqual(item.content_type, ContentItem.ContentType.ARTICLE)
+        self.assertEqual(item.personal_comment, "Per llegir amb calma")
+        self.assertEqual(item.priority, ContentItem.Priority.HIGH)
+        self.assertEqual(item.internal_context, "Important per a la propera selecció.")
+        self.assertEqual(item.expiry_amount, 6)
+        self.assertEqual(item.expiry_unit, ContentItem.ExpiryUnit.MONTHS)
         self.assertEqual(item.tags.count(), 2)
 
     @patch("core.content_services.fetch_url_metadata")
@@ -657,6 +743,11 @@ class CoreViewsTests(TestCase):
             channel=self.channel,
             title="Toggle item",
             url="https://example.com/toggle",
+            personal_comment="Recordatori.",
+            priority=ContentItem.Priority.HIGH,
+            internal_context="Per editar més tard.",
+            expiry_amount=3,
+            expiry_unit=ContentItem.ExpiryUnit.DAYS,
             visibility=ContentItem.Visibility.PUBLIC,
         )
         self.client.force_login(self.user)
@@ -665,6 +756,11 @@ class CoreViewsTests(TestCase):
 
         self.assertContains(response, "Marcar com a visitat")
         self.assertNotContains(response, "Marcar com a pendent")
+        self.assertContains(response, "Comentari personal")
+        self.assertContains(response, "Context intern")
+        self.assertContains(response, "Prioritat")
+        self.assertContains(response, "Alta")
+        self.assertContains(response, "3 dies")
 
         ContentItemVisit.objects.create(user=self.user, item=item, visit_count=1)
         response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))

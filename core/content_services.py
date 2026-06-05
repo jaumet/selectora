@@ -25,7 +25,7 @@ def apply_metadata_to_item(item, metadata, manual_data=None):
             setattr(item, field, value)
 
     for field, value in manual_data.items():
-        if hasattr(item, field) and value:
+        if hasattr(item, field) and value is not None and value != "":
             setattr(item, field, value)
 
     if metadata.data.get("metadata_json"):

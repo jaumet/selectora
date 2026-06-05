@@ -31,10 +31,24 @@
     {% if item.description %}
       <p class="lead">{{ item.description }}</p>
     {% endif %}
+    {% if is_owner and item.personal_comment %}
+      <div class="owner-note">
+        <p class="meta">Comentari personal</p>
+        <p>{{ item.personal_comment }}</p>
+      </div>
+    {% endif %}
+    {% if is_owner and item.internal_context %}
+      <div class="owner-note">
+        <p class="meta">Context intern</p>
+        <p>{{ item.internal_context }}</p>
+      </div>
+    {% endif %}
     <dl class="metadata-list">
       {% if item.author %}<div><dt>Autor</dt><dd>{{ item.author }}</dd></div>{% endif %}
       {% if item.published_date %}<div><dt>Publicat</dt><dd>{{ item.published_date|date:"d/m/Y" }}</dd></div>{% endif %}
       {% if item.language %}<div><dt>Idioma</dt><dd>{{ item.language }}</dd></div>{% endif %}
+      {% if is_owner %}<div><dt>Prioritat</dt><dd>{{ item.priority_label }}</dd></div>{% endif %}
+      {% if is_owner and item.personal_expiry_label %}<div><dt>Caducitat</dt><dd>{{ item.personal_expiry_label }}</dd></div>{% endif %}
       {% if item.duration %}<div><dt>Durada</dt><dd>{{ item.duration }}</dd></div>{% endif %}
       {% if item.canonical_url %}<div><dt>URL canonica</dt><dd><a href="{{ item.canonical_url }}" target="_blank" rel="noopener">{{ item.canonical_url }}</a></dd></div>{% endif %}
     </dl>
