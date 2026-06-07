@@ -82,6 +82,53 @@ class MetadataFetcherTests(TestCase):
         self.assertEqual(result.data["source_platform"], "example.com")
         self.assertEqual(result.data["content_type"], ContentItem.ContentType.OTHER)
 
+    def test_extract_metadata_uses_lazy_srcset_image_when_social_tags_missing(self):
+        html = """
+        <html>
+          <head><title>Article sense Open Graph</title></head>
+          <body>
+            <article>
+              <h1>Article sense Open Graph</h1>
+              <img
+                alt="Foto principal"
+                data-srcset="/small.jpg 320w, /large.webp 1200w">
+            </article>
+          </body>
+        </html>
+        """
+
+        metadata = extract_metadata(html, "https://example.com/article")
+
+        self.assertEqual(metadata["image_url"], "https://example.com/large.webp")
+        self.assertEqual(metadata["thumbnail_url"], "https://example.com/large.webp")
+
+    def test_instagram_json_image_is_used_when_meta_image_is_missing(self):
+        html = r"""
+        <html>
+          <head>
+            <meta property="og:site_name" content="Instagram">
+            <meta property="og:url" content="https://www.instagram.com/reel/ABC123/">
+          </head>
+          <body>
+            <script>{"display_url":"https:\/\/cdn.example.com\/insta.jpg?x=1\u0026y=2"}</script>
+          </body>
+        </html>
+        """
+
+        metadata = extract_metadata(html, "https://www.instagram.com/reel/ABC123/")
+
+        self.assertEqual(metadata["image_url"], "https://cdn.example.com/insta.jpg?x=1&y=2")
+        self.assertEqual(metadata["thumbnail_url"], "https://cdn.example.com/insta.jpg?x=1&y=2")
+
+    def test_youtube_fallback_adds_thumbnail_when_request_fails(self):
+        def failing_get(*args, **kwargs):
+            raise TimeoutError("timeout")
+
+        result = fetch_url_metadata("https://youtu.be/eh1hrYQi4FY", http_get=failing_get)
+
+        self.assertEqual(result.data["thumbnail_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
+        self.assertEqual(result.data["image_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
+
     def test_youtube_embed_iframe_has_referrer_policy(self):
         user = get_user_model().objects.create_user(username="owner", password="test-password")
         channel = Channel.objects.create(owner=user, name="Canal", is_public=True)
@@ -273,7 +320,7 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Portada collection")
         self.assertContains(response, "collection-collage")
         self.assertContains(response, "data-darkreader-ignore")
-        self.assertContains(response, 'aria-label="Share collection"')
+        self.assertContains(response, 'aria-label="Compartir col.leccio"')
         self.assertContains(response, "Cinema")
         self.assertContains(response, "Cerca")
         self.assertContains(response, 'name="platform"')
@@ -843,7 +890,7 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Canal de Jaume")
         self.assertContains(response, "Public")
-        self.assertContains(response, "Share channel")
+        self.assertContains(response, "Compartir canal")
         self.assertContains(response, reverse("contentitem_visited", kwargs={"pk": item.pk}), html=False)
 
     def test_public_channel_item_sections_are_ordered_by_item_count(self):
@@ -930,7 +977,7 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Human note.")
         self.assertContains(response, "https://example.com/shareable")
         self.assertContains(response, "Open curator channel")
-        self.assertContains(response, 'aria-label="Share item"')
+        self.assertContains(response, 'aria-label="Compartir item"')
 
     def test_private_item_share_page_is_not_exposed(self):
         self.channel.is_public = True
@@ -983,7 +1030,7 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Public collection item")
         self.assertContains(response, public_item.get_public_url())
         self.assertNotContains(response, "Private collection item")
-        self.assertContains(response, 'aria-label="Share collection"')
+        self.assertContains(response, 'aria-label="Compartir col.leccio"')
 
     def test_private_collection_share_page_is_not_exposed(self):
         self.channel.is_public = True
@@ -1041,7 +1088,7 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Latest public item")
         self.assertNotContains(response, "Hidden collection")
         self.assertNotContains(response, "Latest private item")
-        self.assertContains(response, 'aria-label="Share channel"')
+        self.assertContains(response, 'aria-label="Compartir canal"')
 
     def test_dashboard_filters_by_content_type(self):
         self.client.force_login(self.user)

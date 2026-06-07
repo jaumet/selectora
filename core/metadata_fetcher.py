@@ -33,6 +33,7 @@ def fetch_url_metadata(url: str, http_get=None) -> MetadataResult:
         data = _fallback_metadata(url)
         if _is_tiktok_url(url):
             data = _merge_metadata(data, _fetch_tiktok_oembed_metadata(url, http_get))
+        data = _merge_metadata(data, _platform_image_metadata(url))
         return MetadataResult(data=data, error=str(exc))
 
     content_type = response.headers.get("content-type", "")
@@ -40,11 +41,13 @@ def fetch_url_metadata(url: str, http_get=None) -> MetadataResult:
         data = _fallback_metadata(response.url)
         if _is_tiktok_url(response.url):
             data = _merge_metadata(data, _fetch_tiktok_oembed_metadata(response.url, http_get))
+        data = _merge_metadata(data, _platform_image_metadata(response.url))
         return MetadataResult(data=data, error="URL did not return HTML.")
 
     data = extract_metadata(response.text, response.url)
     if _is_tiktok_url(response.url):
         data = _merge_metadata(data, _fetch_tiktok_oembed_metadata(response.url, http_get))
+    data = _merge_metadata(data, _platform_image_metadata(response.url))
     return MetadataResult(data=data, error="")
 
 
@@ -98,6 +101,8 @@ def extract_metadata(html: str, url: str) -> dict[str, Any]:
     latest_episode = _latest_episode_from_links(soup)
     host_site_name = _site_name_from_url(url)
     canonical_url = _first(_canonical(soup, base_url), _meta(soup, "og:url"), url)
+    image_url = _absolute(_first(*_image_candidates(soup, json_ld, html)), base_url)
+    platform_image_url = _first(_social_json_image(html, canonical_url), _youtube_thumbnail(canonical_url))
 
     raw = {
         "title": _first(
@@ -116,19 +121,8 @@ def extract_metadata(html: str, url: str) -> dict[str, Any]:
             latest_episode.get("description", ""),
             _first_meaningful_paragraph(soup),
         ),
-        "image_url": _absolute(
-            _first(_meta(soup, "og:image"), _meta(soup, "twitter:image"), _json_ld_image(json_ld), _first_image(soup)),
-            base_url,
-        ),
-        "thumbnail_url": _absolute(
-            _first(
-                _meta(soup, "og:image:secure_url"),
-                _meta(soup, "twitter:image"),
-                _json_ld_image(json_ld),
-                _first_image(soup),
-            ),
-            base_url,
-        ),
+        "image_url": _first(platform_image_url, image_url),
+        "thumbnail_url": _first(platform_image_url, image_url),
         "favicon_url": _favicon(soup, base_url),
         "site_name": _first(_meta(soup, "og:site_name"), _json_ld_value(json_ld, "publisher.name"), host_site_name),
         "source_platform": _source_platform(soup, url),
@@ -182,6 +176,7 @@ def _fallback_metadata(url: str) -> dict[str, Any]:
         "canonical_url": url,
         "source_platform": _site_name_from_url(url) or _platform_from_url(url),
         "content_type": _content_type(None, [], url),
+        **_platform_image_metadata(url),
         "embed_url": _youtube_embed(url) or _instagram_embed(url) or _tiktok_embed(url),
         "metadata_json": {},
     }
@@ -335,14 +330,147 @@ def _first_meaningful_paragraph(soup):
 
 def _first_image(soup):
     for image in soup.find_all("img"):
-        src = image.get("src") or image.get("data-src") or image.get("data-lazy-src")
+        src = _image_source(image)
         if not src:
             continue
-        alt = image.get("alt", "")
-        combined = f"{src} {alt}".lower()
-        if any(skip in combined for skip in ("logo", "avatar", "icon", "tracking", "pixel")):
+        if not _usable_image_candidate(src, image.get("alt", "")):
             continue
         return src
+    return ""
+
+
+def _image_candidates(soup, json_ld, html):
+    return [
+        _meta(soup, "og:image:secure_url"),
+        _meta(soup, "og:image:url"),
+        _meta(soup, "og:image"),
+        _meta(soup, "twitter:image:src"),
+        _meta(soup, "twitter:image"),
+        _meta_name(soup, "thumbnail"),
+        _meta_name(soup, "image"),
+        _link_image(soup),
+        _itemprop_image(soup),
+        _json_ld_image(json_ld),
+        _social_json_image(html, ""),
+        _first_image(soup),
+    ]
+
+
+def _link_image(soup):
+    for rel in ("image_src", "preload"):
+        tag = soup.find("link", rel=lambda value: value and rel in " ".join(value).lower())
+        if not tag or not tag.get("href"):
+            continue
+        if rel == "preload" and tag.get("as") != "image":
+            continue
+        href = tag["href"].strip()
+        if _usable_image_candidate(href):
+            return href
+    return ""
+
+
+def _itemprop_image(soup):
+    tag = soup.find(attrs={"itemprop": "image"})
+    if not tag:
+        return ""
+    value = tag.get("content") or tag.get("src") or tag.get("href")
+    return value.strip() if value and _usable_image_candidate(value) else ""
+
+
+def _image_source(image):
+    for attr in ("src", "data-src", "data-lazy-src", "data-original", "data-url"):
+        value = image.get(attr)
+        if value:
+            return value.strip()
+    srcset = image.get("srcset") or image.get("data-srcset")
+    return _best_srcset_image(srcset)
+
+
+def _best_srcset_image(srcset):
+    best_url = ""
+    best_score = -1
+    for candidate in (srcset or "").split(","):
+        parts = candidate.strip().split()
+        if not parts:
+            continue
+        url = parts[0]
+        score = 0
+        if len(parts) > 1:
+            descriptor = parts[1]
+            try:
+                if descriptor.endswith("w"):
+                    score = int(descriptor[:-1])
+                elif descriptor.endswith("x"):
+                    score = int(float(descriptor[:-1]) * 1000)
+            except ValueError:
+                score = 0
+        if score >= best_score and _usable_image_candidate(url):
+            best_url = url
+            best_score = score
+    return best_url
+
+
+def _usable_image_candidate(src, alt=""):
+    value = (src or "").strip()
+    if not value:
+        return False
+    lowered = f"{value} {alt or ''}".lower()
+    if value.startswith("data:"):
+        return False
+    if any(skip in lowered for skip in ("tracking", "pixel", "spacer", "blank.gif")):
+        return False
+    if any(skip in lowered for skip in ("avatar", "profile_pic")):
+        return False
+    if any(skip in lowered for skip in ("logo", "icon", "favicon", "sprite")):
+        image_like = lowered.split("?", 1)[0].endswith((".jpg", ".jpeg", ".png", ".webp", ".avif"))
+        return image_like and not any(size in lowered for size in ("16x16", "32x32", "64x64"))
+    return True
+
+
+def _social_json_image(html, url):
+    patterns = [
+        r'"display_url"\s*:\s*"([^"]+)"',
+        r'"thumbnail_src"\s*:\s*"([^"]+)"',
+        r'"thumbnail_url"\s*:\s*"([^"]+)"',
+        r'"thumbnailUrl"\s*:\s*\[\s*"([^"]+)"',
+        r'"thumbnailUrl"\s*:\s*"([^"]+)"',
+        r'"cover"\s*:\s*"([^"]+)"',
+        r'"originCover"\s*:\s*"([^"]+)"',
+        r'"dynamicCover"\s*:\s*"([^"]+)"',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, html or "")
+        if not match:
+            continue
+        value = _decode_json_url(match.group(1))
+        if _usable_image_candidate(value):
+            return value
+    return _youtube_thumbnail(url)
+
+
+def _decode_json_url(value):
+    return (value or "").replace("\\u0026", "&").replace("\\/", "/")
+
+
+def _platform_image_metadata(url):
+    image_url = _youtube_thumbnail(url)
+    return {"image_url": image_url, "thumbnail_url": image_url} if image_url else {}
+
+
+def _youtube_thumbnail(url):
+    video_id = _youtube_video_id(url)
+    return f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg" if video_id else ""
+
+
+def _youtube_video_id(url):
+    parsed = urlparse(url)
+    host = parsed.netloc.lower()
+    if "youtu.be" in host:
+        return parsed.path.strip("/").split("/", 1)[0]
+    if "youtube.com" in host:
+        if parsed.path.startswith("/shorts/"):
+            return parsed.path.split("/")[2] if len(parsed.path.split("/")) > 2 else ""
+        return parse_qs(parsed.query).get("v", [""])[0]
     return ""
 
 
@@ -425,13 +553,7 @@ def _source_platform(soup, url):
 
 
 def _youtube_embed(url):
-    parsed = urlparse(url)
-    host = parsed.netloc.lower()
-    video_id = ""
-    if "youtu.be" in host:
-        video_id = parsed.path.strip("/")
-    elif "youtube.com" in host:
-        video_id = parse_qs(parsed.query).get("v", [""])[0]
+    video_id = _youtube_video_id(url)
     if video_id:
         return f"https://www.youtube.com/embed/{video_id}"
     return ""

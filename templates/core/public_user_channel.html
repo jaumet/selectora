@@ -14,7 +14,7 @@
       {% endif %}
       <div class="actions">
         <a class="button secondary" href="{{ channel.get_absolute_url }}">Open channel</a>
-        {% include "core/includes/share_menu.html" with share_label="Share channel" share_aria_label="Share channel" share_type="channel" share_title=channel.name share_url=request.path share_curator=channel.name %}
+        {% include "core/includes/share_menu.html" with share_label="Compartir canal" share_aria_label="Compartir canal" share_type="channel" share_title=channel.name share_url=request.path share_curator=channel.name %}
       </div>
     </div>
   </div>
@@ -34,7 +34,7 @@
           {% if collection.description %}<p>{{ collection.description|truncatechars:140 }}</p>{% endif %}
           <div class="card-actions">
             <a href="{{ collection.get_public_url }}">Open</a>
-            {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=channel.name %}
+            {% include "core/includes/share_menu.html" with share_label="Compartir col.leccio" share_aria_label="Compartir col.leccio" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=channel.name %}
           </div>
         </article>
       {% endfor %}

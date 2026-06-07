@@ -28,7 +28,56 @@
     return true;
   }
 
+  function updateRailControls(shell) {
+    const rail = shell.querySelector("[data-media-rail]");
+    const prev = shell.querySelector("[data-rail-prev]");
+    const next = shell.querySelector("[data-rail-next]");
+    if (!rail || !prev || !next) {
+      return;
+    }
+    const maxScroll = rail.scrollWidth - rail.clientWidth;
+    const hasOverflow = maxScroll > 2;
+    prev.hidden = !hasOverflow;
+    next.hidden = !hasOverflow;
+    prev.disabled = rail.scrollLeft <= 2;
+    next.disabled = rail.scrollLeft >= maxScroll - 2;
+  }
+
+  function scrollRail(button, direction) {
+    const shell = button.closest(".media-rail-shell");
+    const rail = shell ? shell.querySelector("[data-media-rail]") : null;
+    if (!rail) {
+      return;
+    }
+    const firstItem = rail.querySelector(".visual-card");
+    const secondItem = firstItem ? firstItem.nextElementSibling : null;
+    const itemStep = secondItem
+      ? secondItem.offsetLeft - firstItem.offsetLeft
+      : firstItem
+        ? firstItem.offsetWidth
+        : Math.max(rail.clientWidth, 320);
+    const visibleItems = Math.max(1, Math.floor((rail.clientWidth + 1) / itemStep));
+    const scrollItems = Math.max(1, visibleItems - 1);
+
+    rail.scrollBy({
+      left: direction * itemStep * scrollItems,
+      behavior: "smooth",
+    });
+  }
+
   document.addEventListener("click", function (event) {
+    const prevRail = event.target.closest("[data-rail-prev]");
+    if (prevRail) {
+      scrollRail(prevRail, -1);
+      return;
+    }
+
+    const nextRail = event.target.closest("[data-rail-next]");
+    if (nextRail) {
+      scrollRail(nextRail, 1);
+      return;
+    }
+
     const trigger = event.target.closest("[data-open-drawer]");
     if (!trigger) {
       return;
@@ -182,6 +231,34 @@
   );
 
   document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".media-rail-shell").forEach(function (shell) {
+      const rail = shell.querySelector("[data-media-rail]");
+      updateRailControls(shell);
+      if (rail) {
+        rail.addEventListener("scroll", function () {
+          updateRailControls(shell);
+        });
+      }
+    });
+
+    window.addEventListener("resize", function () {
+      document.querySelectorAll(".media-rail-shell").forEach(updateRailControls);
+    });
+
+    document.querySelectorAll("[data-image-fallback]").forEach(function (image) {
+      function showFallback() {
+        const cardImage = image.closest(".card-image");
+        if (cardImage) {
+          cardImage.classList.add("image-missing");
+        }
+      }
+
+      image.addEventListener("error", showFallback, { once: true });
+      if (image.complete && image.naturalWidth === 0) {
+        showFallback();
+      }
+    });
+
     const savedPosition = sessionStorage.getItem(scrollKey);
     if (!savedPosition) {
       const hash = window.location.hash.replace("#", "");
@@ -329,19 +406,31 @@
     const nativeButton = event.target.closest("[data-share-native]");
     const copyLinkButton = event.target.closest("[data-copy-link]");
     const copyTextButton = event.target.closest("[data-copy-share-text]");
+    const target = nativeButton || copyLinkButton || copyTextButton;
+    if (!target) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const menu = target.closest("[data-share-menu]");
     try {
       if (nativeButton) {
         await shareViaNativeOrFallback(payloadFromElement(nativeButton));
       } else if (copyLinkButton) {
         await copyToClipboard(absoluteUrl(copyLinkButton.dataset.shareUrl));
-        showCopied(copyLinkButton, "Link copied");
+        showCopied(copyLinkButton, "Enllac copiat");
       } else if (copyTextButton) {
         await copyToClipboard(payloadFromElement(copyTextButton).text);
-        showCopied(copyTextButton, "Link copied");
+        showCopied(copyTextButton, "Text copiat");
       }
     } catch (error) {
-      const target = nativeButton || copyLinkButton || copyTextButton;
-      showCopied(target, "Copy failed");
+      showCopied(target, "No s'ha pogut copiar");
+    } finally {
+      if (menu) {
+        window.setTimeout(function () {
+          menu.open = false;
+        }, 450);
+      }
     }
   });
 

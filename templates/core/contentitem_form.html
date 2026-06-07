@@ -78,10 +78,9 @@
     </p>
     <p class="expiry-inline">
       <span class="expiry-prefix">Caducitat -</span>
-      <label for="{{ form.expiry_amount.id_for_label }}">{{ form.expiry_amount.label }}</label>
+      <label class="visually-hidden" for="{{ form.expiry_amount.id_for_label }}">{{ form.expiry_amount.label }}</label>
       {{ form.expiry_amount }}
-      <span class="expiry-joiner">i</span>
-      <label for="{{ form.expiry_unit.id_for_label }}">{{ form.expiry_unit.label }}</label>
+      <label class="visually-hidden" for="{{ form.expiry_unit.id_for_label }}">{{ form.expiry_unit.label }}</label>
       {{ form.expiry_unit }}
       {{ form.expiry_amount.errors }}
       {{ form.expiry_unit.errors }}

@@ -1,5 +1,5 @@
 <details class="share-menu" data-share-menu>
-  <summary class="share-summary" aria-label="{{ share_aria_label|default:'Share' }}">{{ share_label|default:"Share" }}</summary>
+  <summary class="share-summary" aria-label="{{ share_aria_label|default:'Compartir' }}">{{ share_label|default:"Compartir" }}</summary>
   <div class="share-panel">
     <button
       type="button"
@@ -10,14 +10,14 @@
       data-share-description="{{ share_description|default:'' }}"
       data-share-url="{{ share_url }}"
       data-share-curator="{{ share_curator|default:'' }}">
-      Share with apps
+      Compartir amb apps
     </button>
     <button
       type="button"
-      aria-label="Copy link"
+      aria-label="Copiar enllac"
       data-copy-link
       data-share-url="{{ share_url }}">
-      Copy link
+      Copiar enllac
     </button>
     <button
       type="button"
@@ -27,7 +27,7 @@
       data-share-description="{{ share_description|default:'' }}"
       data-share-url="{{ share_url }}"
       data-share-curator="{{ share_curator|default:'' }}">
-      Copy share text
+      Copiar text
     </button>
     <span class="share-status" data-share-status role="status" aria-live="polite"></span>
   </div>

@@ -1,28 +1,34 @@
 <article class="visual-card">
-  <a class="card-image" href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" aria-label="{{ item.title }}">
+  <a class="card-image{% if item.display_image_url %} has-image{% endif %}" href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" aria-label="{{ item.title }}">
     {% if item.display_image_url %}
-      <img src="{{ item.display_image_url }}" alt="">
-    {% else %}
-      <div class="poster-placeholder poster-{{ item.content_type }}" aria-hidden="true">
-        <div class="poster-orbit"></div>
-        <span>{{ item.get_content_type_display }}</span>
-        <strong>{{ item.title }}</strong>
-        {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
-      </div>
+      <img src="{{ item.display_image_url }}" alt="" loading="lazy" decoding="async" data-image-fallback>
     {% endif %}
+    <div class="poster-placeholder poster-{{ item.content_type }}" aria-hidden="true">
+      <div class="poster-orbit"></div>
+      <span>{{ item.get_content_type_display }}</span>
+      {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
+    </div>
     {% if item.embed_url %}
       <span class="embed-badge">Embed</span>
     {% endif %}
+    <span class="card-image-title">{{ item.title }}</span>
   </a>
   <div class="card-body">
-    <p class="meta">{{ item.get_content_type_display }}{% if item.display_source %} · {{ item.display_source }}{% endif %}</p>
-    <h3><a href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}">{{ item.title }}</a></h3>
-    {% if item.description %}
-      <p>{{ item.description|truncatechars:120 }}</p>
-    {% endif %}
+    <div class="item-signal-strip" aria-label="Detalls destacats">
+      {% if item.personal_expiry_label %}
+        <span class="item-signal signal-expiry">{{ item.personal_expiry_label }}</span>
+      {% endif %}
+      <span class="item-signal signal-type">{{ item.get_content_type_display }}</span>
+      {% if item.display_source %}
+        <span class="item-signal signal-source">{{ item.display_source }}</span>
+      {% endif %}
+      {% for tag in item.tags.all|slice:":3" %}
+        <span class="item-signal signal-tag">{{ tag.name }}</span>
+      {% endfor %}
+    </div>
     <div class="card-actions">
       <a href="{{ item.url }}" target="_blank" rel="noopener" data-mark-visited-url="{% url 'contentitem_visited' item.pk %}">Obrir</a>
-      {% include "core/includes/share_menu.html" with share_label="Share" share_aria_label="Share item" share_type="item" share_title=item.title share_description=item.description share_url=item.get_public_url share_curator=item.channel.name %}
+      {% include "core/includes/share_menu.html" with share_label="Compartir" share_aria_label="Compartir item" share_type="item" share_title=item.title share_description=item.description share_url=item.get_public_url share_curator=item.channel.name %}
       {% if is_owner %}
         <a href="{% url 'contentitem_update' item.pk %}">Editar</a>
       {% endif %}

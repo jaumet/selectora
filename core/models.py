@@ -140,6 +140,7 @@ class ContentItem(models.Model):
     url = models.URLField(max_length=500)
     canonical_url = models.URLField(max_length=500, blank=True)
     description = models.TextField(blank=True)
+    image_file = models.FileField(upload_to="item_images/", blank=True)
     image_url = models.URLField(max_length=500, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
     favicon_url = models.URLField(max_length=500, blank=True)
@@ -196,6 +197,8 @@ class ContentItem(models.Model):
 
     @property
     def display_image_url(self):
+        if self.image_file:
+            return self.image_file.url
         return self.thumbnail_url or self.image_url
 
     @property

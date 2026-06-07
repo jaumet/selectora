@@ -131,14 +131,18 @@
               {% endif %}
               <div class="card-actions">
                 <a href="{{ collection.get_public_url }}">Obrir</a>
-                {% include "core/includes/share_menu.html" with share_label="Share collection" share_aria_label="Share collection" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=collection.channel.name %}
+                {% include "core/includes/share_menu.html" with share_label="Compartir col.leccio" share_aria_label="Compartir col.leccio" share_type="collection" share_title=collection.title share_description=collection.description share_url=collection.get_public_url share_curator=collection.channel.name %}
               </div>
             </article>
           {% endfor %}
         </div>
       {% else %}
-        <div class="compact-rail">
-          {% for item in section.items %}{% include "core/includes/content_card.html" %}{% endfor %}
+        <div class="media-rail-shell">
+          <button class="rail-arrow rail-arrow-prev" type="button" aria-label="Anterior" data-rail-prev>&lt;</button>
+          <div class="compact-rail media-rail" data-media-rail>
+            {% for item in section.items %}{% include "core/includes/content_card.html" %}{% endfor %}
+          </div>
+          <button class="rail-arrow rail-arrow-next" type="button" aria-label="Seguent" data-rail-next>&gt;</button>
         </div>
       {% endif %}
     </section>

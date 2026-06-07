@@ -30,7 +30,7 @@
     <div class="actions">
       <a class="button" href="{{ item.url }}" target="_blank" rel="noopener">Open original</a>
       <a class="button secondary" href="{{ item.channel.get_absolute_url }}">Open curator channel</a>
-      {% include "core/includes/share_menu.html" with share_label="Share" share_aria_label="Share item" share_type="item" share_title=item.title share_description=item.description share_url=item.get_public_url share_curator=item.channel.name %}
+      {% include "core/includes/share_menu.html" with share_label="Compartir" share_aria_label="Compartir item" share_type="item" share_title=item.title share_description=item.description share_url=item.get_public_url share_curator=item.channel.name %}
     </div>
   </div>
 </article>
