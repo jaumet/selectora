@@ -1,0 +1,869 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$RiSLPUPBFNKzVAL25aVK6A$GTUEruGwzfFmT7+Fr+wGiT6vcOsthIukustsduLoGhA=",
+    "last_login": "2026-06-01T19:28:45.857Z",
+    "is_superuser": true,
+    "username": "jaume",
+    "first_name": "",
+    "last_name": "",
+    "email": "jaume@nualart.cat",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-01T19:26:28.927Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "!Rg3NyshmEnjjbrvkQqFVeCICrixSajl7TG77fOdO",
+    "last_login": "2026-06-07T13:57:23.271Z",
+    "is_superuser": false,
+    "username": "jaume-1",
+    "first_name": "",
+    "last_name": "",
+    "email": "jaume@audiovook.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-06-02T10:52:56.739Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "4tkvu67pt9d14tl7xlvmbclrjfjg1fao",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSEMjzK4dO83EB6DVA0kpV0Z_12bdKHbe865L-bDtla_DVr8nNmZATv9bjGkB7Ud5Htot85Tb-syR74r_KCDX3um5-Vw_w5qGPVbI0kHKHOZjM6ugBNIVusSY3RWUU7ampJQiWBQgEVpZQoIVkucjCrA3h_TizcB:1wU8JZ:7o2IEVc9-5Y1Z3GBsoZWNVUxS5PuZPKgrvwxxKs4KjY",
+    "expire_date": "2026-06-15T19:28:45.863Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "si1o9cav7yw7aq8gyyunl90tz3p8eds6",
+  "fields": {
+    "session_data": ".eJxVjM0OwiAQhN-FsyH8tMJ69O4zkGVZpGpoUtqT8d2lSQ96m3zzzbxFwG0tYWu8hCmJizDi9Msi0pPrXqQH1vssaa7rMkW5K_Jom7zNiV_Xw_07KNhKX2eXPYMC4zOBSqMj0NjTQB7ZgSJija6zHCNhtGerrc0APCRr8mjE5wv7njh0:1wWE0B:Szj02Zgt4AwlpenE8nycz_2wBP81Cf0QmFOYmJSJAVE",
+    "expire_date": "2026-06-21T13:57:23.276Z"
+  }
+},
+{
+  "model": "core.channel",
+  "pk": 1,
+  "fields": {
+    "owner": [
+      "jaume"
+    ],
+    "name": "Ja nu a l'art flow",
+    "description": "malaltíssament divers",
+    "cover_image": "channel_covers/ja-nu-a-l-art-logo-canal.png",
+    "cover_image_url": "https://research.nualart.cat",
+    "is_public": true,
+    "telegram_link_code": "clQHSxJJrJU",
+    "created_at": "2026-06-01T19:28:45.881Z",
+    "updated_at": "2026-06-02T08:28:16.842Z"
+  }
+},
+{
+  "model": "core.channel",
+  "pk": 2,
+  "fields": {
+    "owner": [
+      "jaume-1"
+    ],
+    "name": "Canal Audiovook",
+    "description": "Seleccio personal de continguts digitals.",
+    "cover_image": "channel_covers/Log-2.detail.jpg",
+    "cover_image_url": "",
+    "is_public": true,
+    "telegram_link_code": "clQHSxJJrJU",
+    "created_at": "2026-06-02T10:53:15.696Z",
+    "updated_at": "2026-06-02T11:27:55.567Z"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 1,
+  "fields": {
+    "name": "#app",
+    "slug": "app"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 2,
+  "fields": {
+    "name": "#music",
+    "slug": "music"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 3,
+  "fields": {
+    "name": "#sing",
+    "slug": "sing"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 4,
+  "fields": {
+    "name": "IA emocional",
+    "slug": "ia-emocional"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 5,
+  "fields": {
+    "name": "José Ignacio Latorre",
+    "slug": "jose-ignacio-latorre"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 6,
+  "fields": {
+    "name": "acompañante virtual",
+    "slug": "acompanante-virtual"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 7,
+  "fields": {
+    "name": "computación cuántica",
+    "slug": "computacion-cuantica"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 8,
+  "fields": {
+    "name": "futuro de la humanidad",
+    "slug": "futuro-de-la-humanidad"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 9,
+  "fields": {
+    "name": "gobernanza IA",
+    "slug": "gobernanza-ia"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 10,
+  "fields": {
+    "name": "información vs conocimiento",
+    "slug": "informacion-vs-conocimiento"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 11,
+  "fields": {
+    "name": "inmortalidad tecnológica",
+    "slug": "inmortalidad-tecnologica"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 12,
+  "fields": {
+    "name": "inteligencia artificial",
+    "slug": "inteligencia-artificial"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 13,
+  "fields": {
+    "name": "la formula del exito podcast",
+    "slug": "la-formula-del-exito-podcast"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 14,
+  "fields": {
+    "name": "lfde podcast",
+    "slug": "lfde-podcast"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 15,
+  "fields": {
+    "name": "mecánica cuántica",
+    "slug": "mecanica-cuantica"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 16,
+  "fields": {
+    "name": "#llengua",
+    "slug": "llengua"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 17,
+  "fields": {
+    "name": "#catala",
+    "slug": "catala"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 18,
+  "fields": {
+    "name": "#English",
+    "slug": "english"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 19,
+  "fields": {
+    "name": "#musica",
+    "slug": "musica"
+  }
+},
+{
+  "model": "core.tag",
+  "pk": 20,
+  "fields": {
+    "name": "#novetats",
+    "slug": "novetats"
+  }
+},
+{
+  "model": "core.magiclogintoken",
+  "pk": 1,
+  "fields": {
+    "email": "jaume@audiovook.com",
+    "user": [
+      "jaume-1"
+    ],
+    "token_hash": "ce254c60d7d9fb375fe946b9e61b176dddf06bdddc7689f09d0809e0c5b0286a",
+    "expires_at": "2026-06-02T11:22:56.744Z",
+    "used_at": "2026-06-02T10:53:15.662Z",
+    "created_at": "2026-06-02T10:52:56.744Z"
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "La tertúlia proscrita",
+    "url": "https://www.vilaweb.cat/podcasts/la-tertulia-proscrita/",
+    "canonical_url": "https://www.vilaweb.cat/podcasts/la-tertulia-proscrita/",
+    "description": "Pòdcast de VilaWeb. Darrer episodi visible a la pàgina: La tertúlia proscrita: El jovent pren el relleu, desmenteix el derrotisme i demostra que hi ha futur. VilaWeb presenta un nou capítol amb Maria Maians, Roger Campdelacreu, Júlia Ojeda i Txell Partal.",
+    "image_file": "",
+    "image_url": "https://img.youtube.com/vi/86NhsnT66M8/maxresdefault.jpg",
+    "thumbnail_url": "https://img.youtube.com/vi/86NhsnT66M8/maxresdefault.jpg",
+    "favicon_url": "https://www.vilaweb.cat/favicon.ico",
+    "site_name": "VilaWeb",
+    "source_platform": "VilaWeb",
+    "content_type": "podcast",
+    "author": "",
+    "published_date": null,
+    "duration": "",
+    "language": "ca",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "",
+    "visibility": "public",
+    "metadata_json": {
+      "latest_episode": {
+        "date": "23.04.2026",
+        "title": "La tertúlia proscrita: El jovent pren el relleu, desmenteix el derrotisme i demostra que hi ha futur",
+        "description": "VilaWeb presenta un nou capítol amb Maria Maians, Roger Campdelacreu, Júlia Ojeda i Txell Partal."
+      }
+    },
+    "created_at": "2026-06-01T19:34:33.115Z",
+    "updated_at": "2026-06-07T14:35:31.483Z",
+    "tags": []
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "TapBand App",
+    "url": "https://www.instagram.com/p/DYiAJdKM7gA/",
+    "canonical_url": "https://www.instagram.com/reel/DYiAJdKM7gA/",
+    "description": "TapBand és una app de creació musical col·lectiva. A partir d'un títol, una sinopsi i un estil, una IA genera automàticament la lletra d'una cançó repartida entre tots els participants. Cadascú tria el seu artista, la música sona de fons, i per torn, cada persona grava les seves frases. Al final, totes les veus s'uneixen en un sol àudio: la vostra cançó. Perfecta per a festes, dinàmiques de grup, activitats escolars o simplement per passar-s'ho bé entre amics.",
+    "image_file": "item_images/2-thumb.jpg",
+    "image_url": "https://scontent.cdninstagram.com/v/t51.71878-15/703181525_1278559471131239_5085010176914990977_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=JZxxxS8QsOUQ7kNvwGrGWiC&_nc_oc=Ado5XzrPuajS_ml9Q3PS05Ehh4i9KMxwyOrOiY7YKQSwiCdoCW33bw742AGiJATkaCA&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=v7vO-sbkl_dUHw2C4RslEA&_nc_ss=7b900&oh=00_Af--I-1OUz5g-fiX94Zho3OltSTs7sxtSGnyJuSU2vIIPA&oe=6A23BD60",
+    "thumbnail_url": "https://scontent.cdninstagram.com/v/t51.71878-15/703181525_1278559471131239_5085010176914990977_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=JZxxxS8QsOUQ7kNvwGrGWiC&_nc_oc=Ado5XzrPuajS_ml9Q3PS05Ehh4i9KMxwyOrOiY7YKQSwiCdoCW33bw742AGiJATkaCA&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=v7vO-sbkl_dUHw2C4RslEA&_nc_ss=7b900&oh=00_Af--I-1OUz5g-fiX94Zho3OltSTs7sxtSGnyJuSU2vIIPA&oe=6A23BD60",
+    "favicon_url": "https://www.instagram.com/favicon.ico",
+    "site_name": "Instagram",
+    "source_platform": "Instagram",
+    "content_type": "video",
+    "author": "Nu al'art",
+    "published_date": null,
+    "duration": "",
+    "language": "CA, EN, ES",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.instagram.com/reel/DYiAJdKM7gA/embed",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {
+        "og:type": "article",
+        "og:site_name": "Instagram",
+        "og:title": "Dual.cat on Instagram",
+        "og:image": "https://scontent.cdninstagram.com/v/t51.71878-15/703181525_1278559471131239_5085010176914990977_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=JZxxxS8QsOUQ7kNvwGrGWiC&_nc_oc=Ado5XzrPuajS_ml9Q3PS05Ehh4i9KMxwyOrOiY7YKQSwiCdoCW33bw742AGiJATkaCA&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=v7vO-sbkl_dUHw2C4RslEA&_nc_ss=7b900&oh=00_Af--I-1OUz5g-fiX94Zho3OltSTs7sxtSGnyJuSU2vIIPA&oe=6A23BD60",
+        "og:url": "https://www.instagram.com/dual_cat_oficial/reel/DYiAJdKM7gA/",
+        "og:description": "0 likes, 0 comments - dual_cat_oficial on May 19, 2026"
+      },
+      "twitter": {
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@instagram",
+        "twitter:maxage": "86400",
+        "twitter:image": "https://scontent.cdninstagram.com/v/t51.71878-15/703181525_1278559471131239_5085010176914990977_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=107&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=JZxxxS8QsOUQ7kNvwGrGWiC&_nc_oc=Ado5XzrPuajS_ml9Q3PS05Ehh4i9KMxwyOrOiY7YKQSwiCdoCW33bw742AGiJATkaCA&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=v7vO-sbkl_dUHw2C4RslEA&_nc_ss=7b900&oh=00_Af--I-1OUz5g-fiX94Zho3OltSTs7sxtSGnyJuSU2vIIPA&oe=6A23BD60",
+        "twitter:title": "Dual.cat (@dual_cat_oficial) • Instagram reel"
+      },
+      "json_ld": [],
+      "selectora_fix": "instagram_reel_embed"
+    },
+    "created_at": "2026-06-01T21:01:38.441Z",
+    "updated_at": "2026-06-07T14:39:02.934Z",
+    "tags": [
+      1,
+      2,
+      3
+    ]
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "La Mecánica Cuántica Explicada: Claves para Entender la IA y el Futuro de la Humanidad #LFDE",
+    "url": "https://youtu.be/eh1hrYQi4FY?si=2VUUOTC3qWwQxpwz",
+    "canonical_url": "https://www.youtube.com/watch?v=eh1hrYQi4FY",
+    "description": "No te quedes atrás: Curso GRATIS de Inteligencia Artificial con Certificado aquí: https://thebigschool.com/sp/curso-de-ia-a-us3/ *PubliEn este episodio de La...",
+    "image_file": "",
+    "image_url": "https://i.ytimg.com/vi/eh1hrYQi4FY/maxresdefault.jpg",
+    "thumbnail_url": "https://i.ytimg.com/vi/eh1hrYQi4FY/maxresdefault.jpg",
+    "favicon_url": "https://www.youtube.com/favicon.ico",
+    "site_name": "YouTube",
+    "source_platform": "YouTube",
+    "content_type": "video",
+    "author": "",
+    "published_date": "2026-03-22T12:00:06Z",
+    "duration": "",
+    "language": "es-ES",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.youtube.com/embed/eh1hrYQi4FY",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {
+        "og:site_name": "YouTube",
+        "og:url": "https://www.youtube.com/watch?v=eh1hrYQi4FY",
+        "og:title": "La Mecánica Cuántica Explicada: Claves para Entender la IA y el Futuro de la Humanidad #LFDE",
+        "og:image": "https://i.ytimg.com/vi/eh1hrYQi4FY/maxresdefault.jpg",
+        "og:image:width": "1280",
+        "og:image:height": "720",
+        "og:description": "No te quedes atrás: Curso GRATIS de Inteligencia Artificial con Certificado aquí: https://thebigschool.com/sp/curso-de-ia-a-us3/ *PubliEn este episodio de La...",
+        "og:type": "video.other",
+        "og:video:url": "https://www.youtube.com/embed/eh1hrYQi4FY",
+        "og:video:secure_url": "https://www.youtube.com/embed/eh1hrYQi4FY",
+        "og:video:type": "text/html",
+        "og:video:width": "1280",
+        "og:video:height": "720",
+        "og:video:tag": "mecánica cuántica"
+      },
+      "twitter": {
+        "twitter:card": "player",
+        "twitter:site": "@youtube",
+        "twitter:url": "https://www.youtube.com/watch?v=eh1hrYQi4FY",
+        "twitter:title": "La Mecánica Cuántica Explicada: Claves para Entender la IA y el Futuro de la Humanidad #LFDE",
+        "twitter:description": "No te quedes atrás: Curso GRATIS de Inteligencia Artificial con Certificado aquí: https://thebigschool.com/sp/curso-de-ia-a-us3/ *PubliEn este episodio de La...",
+        "twitter:image": "https://i.ytimg.com/vi/eh1hrYQi4FY/maxresdefault.jpg",
+        "twitter:app:name:iphone": "YouTube",
+        "twitter:app:id:iphone": "544007664",
+        "twitter:app:name:ipad": "YouTube",
+        "twitter:app:id:ipad": "544007664",
+        "twitter:app:url:iphone": "vnd.youtube://www.youtube.com/watch?si=2VUUOTC3qWwQxpwz&v=eh1hrYQi4FY&feature=youtu.be&feature=applinks",
+        "twitter:app:url:ipad": "vnd.youtube://www.youtube.com/watch?si=2VUUOTC3qWwQxpwz&v=eh1hrYQi4FY&feature=youtu.be&feature=applinks",
+        "twitter:app:name:googleplay": "YouTube",
+        "twitter:app:id:googleplay": "com.google.android.youtube",
+        "twitter:app:url:googleplay": "https://www.youtube.com/watch?v=eh1hrYQi4FY",
+        "twitter:player": "https://www.youtube.com/embed/eh1hrYQi4FY",
+        "twitter:player:width": "1280",
+        "twitter:player:height": "720"
+      },
+      "json_ld": [
+        {
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "@id": "https://www.youtube.com/watch?v=eh1hrYQi4FY",
+          "name": "La Mecánica Cuántica Explicada: Claves para Entender la IA y el Futuro de la Humanidad #LFDE",
+          "thumbnailUrl": "https://i.ytimg.com/vi/eh1hrYQi4FY/maxresdefault.jpg",
+          "uploadDate": "2026-03-22T05:00:06-07:00",
+          "comment": [
+            {
+              "@type": "https://schema.org/Comment",
+              "dateCreated": "2026-03-24T13:33:42-07:00",
+              "text": "Soy una mujer de 78 años y disfruto como una enana con estas entrevistas largas que hacen pensar. Me explotó la cabeza con Constanza y con el experimento de dejar a la IA llegar hasta 1911 y ver si ella solita formula la teoría de la relatividad. Elijo estas charlas más que cualquier otra en cualquier café con gente. Felicitaciones a los dos.",
+              "author": {
+                "@type": "https://schema.org/Person",
+                "name": "@mainabardi",
+                "url": "https://www.youtube.com/@mainabardi",
+                "alternateName": "mainabardi"
+              },
+              "upvoteCount": 132
+            }
+          ]
+        }
+      ]
+    },
+    "created_at": "2026-06-01T21:12:53.084Z",
+    "updated_at": "2026-06-01T21:12:53.084Z",
+    "tags": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "TikTok de @dual.cat3",
+    "url": "https://www.tiktok.com/@dual.cat3/video/7639623555843493142",
+    "canonical_url": "https://www.tiktok.com/@dual.cat3/video/7639623555843493142",
+    "description": "Vídeo de TikTok seleccionat a Selectora.",
+    "image_file": "item_images/4-thumb.png",
+    "image_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-no1a-p-0037-no/o8f1kWKABTBAtFiiEZiKIEARCpA6IwB1rTASEA~tplv-tiktokx-origin.image?dr=10395&x-expires=1781013600&x-signature=AS7i9o9YzWbbGlW7JMhHusnUXIw%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "thumbnail_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-no1a-p-0037-no/o8f1kWKABTBAtFiiEZiKIEARCpA6IwB1rTASEA~tplv-tiktokx-origin.image?dr=10395&x-expires=1781013600&x-signature=AS7i9o9YzWbbGlW7JMhHusnUXIw%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "favicon_url": "https://www.tiktok.com/favicon.ico",
+    "site_name": "TikTok",
+    "source_platform": "TikTok",
+    "content_type": "video",
+    "author": "@dual.cat3",
+    "published_date": null,
+    "duration": "",
+    "language": "en",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.tiktok.com/player/v1/7639623555843493142?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {},
+      "twitter": {},
+      "json_ld": [],
+      "latest_episode": {},
+      "selectora_fix": "tiktok_player_v1",
+      "video_orientation": "vertical_default"
+    },
+    "created_at": "2026-06-01T21:50:39.954Z",
+    "updated_at": "2026-06-07T14:39:03.972Z",
+    "tags": []
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "TikTok horitzontal de @dual.cat3",
+    "url": "https://www.tiktok.com/@dual.cat3/video/7638139327163141398",
+    "canonical_url": "https://www.tiktok.com/@dual.cat3/video/7638139327163141398",
+    "description": "Vídeo horitzontal de TikTok seleccionat a Selectora.",
+    "image_file": "item_images/5-thumb.png",
+    "image_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-no1a-p-0037-no/okHBqFIp8ADpgPAyEKACCQiApkFzVACEAA0ffA~tplv-tiktokx-origin.image?dr=10395&x-expires=1781013600&x-signature=o4fFL92eNxd%2F%2BTr57svxDB6jrTc%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "thumbnail_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-no1a-p-0037-no/okHBqFIp8ADpgPAyEKACCQiApkFzVACEAA0ffA~tplv-tiktokx-origin.image?dr=10395&x-expires=1781013600&x-signature=o4fFL92eNxd%2F%2BTr57svxDB6jrTc%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "favicon_url": "https://www.tiktok.com/favicon.ico",
+    "site_name": "TikTok",
+    "source_platform": "TikTok",
+    "content_type": "video",
+    "author": "@dual.cat3",
+    "published_date": null,
+    "duration": "",
+    "language": "en",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.tiktok.com/player/v1/7638139327163141398?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {},
+      "twitter": {},
+      "json_ld": [],
+      "latest_episode": {},
+      "video_width": 1920,
+      "video_height": 1080,
+      "selectora_fix": "tiktok_horizontal_dimensions"
+    },
+    "created_at": "2026-06-01T22:30:53.725Z",
+    "updated_at": "2026-06-07T14:39:04.940Z",
+    "tags": []
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "El pitjor català es el que no es parla ❤️ #català #aprèncatalà #expat #barcelona ",
+    "url": "https://www.tiktok.com/@mario_laram/video/7628670809086725397?q=apren%20catal%C3%A0&t=1780353922890",
+    "canonical_url": "https://www.tiktok.com/@mario_laram/video/7628670809086725397?q=apren%20catal%C3%A0&t=1780353922890",
+    "description": "",
+    "image_file": "item_images/6-thumb.jpg",
+    "image_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-alisg-p-0037/oMWuIUmH2DA7e8AbAnFoBRpAGEngpCb3QgfY8E~tplv-tiktokx-dmt-logom:tos-alisg-i-0068/o0vA2EQP7EMAjZAtdwAfXV8D85oAGTQIeeIrni.image?dr=10393&x-expires=1780524000&x-signature=zx%2FxVdxBGQYq1T112Tt%2F6vUx3dY%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "thumbnail_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-alisg-p-0037/oMWuIUmH2DA7e8AbAnFoBRpAGEngpCb3QgfY8E~tplv-tiktokx-dmt-logom:tos-alisg-i-0068/o0vA2EQP7EMAjZAtdwAfXV8D85oAGTQIeeIrni.image?dr=10393&x-expires=1780524000&x-signature=zx%2FxVdxBGQYq1T112Tt%2F6vUx3dY%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+    "favicon_url": "https://www.tiktok.com/favicon.ico",
+    "site_name": "TikTok",
+    "source_platform": "TikTok",
+    "content_type": "video",
+    "author": "mario lara",
+    "published_date": null,
+    "duration": "",
+    "language": "en",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.tiktok.com/player/v1/7628670809086725397?controls=1&progress_bar=1&play_button=1&volume_control=1&fullscreen_button=1",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {},
+      "twitter": {},
+      "json_ld": [],
+      "latest_episode": {},
+      "video_width": 576,
+      "video_height": 1024,
+      "oembed": {
+        "version": "1.0",
+        "type": "video",
+        "title": "El pitjor català es el que no es parla ❤️ #català #aprèncatalà #expat #barcelona ",
+        "author_url": "https://www.tiktok.com/@mario_laram",
+        "author_name": "mario lara",
+        "width": "100%",
+        "height": "100%",
+        "html": "<blockquote class=\"tiktok-embed\" cite=\"https://www.tiktok.com/@mario_laram/video/7628670809086725397\" data-video-id=\"7628670809086725397\" data-embed-from=\"oembed\" style=\"max-width:605px; min-width:325px;\"> <section> <a target=\"_blank\" title=\"@mario_laram\" href=\"https://www.tiktok.com/@mario_laram?refer=embed\">@mario_laram</a> <p>El pitjor català es el que no es parla ❤️ <a title=\"català\" target=\"_blank\" href=\"https://www.tiktok.com/tag/catal%C3%A0?refer=embed\">#català</a> <a title=\"aprèncatalà\" target=\"_blank\" href=\"https://www.tiktok.com/tag/apr%C3%A8ncatal%C3%A0?refer=embed\">#aprèncatalà</a> <a title=\"expat\" target=\"_blank\" href=\"https://www.tiktok.com/tag/expat?refer=embed\">#expat</a> <a title=\"barcelona\" target=\"_blank\" href=\"https://www.tiktok.com/tag/barcelona?refer=embed\">#barcelona</a> </p> <a target=\"_blank\" title=\"♬ Els teus ulls - Alfred García\" href=\"https://www.tiktok.com/music/Els-teus-ulls-7283244190493132802?refer=embed\">♬ Els teus ulls - Alfred García</a> </section> </blockquote> <script async src=\"https://www.tiktok.com/embed.js\"></script>",
+        "thumbnail_width": 576,
+        "thumbnail_height": 1024,
+        "thumbnail_url": "https://p16-common-sign.tiktokcdn-eu.com/tos-alisg-p-0037/oMWuIUmH2DA7e8AbAnFoBRpAGEngpCb3QgfY8E~tplv-tiktokx-dmt-logom:tos-alisg-i-0068/o0vA2EQP7EMAjZAtdwAfXV8D85oAGTQIeeIrni.image?dr=10393&x-expires=1780524000&x-signature=zx%2FxVdxBGQYq1T112Tt%2F6vUx3dY%3D&t=4d5b0474&ps=13740610&shp=81f88b70&shcp=43f4a2f9&idc=no1a",
+        "provider_url": "https://www.tiktok.com",
+        "provider_name": "TikTok",
+        "author_unique_id": "mario_laram",
+        "embed_product_id": "7628670809086725397",
+        "embed_type": "video"
+      }
+    },
+    "created_at": "2026-06-01T22:51:48.662Z",
+    "updated_at": "2026-06-07T14:39:05.908Z",
+    "tags": [
+      17,
+      16
+    ]
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "Amelia McDade on Instagram: \"Com es diu ___ en anglès? #english #català #catalunya #idiom #language\"",
+    "url": "https://www.instagram.com/reel/DYH0M3VoqIK/?utm_source=ig_web_copy_link&igsh=NTc4MTIwNjQ2YQ==",
+    "canonical_url": "https://www.instagram.com/reel/DYH0M3VoqIK/",
+    "description": "1,151 likes, 72 comments - languageswithamelia on May 9, 2026: \"Com es diu ___ en anglès? #english #català #catalunya #idiom #language\".",
+    "image_file": "item_images/7-thumb.jpg",
+    "image_url": "https://scontent.cdninstagram.com/v/t51.71878-15/685868035_1662856591527363_9181025916208278790_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DjzV7fFsQb8Q7kNvwF39fxS&_nc_oc=AdpOhAznE7uL8Cca_kiz6m93UjXEUZnRvMt-nXVUILaqVmWb7ZtQB5Um6aaXSSG2FtM&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=QHIitcuULTxulTPyBqSBJw&_nc_ss=7b100&oh=00_Af-Cv7v0AJytPMhw_hdc_8n62e8rLgwpT9CAOFAV76tUCg&oe=6A246510",
+    "thumbnail_url": "https://scontent.cdninstagram.com/v/t51.71878-15/685868035_1662856591527363_9181025916208278790_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DjzV7fFsQb8Q7kNvwF39fxS&_nc_oc=AdpOhAznE7uL8Cca_kiz6m93UjXEUZnRvMt-nXVUILaqVmWb7ZtQB5Um6aaXSSG2FtM&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=QHIitcuULTxulTPyBqSBJw&_nc_ss=7b100&oh=00_Af-Cv7v0AJytPMhw_hdc_8n62e8rLgwpT9CAOFAV76tUCg&oe=6A246510",
+    "favicon_url": "https://www.instagram.com/favicon.ico",
+    "site_name": "Instagram",
+    "source_platform": "Instagram",
+    "content_type": "video",
+    "author": "",
+    "published_date": null,
+    "duration": "",
+    "language": "En, CA",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.instagram.com/reel/DYH0M3VoqIK/embed",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {
+        "og:type": "article",
+        "og:site_name": "Instagram",
+        "og:title": "Amelia McDade on Instagram: \"Com es diu ___ en anglès? #english #català #catalunya #idiom #language\"",
+        "og:image": "https://scontent.cdninstagram.com/v/t51.71878-15/685868035_1662856591527363_9181025916208278790_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DjzV7fFsQb8Q7kNvwF39fxS&_nc_oc=AdpOhAznE7uL8Cca_kiz6m93UjXEUZnRvMt-nXVUILaqVmWb7ZtQB5Um6aaXSSG2FtM&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=QHIitcuULTxulTPyBqSBJw&_nc_ss=7b100&oh=00_Af-Cv7v0AJytPMhw_hdc_8n62e8rLgwpT9CAOFAV76tUCg&oe=6A246510",
+        "og:url": "https://www.instagram.com/languageswithamelia/reel/DYH0M3VoqIK/",
+        "og:description": "1,151 likes, 72 comments - languageswithamelia on May 9, 2026: \"Com es diu ___ en anglès? #english #català #catalunya #idiom #language\". "
+      },
+      "twitter": {
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@instagram",
+        "twitter:maxage": "86400",
+        "twitter:image": "https://scontent.cdninstagram.com/v/t51.71878-15/685868035_1662856591527363_9181025916208278790_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DjzV7fFsQb8Q7kNvwF39fxS&_nc_oc=AdpOhAznE7uL8Cca_kiz6m93UjXEUZnRvMt-nXVUILaqVmWb7ZtQB5Um6aaXSSG2FtM&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=QHIitcuULTxulTPyBqSBJw&_nc_ss=7b100&oh=00_Af-Cv7v0AJytPMhw_hdc_8n62e8rLgwpT9CAOFAV76tUCg&oe=6A246510",
+        "twitter:title": "Amelia McDade (@languageswithamelia) • Instagram reel"
+      },
+      "json_ld": [],
+      "latest_episode": {},
+      "video_width": "",
+      "video_height": ""
+    },
+    "created_at": "2026-06-02T07:53:21.416Z",
+    "updated_at": "2026-06-07T14:39:06.672Z",
+    "tags": [
+      18,
+      17
+    ]
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "Ferran Sedó on Instagram: \"Vosaltres també penseu que el rock està tornant amb força? Aquí van 4 projectes que m’encanten!1. @sandreband 2. @som.minoria 3. @minibus_intergalactic 4. @ruinosas #musicaencatala #rock #punk\"",
+    "url": "https://www.instagram.com/reels/DYph5CdNNnI/",
+    "canonical_url": "https://www.instagram.com/reel/DYph5CdNNnI/",
+    "description": "1,252 likes, 212 comments - ferransedo on May 22, 2026: \"Vosaltres també penseu que el rock està tornant amb força? Aquí van 4 projectes que m’encanten!\r\n1. @sandreband \r\n2. @som.minoria \r\n3. @minibus_intergalactic \r\n4. @ruinosas \r\n\r\n#musicaencatala #rock #punk\".",
+    "image_file": "item_images/8-thumb.jpg",
+    "image_url": "https://scontent.cdninstagram.com/v/t51.82787-15/703861881_18320745559286907_4418720284733056055_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xLBsTtpUF6cQ7kNvwFfitWz&_nc_oc=AdrYyF7v1QYYbOOCu8yho0M6kR6x_ZKrYfSk1KNjtjDuwcor0yLPx4vID2ZNmIy4L5o&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=W3i5OuBKQ9Ui72KgKLAaKA&_nc_ss=7b900&oh=00_Af9TGMAhLu9I-AXuj8hG5i9mCPSgVjZSg_6qyDGwrK5dXg&oe=6A247AB4",
+    "thumbnail_url": "https://scontent.cdninstagram.com/v/t51.82787-15/703861881_18320745559286907_4418720284733056055_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xLBsTtpUF6cQ7kNvwFfitWz&_nc_oc=AdrYyF7v1QYYbOOCu8yho0M6kR6x_ZKrYfSk1KNjtjDuwcor0yLPx4vID2ZNmIy4L5o&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=W3i5OuBKQ9Ui72KgKLAaKA&_nc_ss=7b900&oh=00_Af9TGMAhLu9I-AXuj8hG5i9mCPSgVjZSg_6qyDGwrK5dXg&oe=6A247AB4",
+    "favicon_url": "https://www.instagram.com/favicon.ico",
+    "site_name": "Instagram",
+    "source_platform": "Instagram",
+    "content_type": "video",
+    "author": "",
+    "published_date": null,
+    "duration": "",
+    "language": "Català",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": 30,
+    "expiry_unit": "days",
+    "embed_url": "https://www.instagram.com/reel/DYph5CdNNnI/embed",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {
+        "og:type": "article",
+        "og:site_name": "Instagram",
+        "og:title": "Ferran Sedó on Instagram: \"Vosaltres també penseu que el rock està tornant amb força? Aquí van 4 projectes que m’encanten!\n1. @sandreband \n2. @som.minoria \n3. @minibus_intergalactic \n4. @ruinosas \n\n#musicaencatala #rock #punk\"",
+        "og:image": "https://scontent.cdninstagram.com/v/t51.82787-15/703861881_18320745559286907_4418720284733056055_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xLBsTtpUF6cQ7kNvwFfitWz&_nc_oc=AdrYyF7v1QYYbOOCu8yho0M6kR6x_ZKrYfSk1KNjtjDuwcor0yLPx4vID2ZNmIy4L5o&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=W3i5OuBKQ9Ui72KgKLAaKA&_nc_ss=7b900&oh=00_Af9TGMAhLu9I-AXuj8hG5i9mCPSgVjZSg_6qyDGwrK5dXg&oe=6A247AB4",
+        "og:url": "https://www.instagram.com/ferransedo/reel/DYph5CdNNnI/",
+        "og:description": "1,252 likes, 212 comments - ferransedo on May 22, 2026: \"Vosaltres també penseu que el rock està tornant amb força? Aquí van 4 projectes que m’encanten!\n1. @sandreband \n2. @som.minoria \n3. @minibus_intergalactic \n4. @ruinosas \n\n#musicaencatala #rock #punk\". "
+      },
+      "twitter": {
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@instagram",
+        "twitter:maxage": "86400",
+        "twitter:image": "https://scontent.cdninstagram.com/v/t51.82787-15/703861881_18320745559286907_4418720284733056055_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=100&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xLBsTtpUF6cQ7kNvwFfitWz&_nc_oc=AdrYyF7v1QYYbOOCu8yho0M6kR6x_ZKrYfSk1KNjtjDuwcor0yLPx4vID2ZNmIy4L5o&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=W3i5OuBKQ9Ui72KgKLAaKA&_nc_ss=7b900&oh=00_Af9TGMAhLu9I-AXuj8hG5i9mCPSgVjZSg_6qyDGwrK5dXg&oe=6A247AB4",
+        "twitter:title": "Ferran Sedó (@ferransedo) • Instagram reel"
+      },
+      "json_ld": [],
+      "latest_episode": {},
+      "video_width": "",
+      "video_height": ""
+    },
+    "created_at": "2026-06-02T08:17:41.065Z",
+    "updated_at": "2026-06-07T15:00:15.455Z",
+    "tags": [
+      19,
+      20
+    ]
+  }
+},
+{
+  "model": "core.contentitem",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "jaume-1"
+    ],
+    "channel": 2,
+    "title": "Dual.cat on Instagram: \"You can try audiovook and get access to a free audiobook and discover your library and the player.\"",
+    "url": "https://www.instagram.com/p/DMc6SczOX56/",
+    "canonical_url": "https://www.instagram.com/reel/DMc6SczOX56/",
+    "description": "0 likes, 0 comments - dual_cat_oficial on July 23, 2025: \"You can try audiovook and get access to a free audiobook and discover your library and the player.\".",
+    "image_file": "item_images/9-thumb.jpg",
+    "image_url": "https://scontent.cdninstagram.com/v/t51.82787-15/522005092_17867564049417695_6420007250992117770_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uklZvhNq0T4Q7kNvwEZAtT9&_nc_oc=Ado9PGP71OWJP8HgPOP-8U-ScmU3h7resr-dq1bNLcSnw9PgA5k0zyhu44gglKVdB78&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=Fl0FXH0xrp84UgHZaqFgMQ&_nc_ss=7b500&oh=00_Af935zFSa8fDrL_4263rC6p5k3Y5TJno1Y1L1cttR_fqzw&oe=6A2476E7",
+    "thumbnail_url": "https://scontent.cdninstagram.com/v/t51.82787-15/522005092_17867564049417695_6420007250992117770_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uklZvhNq0T4Q7kNvwEZAtT9&_nc_oc=Ado9PGP71OWJP8HgPOP-8U-ScmU3h7resr-dq1bNLcSnw9PgA5k0zyhu44gglKVdB78&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=Fl0FXH0xrp84UgHZaqFgMQ&_nc_ss=7b500&oh=00_Af935zFSa8fDrL_4263rC6p5k3Y5TJno1Y1L1cttR_fqzw&oe=6A2476E7",
+    "favicon_url": "https://www.instagram.com/favicon.ico",
+    "site_name": "Instagram",
+    "source_platform": "Instagram",
+    "content_type": "video",
+    "author": "",
+    "published_date": null,
+    "duration": "",
+    "language": "en",
+    "personal_comment": "",
+    "priority": "normal",
+    "internal_context": "",
+    "expiry_amount": null,
+    "expiry_unit": "",
+    "embed_url": "https://www.instagram.com/reel/DMc6SczOX56/embed",
+    "visibility": "public",
+    "metadata_json": {
+      "open_graph": {
+        "og:type": "article",
+        "og:site_name": "Instagram",
+        "og:title": "Dual.cat on Instagram: \"You can try audiovook and get access to a free audiobook and discover your library and the player.\"",
+        "og:image": "https://scontent.cdninstagram.com/v/t51.82787-15/522005092_17867564049417695_6420007250992117770_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uklZvhNq0T4Q7kNvwEZAtT9&_nc_oc=Ado9PGP71OWJP8HgPOP-8U-ScmU3h7resr-dq1bNLcSnw9PgA5k0zyhu44gglKVdB78&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=Fl0FXH0xrp84UgHZaqFgMQ&_nc_ss=7b500&oh=00_Af935zFSa8fDrL_4263rC6p5k3Y5TJno1Y1L1cttR_fqzw&oe=6A2476E7",
+        "og:url": "https://www.instagram.com/dual_cat_oficial/reel/DMc6SczOX56/",
+        "og:description": "0 likes, 0 comments - dual_cat_oficial on July 23, 2025: \"You can try audiovook and get access to a free audiobook and discover your library and the player.\". "
+      },
+      "twitter": {
+        "twitter:card": "summary_large_image",
+        "twitter:site": "@instagram",
+        "twitter:maxage": "86400",
+        "twitter:image": "https://scontent.cdninstagram.com/v/t51.82787-15/522005092_17867564049417695_6420007250992117770_n.jpg?stp=cmp1_dst-jpg_e35_s640x640_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uklZvhNq0T4Q7kNvwEZAtT9&_nc_oc=Ado9PGP71OWJP8HgPOP-8U-ScmU3h7resr-dq1bNLcSnw9PgA5k0zyhu44gglKVdB78&_nc_zt=23&_nc_ht=scontent.cdninstagram.com&_nc_gid=Fl0FXH0xrp84UgHZaqFgMQ&_nc_ss=7b500&oh=00_Af935zFSa8fDrL_4263rC6p5k3Y5TJno1Y1L1cttR_fqzw&oe=6A2476E7",
+        "twitter:title": "Dual.cat (@dual_cat_oficial) • Instagram reel"
+      },
+      "json_ld": [],
+      "latest_episode": {},
+      "video_width": "",
+      "video_height": "",
+      "selectora_fix": "instagram_iframe_embed"
+    },
+    "created_at": "2026-06-02T10:59:59.586Z",
+    "updated_at": "2026-06-07T14:39:08.553Z",
+    "tags": []
+  }
+},
+{
+  "model": "core.contentitemvisit",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "item": 9,
+    "visit_count": 1,
+    "first_visited_at": "2026-06-04T20:48:06.595Z",
+    "last_visited_at": "2026-06-04T20:48:06.599Z"
+  }
+},
+{
+  "model": "core.contentitemvisit",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "item": 8,
+    "visit_count": 12,
+    "first_visited_at": "2026-06-04T20:48:15.131Z",
+    "last_visited_at": "2026-06-07T13:41:07.797Z"
+  }
+},
+{
+  "model": "core.contentitemvisit",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "item": 6,
+    "visit_count": 2,
+    "first_visited_at": "2026-06-04T20:58:30.913Z",
+    "last_visited_at": "2026-06-07T15:39:57.577Z"
+  }
+},
+{
+  "model": "core.contentitemvisit",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "item": 3,
+    "visit_count": 1,
+    "first_visited_at": "2026-06-04T20:59:04.759Z",
+    "last_visited_at": "2026-06-04T20:59:04.765Z"
+  }
+},
+{
+  "model": "core.collection",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "jaume"
+    ],
+    "channel": 1,
+    "title": "Seleccio exemple",
+    "description": "Quatre peces publiques per provar el Share Module.",
+    "visibility": "public",
+    "created_at": "2026-06-04T20:10:00.626Z",
+    "updated_at": "2026-06-04T20:10:00.632Z",
+    "items": [
+      8,
+      7,
+      6,
+      5
+    ]
+  }
+}
+]
