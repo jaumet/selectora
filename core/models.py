@@ -19,7 +19,7 @@ class Channel(models.Model):
     description = models.TextField(blank=True)
     cover_image = models.FileField(upload_to="channel_covers/", blank=True)
     cover_image_url = models.URLField(max_length=500, blank=True)
-    is_public = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)
     telegram_link_code = models.CharField(
         max_length=32,
         db_index=True,
@@ -30,6 +30,10 @@ class Channel(models.Model):
 
     class Meta:
         ordering = ["owner__username"]
+
+    def save(self, *args, **kwargs):
+        self.is_public = True
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

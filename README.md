@@ -14,7 +14,8 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 - Col·leccions públiques i privades amb pàgina pròpia, collage de portada i suport per compartir.
 - Share module amb URL públiques per item, col·lecció, canal i la pròpia Selectora, botó de compartir, `copy link`, `copy text` i Web Share API quan existeix.
 - Metadades Open Graph i Twitter Card per compartir Selectora amb títol, descripció i logo PNG 1200x630 compatible amb WhatsApp.
-- Visibilitat bàsica `public` / `private` per items, col·leccions i canals.
+- Canals públics per defecte i visibilitat `public` / `private` per items i col·leccions.
+- Formulari d'item amb control de visibilitat destacat: verd per públic i vermell per privat, amb explicació de qui ho podrà veure.
 - Seguiment d’items visitats per usuari, amb marca visual a les cards, secció `Has estat veient` i secció d’items pendents de veure quan hi ha login.
 - Fitxa d’item amb vista pública, enllaç a l’origen, accions de compartir i interruptor per marcar visitat o pendent.
 - Edició d’items amb eliminació segura: cal obrir el panell d’alerta, marcar confirmació i tornar a clicar `Elimina`.
@@ -84,12 +85,12 @@ Despres obre `http://127.0.0.1:8000/`.
 - Service worker: `/sw.js`
 - Share target PWA: `/share/`
 - Webhook de Telegram: `/integrations/telegram/webhook/`
-- Canal public, si el canal esta marcat com a public: `/@<username>/`
+- Canal public de l'usuari: `/@<username>/`
 - Admin Django: `/entra-per-darrere/`
 
 Els usuaris es creen ara mateix amb `createsuperuser` o des de l'admin. Quan un usuari entra al dashboard o afegeix contingut, Selectora crea automaticament el seu canal personal si encara no existeix.
 
-Per fer visible un canal publicament, marca `is_public` al model `Channel` des de l'admin.
+Els canals són públics per defecte. La privacitat es controla a cada item o col·lecció: si un item és privat, no es mostra a cap altre usuari encara que el canal sigui públic.
 
 ## Telegram
 

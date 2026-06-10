@@ -61,13 +61,12 @@ class MagicLoginRequestForm(forms.Form):
 class ChannelForm(forms.ModelForm):
     class Meta:
         model = Channel
-        fields = ["name", "description", "cover_image", "cover_image_url", "is_public"]
+        fields = ["name", "description", "cover_image", "cover_image_url"]
         labels = {
             "name": "Nom del canal",
             "description": "Descripcio",
             "cover_image": "Imatge de portada",
             "cover_image_url": "URL externa de portada",
-            "is_public": "Fer public aquest canal",
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
@@ -175,6 +174,11 @@ class ContentItemForm(forms.ModelForm):
         self.fields["image_url"].required = False
         self.fields["source_platform"].required = False
         self.fields["visibility"].required = False
+        self.fields["visibility"].label = "Visibilitat"
+        self.fields["visibility"].choices = [
+            (ContentItem.Visibility.PUBLIC, "Públic"),
+            (ContentItem.Visibility.PRIVATE, "Privat"),
+        ]
         self.fields["visibility"].initial = ContentItem.Visibility.PUBLIC
         self.fields["author"].required = False
         self.fields["language"].required = False

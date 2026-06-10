@@ -5,9 +5,10 @@ from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLog
 
 @admin.register(Channel)
 class ChannelAdmin(admin.ModelAdmin):
-    list_display = ("name", "owner", "is_public", "created_at", "updated_at")
-    list_filter = ("is_public", "created_at")
+    list_display = ("name", "owner", "created_at", "updated_at")
+    list_filter = ("created_at",)
     search_fields = ("name", "description", "owner__username", "owner__email")
+    exclude = ("is_public",)
 
 
 @admin.register(Tag)

@@ -231,6 +231,34 @@
     }
   }
 
+  function initVisibilityControls() {
+    document.querySelectorAll("[data-visibility-control]").forEach(function (control) {
+      const select = control.querySelector("select");
+      const state = control.querySelector("[data-visibility-state]");
+      const help = control.querySelector("[data-visibility-help]");
+      if (!select) {
+        return;
+      }
+
+      function syncVisibility() {
+        const isPrivate = select.value === "private";
+        control.classList.toggle("is-private", isPrivate);
+        control.classList.toggle("is-public", !isPrivate);
+        if (state) {
+          state.textContent = isPrivate ? "Privat" : "Públic";
+        }
+        if (help) {
+          help.textContent = isPrivate
+            ? "Aquest ítem no es mostrarà a cap altre usuari; només el veus tu, creador del canal."
+            : "Aquest ítem es mostrarà als altres usuaris dins del teu canal públic.";
+        }
+      }
+
+      syncVisibility();
+      select.addEventListener("change", syncVisibility);
+    });
+  }
+
   function initHomeSectionSorting() {
     const container = document.querySelector("[data-home-sections]");
     if (!container) {
@@ -516,6 +544,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     initHomeIntro();
     initDeletePanel();
+    initVisibilityControls();
     initHomeSectionSorting();
 
     document.querySelectorAll(".media-rail-shell").forEach(function (shell) {

@@ -1,0 +1,223 @@
+# HOW TO - Telegram i Selectora
+
+Aquest document explica com configurar i usar el bot de Telegram de Selectora per publicar URLs al canal personal.
+
+## Bot actual
+
+El bot actiu és:
+
+```text
+@selectoracc_bot
+```
+
+> El bot anterior va ser revocat. No reutilitzis tokens antics.
+
+## 1. Crear o revisar el bot a Telegram
+
+1. Obre Telegram.
+2. Ves a:
+
+```text
+@BotFather
+```
+
+3. Si cal crear un bot nou, envia:
+
+```text
+/newbot
+```
+
+4. Nom visible recomanat:
+
+```text
+Selectora
+```
+
+5. Username actual:
+
+```text
+selectoracc_bot
+```
+
+6. Desa el token nou que dona BotFather.
+
+## 2. Configurar variables al servidor
+
+Al servidor de producció, defineix:
+
+```bash
+export TELEGRAM_BOT_TOKEN='TOKEN_NOU_DEL_BOT'
+export TELEGRAM_WEBHOOK_SECRET='SECRET_LLARG_I_DIFICIL'
+```
+
+Important:
+
+- Aquests `export` només duren en la sessió actual.
+- També cal posar aquestes variables a l'entorn real del servei Django/Gunicorn.
+- Després cal reiniciar el servei.
+
+## 3. Registrar el webhook
+
+Si el domini és `selectora.cc`:
+
+```bash
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=https://selectora.cc/integrations/telegram/webhook/" \
+  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+```
+
+## 4. Comprovar el webhook
+
+Executa:
+
+```bash
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
+```
+
+Ha de sortir:
+
+- `"ok": true`
+- URL del webhook:
+
+```text
+https://selectora.cc/integrations/telegram/webhook/
+```
+
+## 5. Vincular Telegram amb el teu canal Selectora
+
+1. Entra a Selectora amb el teu usuari.
+2. Ves a:
+
+```text
+/dashboard/channel/
+```
+
+3. Copia el codi que surt a la secció Telegram.
+
+Exemple:
+
+```text
+/connect CODI
+```
+
+4. Obre un xat directe amb:
+
+```text
+@selectoracc_bot
+```
+
+5. Envia:
+
+```text
+/connect CODI
+```
+
+6. El bot ha de respondre que Telegram ha quedat vinculat.
+
+## 6. Publicar URLs des del xat directe
+
+1. Obre el xat directe amb:
+
+```text
+@selectoracc_bot
+```
+
+2. Envia o comparteix una URL.
+3. Selectora crearà un item al canal vinculat.
+
+## 7. Usar el bot dins un grup
+
+Per defecte, Telegram pot tenir el bot en **privacy mode**.
+
+Això vol dir:
+
+- En xat directe, el bot rep tots els missatges.
+- En grup, el bot pot no rebre URLs normals.
+
+### Opció A: mencionar el bot
+
+Envia el missatge així:
+
+```text
+@selectoracc_bot https://exemple.com/article
+```
+
+### Opció B: desactivar privacy mode
+
+1. Obre:
+
+```text
+@BotFather
+```
+
+2. Envia:
+
+```text
+/setprivacy
+```
+
+3. Tria:
+
+```text
+@selectoracc_bot
+```
+
+4. Selecciona:
+
+```text
+Disable
+```
+
+Després el bot podrà llegir missatges normals del grup.
+
+## 8. Com funciona el grup amb el codi actual
+
+El grup **no és un canal compartit independent**.
+
+El comportament actual és:
+
+1. El bot mira quin usuari Telegram envia la URL.
+2. Selectora comprova si aquest usuari Telegram està vinculat.
+3. Si està vinculat, publica la URL al canal Selectora d'aquell usuari.
+4. Si no està vinculat, no publica.
+
+Per tant:
+
+- Si envies tu una URL al grup i el teu Telegram està vinculat, pot publicar.
+- Si l'envia una altra persona, aquella persona també ha de fer `/connect CODI`.
+
+## 9. Errors habituals
+
+### Error: `Bad Request: bad webhook: Failed to resolve host`
+
+Causa probable:
+
+- Has deixat un placeholder tipus `EL_TEU_DOMINI`.
+
+Solució:
+
+```text
+https://selectora.cc/integrations/telegram/webhook/
+```
+
+### Error: el bot no publica des d'un grup
+
+Causes probables:
+
+- Privacy mode activat.
+- No has mencionat `@selectoracc_bot`.
+- L'usuari que envia la URL no està vinculat amb `/connect CODI`.
+- El webhook no està registrat amb el token nou.
+
+## 10. Seguretat
+
+- No enganxis el token del bot en xats públics.
+- Si el token s'ha compartit, revoca'l a BotFather.
+- Després de revocar-lo, actualitza `TELEGRAM_BOT_TOKEN` al servidor.
+- Torna a registrar el webhook amb el token nou.
+
+## Resum ràpid
+
+```text
+BotFather -> token -> variables d'entorn -> webhook -> /connect CODI -> enviar URLs
+```

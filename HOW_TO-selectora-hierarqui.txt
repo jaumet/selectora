@@ -1,0 +1,112 @@
+# HOW TO - Jerarquia de Selectora
+
+Aquest document resumeix com s'organitzen els **usuaris**, **canals**, **col.leccions** i **items** dins de Selectora.
+
+## Esquema general
+
+```text
+Selectora
+└── Usuaris
+    └── Usuari
+        ├── Canal personal
+        │   ├── És públic sempre
+        │   ├── Té URL pública: /@usuari/
+        │   ├── Té portada, nom i descripció
+        │   │
+        │   ├── Items
+        │   │   ├── Ítem públic
+        │   │   │   ├── Es veu al canal públic
+        │   │   │   ├── Pot sortir a portada/explorar
+        │   │   │   └── Es pot compartir
+        │   │   │
+        │   │   └── Ítem privat
+        │   │       ├── Només el veu el creador
+        │   │       ├── No surt al canal públic
+        │   │       ├── No surt a portada/explorar
+        │   │       └── No és visible per altres usuaris
+        │   │
+        │   └── Col.leccions
+        │       ├── Col.lecció pública
+        │       │   ├── Es veu al canal públic
+        │       │   ├── Té pàgina compartible
+        │       │   └── Pot contenir items públics
+        │       │
+        │       └── Col.lecció privada
+        │           ├── Només la veu el creador
+        │           └── No surt al canal públic
+        │
+        ├── Dashboard privat
+        │   ├── Veu tots els seus items
+        │   ├── Veu items públics i privats
+        │   ├── Edita items
+        │   ├── Elimina items
+        │   └── Configura el canal
+        │
+        ├── Historial personal
+        │   ├── Items visitats
+        │   └── Secció "Has estat veient"
+        │
+        └── Integracions
+            └── Telegram
+                ├── Usuari vincula Telegram amb el canal
+                └── Enviar URL al bot crea item al canal
+```
+
+## Regla principal de visibilitat
+
+| Element | Visibilitat | Qui ho pot veure |
+| --- | --- | --- |
+| Canal | Sempre públic | Tothom |
+| Ítem públic | Públic | Tothom |
+| Ítem privat | Privat | Només el creador |
+| Col.lecció pública | Pública | Tothom |
+| Col.lecció privada | Privada | Només el creador |
+
+## Resum pràctic
+
+### Canal
+
+- Cada usuari té un **canal personal**.
+- El canal és **sempre públic**.
+- La URL pública del canal és:
+
+```text
+/@usuari/
+```
+
+### Items
+
+- Els items són els continguts concrets guardats per l'usuari.
+- Poden ser **públics** o **privats**.
+- Si un item és públic, pot aparèixer al canal, a portada, a explorar i es pot compartir.
+- Si un item és privat, només el veu el creador.
+
+### Col.leccions
+
+- Les col.leccions agrupen items.
+- Poden ser **públiques** o **privades**.
+- Una col.lecció privada no surt al canal públic.
+
+### Dashboard privat
+
+El dashboard és l'espai de gestió de l'usuari.
+
+Des del dashboard, l'usuari pot:
+
+- Veure tots els seus items.
+- Editar items.
+- Eliminar items.
+- Configurar el canal.
+- Veure historial i items visitats.
+
+### Telegram
+
+Quan Telegram està vinculat:
+
+- L'usuari envia una URL al bot.
+- Selectora crea un item al canal d'aquell usuari.
+- La visibilitat de l'item es gestiona dins de Selectora.
+
+## Frase curta
+
+> El canal és públic; la privacitat es decideix a cada item o col.lecció.

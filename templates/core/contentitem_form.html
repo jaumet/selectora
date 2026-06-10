@@ -18,11 +18,28 @@
       {{ form.url.errors }}
       {% if form.url.help_text %}<span class="helptext">{{ form.url.help_text }}</span>{% endif %}
     </p>
-    <p>
-      <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
-      {{ form.title }}
-      {{ form.title.errors }}
-    </p>
+    <div class="item-title-visibility-row">
+      <p class="item-title-field">
+        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </p>
+      <div class="visibility-control{% if form.visibility.value == 'private' %} is-private{% else %} is-public{% endif %}" data-visibility-control>
+        <label for="{{ form.visibility.id_for_label }}">{{ form.visibility.label }}</label>
+        <div class="visibility-control-grid">
+          {{ form.visibility }}
+          <strong class="visibility-state" data-visibility-state>{% if form.visibility.value == 'private' %}Privat{% else %}Públic{% endif %}</strong>
+        </div>
+        <p class="visibility-help" data-visibility-help>
+          {% if form.visibility.value == 'private' %}
+            Aquest ítem no es mostrarà a cap altre usuari; només el veus tu, creador del canal.
+          {% else %}
+            Aquest ítem es mostrarà als altres usuaris dins del teu canal públic.
+          {% endif %}
+        </p>
+        {{ form.visibility.errors }}
+      </div>
+    </div>
     <p>
       <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
       {{ form.description }}
@@ -42,11 +59,6 @@
       <label for="{{ form.content_type.id_for_label }}">{{ form.content_type.label }}</label>
       {{ form.content_type }}
       {{ form.content_type.errors }}
-    </p>
-    <p>
-      <label for="{{ form.visibility.id_for_label }}">{{ form.visibility.label }}</label>
-      {{ form.visibility }}
-      {{ form.visibility.errors }}
     </p>
     <p>
       <label for="{{ form.author.id_for_label }}">{{ form.author.label }}</label>

@@ -561,6 +561,18 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Número")
         self.assertContains(response, "Unitat")
 
+    def test_contentitem_form_highlights_visibility_next_to_title(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="item-title-visibility-row"')
+        self.assertContains(response, 'data-visibility-control')
+        self.assertContains(response, "Visibilitat")
+        self.assertContains(response, "Públic")
+        self.assertContains(response, "Aquest ítem es mostrarà als altres usuaris dins del teu canal públic.")
+
     def test_pwa_manifest_exposes_share_target(self):
         response = self.client.get(reverse("pwa_manifest"))
 
@@ -676,8 +688,21 @@ class CoreViewsTests(TestCase):
         self.assertEqual(second_response.status_code, 302)
         self.assertEqual(second_response.url, reverse("login"))
 
-    def test_user_can_make_channel_public_from_settings(self):
+    def test_channels_are_public_by_default_and_settings_do_not_expose_visibility(self):
+        self.assertTrue(self.channel.is_public)
+        forced_private_channel = Channel.objects.create(
+            owner=get_user_model().objects.create_user(username="anna"),
+            name="Canal forcat privat",
+            is_public=False,
+        )
+        self.assertTrue(forced_private_channel.is_public)
         self.client.force_login(self.user)
+
+        response = self.client.get(reverse("channel_update"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "is_public")
+        self.assertContains(response, "El teu canal és públic")
 
         response = self.client.post(
             reverse("channel_update"),
@@ -685,7 +710,6 @@ class CoreViewsTests(TestCase):
                 "name": "Canal public",
                 "description": "Ja es pot veure.",
                 "cover_image_url": "",
-                "is_public": "on",
             },
         )
 
@@ -977,6 +1001,7 @@ class CoreViewsTests(TestCase):
             channel=self.channel,
             title="Privat",
             url="https://example.com/private",
+            visibility=ContentItem.Visibility.PRIVATE,
         )
 
         response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))

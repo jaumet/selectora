@@ -1,87 +1,144 @@
-HOW TO SET RESEND FOR SELECTORA MAGIC LINKS
+# HOW TO - Configurar Resend per als Magic Links de Selectora
 
-1. Verify the sending domain in Resend
+Aquest document explica com configurar **Resend SMTP** perquè Selectora pugui enviar els emails de login amb **magic link**.
 
-In Resend, add and verify the domain you want to send from.
+## Objectiu
 
-Example:
+Quan un usuari entra el seu email al formulari de login:
 
-  selectora.cc
+1. Selectora crea un magic link.
+2. Django envia l'email via Resend SMTP.
+3. L'usuari clica l'enllaç.
+4. L'usuari queda autenticat.
 
-Resend will show DNS records that must be added to the domain DNS.
-Wait until Resend marks the domain as verified.
+## 1. Verificar el domini a Resend
 
-2. Create a Resend API key
+A Resend, afegeix i verifica el domini des del qual vols enviar emails.
 
-In Resend, create an API key for sending emails.
+Exemple:
 
-It will look like:
+```text
+selectora.cc
+```
 
-  re_xxxxxxxxxxxxxxxxxxxxxxxxx
+Resend mostrarà registres DNS que cal afegir al DNS del domini.
 
-Do not commit the real key to git.
+Espera fins que Resend indiqui que el domini està verificat.
 
-3. Set these environment variables on the production server
+## 2. Crear una API key de Resend
 
-Use an email address from the verified domain.
+A Resend, crea una API key per enviar emails.
 
-Example:
+Tindrà un format semblant a aquest:
 
-  EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-  EMAIL_HOST=smtp.resend.com
-  EMAIL_PORT=587
-  EMAIL_HOST_USER=resend
-  EMAIL_HOST_PASSWORD=re_xxxxxxxxxxxxxxxxxxxxxxxxx
-  EMAIL_USE_TLS=true
-  EMAIL_USE_SSL=false
-  EMAIL_TIMEOUT=10
-  DEFAULT_FROM_EMAIL=Selectora <noreply@selectora.cc>
+```text
+re_xxxxxxxxxxxxxxxxxxxxxxxxx
+```
 
-4. Restart the Django app
+> No facis commit de la clau real al repositori.
 
-After changing environment variables, restart the application process.
+## 3. Configurar variables d'entorn en producció
 
-Example, depending on your server:
+Al servidor de producció, defineix aquestes variables:
 
-  systemctl restart selectora
+```bash
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.resend.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=resend
+EMAIL_HOST_PASSWORD=re_xxxxxxxxxxxxxxxxxxxxxxxxx
+EMAIL_USE_TLS=true
+EMAIL_USE_SSL=false
+EMAIL_TIMEOUT=10
+DEFAULT_FROM_EMAIL=Selectora <noreply@selectora.cc>
+```
 
-or restart the container/process manager that runs Django.
+Notes importants:
 
-5. Test from Django shell
+- `EMAIL_HOST_USER` ha de ser sempre `resend`.
+- `EMAIL_HOST_PASSWORD` és la API key de Resend.
+- `DEFAULT_FROM_EMAIL` ha d'usar un domini verificat a Resend.
 
-Run this on the production server with the production settings loaded:
+## 4. Reiniciar l'aplicació Django
 
-  .venv/bin/python manage.py shell
+Després de canviar variables d'entorn, reinicia el procés que executa Django.
 
-Then:
+Exemple amb systemd:
 
-  from django.core.mail import send_mail
-  send_mail(
-      "Selectora email test",
-      "If this arrives, Resend SMTP is configured.",
-      None,
-      ["your-email@example.com"],
-      fail_silently=False,
-  )
+```bash
+systemctl restart selectora
+```
 
-If SMTP fails, Django will raise an exception because fail_silently=False.
+O reinicia el contenidor/process manager que estigui executant Django.
 
-6. Test the real magic link flow
+## 5. Provar l'enviament des de Django shell
 
-Open Selectora, go to login, enter an email address, and submit.
+Al servidor de producció, amb l'entorn carregat, obre el shell:
 
-Expected result:
+```bash
+.venv/bin/python manage.py shell
+```
 
-  - The page redirects to the check-email screen.
-  - The recipient receives the magic link email.
-  - Clicking the magic link logs the user in.
+Després executa:
 
-Notes
+```python
+from django.core.mail import send_mail
 
-- Resend SMTP host: smtp.resend.com
-- SMTP username: resend
-- SMTP password: the Resend API key
-- Port 587 uses STARTTLS, so EMAIL_USE_TLS=true and EMAIL_USE_SSL=false.
-- For port 465, use EMAIL_USE_SSL=true and EMAIL_USE_TLS=false.
-- DEFAULT_FROM_EMAIL must use a domain verified in Resend.
-- Django already sends magic links with fail_silently=False, so failed SMTP delivery attempts are visible in logs.
+send_mail(
+    "Selectora email test",
+    "If this arrives, Resend SMTP is configured.",
+    None,
+    ["your-email@example.com"],
+    fail_silently=False,
+)
+```
+
+Si SMTP falla, Django mostrarà una excepció perquè `fail_silently=False`.
+
+## 6. Provar el flux real de magic link
+
+1. Obre Selectora.
+2. Ves al login.
+3. Escriu un email.
+4. Resol el captcha.
+5. Envia el formulari.
+
+Resultat esperat:
+
+- La pàgina redirigeix a la pantalla de revisar l'email.
+- El destinatari rep el magic link.
+- Clicar el magic link inicia sessió.
+
+## Referència ràpida
+
+| Opció | Valor |
+| --- | --- |
+| SMTP host | `smtp.resend.com` |
+| SMTP username | `resend` |
+| SMTP password | API key de Resend |
+| Port STARTTLS | `587` |
+| Port SSL | `465` |
+| From email | Domini verificat a Resend |
+
+## Configuració TLS / SSL
+
+Per port `587`:
+
+```bash
+EMAIL_USE_TLS=true
+EMAIL_USE_SSL=false
+```
+
+Per port `465`:
+
+```bash
+EMAIL_USE_TLS=false
+EMAIL_USE_SSL=true
+```
+
+## Notes de diagnòstic
+
+- Si no arriben emails, revisa els logs de Django.
+- Si el domini no està verificat, Resend pot rebutjar l'enviament.
+- Si `DEFAULT_FROM_EMAIL` no usa el domini verificat, l'enviament pot fallar.
+- Django ja envia magic links amb `fail_silently=False`, per tant els errors SMTP han de quedar visibles als logs.

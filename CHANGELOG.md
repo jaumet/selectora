@@ -20,14 +20,18 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
 - Honeypot anti-spam ocult al formulari d'entrada/registre.
 - Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
+- Documents `HOW_TO-selectora-hierarqui.txt`, `HOW_TO-set-resend.txt` i `HOW_TO_Telegram.txt` reformatejats amb Markdown ric.
 - Ruta del Django admin canviada de `/admin/` a `/entra-per-darrere/`.
 - Fallback d'embed de YouTube ampliat per reconèixer URLs `/live/`, `/embed/`, `/v/` i `youtube-nocookie.com`, útil quan els items arriben des de Telegram i YouTube no retorna metadades completes.
 - Els items existents sense `embed_url` es refresquen quan es torna a afegir la mateixa URL, evitant que un YouTube creat prèviament des de Telegram quedi sense reproductor incrustat.
 - El fallback de YouTube ara també s'aplica quan YouTube retorna HTML sense metadades útils o una pàgina intermèdia, usant sempre la URL original enviada.
 - `og:image` i `twitter:image` passen d'un SVG a `media/logos/selectora-og-horizontal.png` en format PNG 1200x630 per millorar la previsualització a WhatsApp.
+- Migració perquè tots els canals existents passin a públics i els canals nous neixin públics per defecte.
 
 ### Canviat
 
+- El formulari de canal ja no exposa el control `is_public`; la visibilitat del contingut es decideix a cada item o col·lecció.
+- El formulari d'item mostra la visibilitat al costat del títol amb estat visual verd `Públic` o vermell `Privat` i text explicatiu.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
 - La navegació de compartir tanca el panell després de copiar enllaç o text.
 - El formulari d'edició usa `Desa` i `Cancel·la` i afegeix `Elimina` només quan s'edita un item existent.
@@ -38,10 +42,12 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 
 - Nova ruta `POST /items/<id>/delete/` per eliminar items propis.
 - Nova helper de queryset `with_viewer_visit_state` per anotar items visitats sense consultes per card.
+- El model `Channel` força `is_public=True` en desar i l'admin ja no exposa aquest camp.
 - El service worker es serveix amb capçalera `Service-Worker-Allowed: /`.
 - S'han afegit proves per PWA, menú d'usuari mòbil, reordenació de seccions, marca de visitat i eliminació d'items.
 - S'han afegit proves per validar captcha correcte, captcha incorrecte i honeypot omplert.
+- S'han afegit proves per validar canals públics per defecte i el nou control visual de visibilitat dels items.
 
 ### Verificació
 
-- `python manage.py test`: 58 tests OK.
+- `python manage.py test`: 66 tests OK.
