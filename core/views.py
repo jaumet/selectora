@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -17,7 +18,7 @@ from django.conf import settings
 from .auth import consume_magic_token, send_magic_login_email
 from .content_services import create_content_item_from_url, get_or_create_channel
 from .forms import ChannelForm, ContentItemForm, MagicLoginRequestForm
-from .models import Channel, Collection, ContentItem, ContentItemVisit, Tag
+from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, Tag
 from .telegram import process_telegram_update
 
 
@@ -61,13 +62,13 @@ class HomeView(TemplateView):
             visited_public_items = list(
                 public_items.filter(visits__user=self.request.user)
                 .select_related("channel", "user")
-                .prefetch_related("tags")
+                .prefetch_related("tags", "ratings")
                 .order_by("-visits__last_visited_at")[:12]
             )
             pending_public_items = list(
                 public_items.exclude(visits__user=self.request.user)
                 .select_related("channel", "user")
-                .prefetch_related("tags")
+                .prefetch_related("tags", "ratings")
                 .order_by("-created_at")[:12]
             )
         context["visited_public_items"] = visited_public_items
@@ -75,25 +76,25 @@ class HomeView(TemplateView):
         recent_public_items = list(
             public_items
             .select_related("channel", "user")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "ratings")
             .order_by("-created_at")[:10]
         )
         video_public_items = list(
             public_items.filter(content_type=ContentItem.ContentType.VIDEO)
             .select_related("channel", "user")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "ratings")
             .order_by("-created_at")[:12]
         )
         podcast_public_items = list(
             public_items.filter(content_type=ContentItem.ContentType.PODCAST)
             .select_related("channel", "user")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "ratings")
             .order_by("-created_at")[:12]
         )
         article_public_items = list(
             public_items.filter(content_type=ContentItem.ContentType.ARTICLE)
             .select_related("channel", "user")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "ratings")
             .order_by("-created_at")[:12]
         )
         context["home_sections"] = ordered_sections(
@@ -271,13 +272,26 @@ def filtered_items(queryset, params):
 
 
 def public_items_queryset():
-    return ContentItem.objects.filter(
+    return with_item_metrics(ContentItem.objects.filter(
         channel__is_public=True,
         visibility=ContentItem.Visibility.PUBLIC,
+    ))
+
+
+def with_item_metrics(queryset):
+    return queryset.annotate(
+        view_count=Count("view_events", distinct=True),
+        rating_count=Count("ratings", distinct=True),
+        rating_passo_count=Count("ratings", filter=Q(ratings__main_value=ContentItemRating.MainValue.PASSO), distinct=True),
+        rating_curios_count=Count("ratings", filter=Q(ratings__main_value=ContentItemRating.MainValue.CURIOS), distinct=True),
+        rating_val_la_pena_count=Count("ratings", filter=Q(ratings__main_value=ContentItemRating.MainValue.VAL_LA_PENA), distinct=True),
+        rating_recomanaria_count=Count("ratings", filter=Q(ratings__main_value=ContentItemRating.MainValue.RECOMANARIA), distinct=True),
+        rating_must_count=Count("ratings", filter=Q(ratings__main_value=ContentItemRating.MainValue.MUST), distinct=True),
     )
 
 
 def with_viewer_visit_state(queryset, user):
+    queryset = with_item_metrics(queryset)
     if not user.is_authenticated:
         return queryset
     return queryset.annotate(
@@ -297,7 +311,7 @@ def public_collections_queryset():
 def public_collection_items_prefetch():
     return Prefetch(
         "items",
-        queryset=public_items_queryset().select_related("channel", "user").order_by("-created_at"),
+        queryset=public_items_queryset().select_related("channel", "user").prefetch_related("ratings").order_by("-created_at"),
         to_attr="public_preview_items",
     )
 
@@ -335,11 +349,43 @@ def share_context(title, url, text):
 
 
 def mark_item_visited(user, item):
+    ContentItemViewEvent.objects.create(
+        item=item,
+        user=user if user.is_authenticated else None,
+    )
+    if not user.is_authenticated:
+        return
     visit, _ = ContentItemVisit.objects.get_or_create(user=user, item=item)
     ContentItemVisit.objects.filter(pk=visit.pk).update(
         visit_count=visit.visit_count + 1,
         last_visited_at=timezone.now(),
     )
+
+
+def item_view_sparkline(item, days=14):
+    today = timezone.localdate()
+    start = today - timezone.timedelta(days=days - 1)
+    rows = (
+        ContentItemViewEvent.objects.filter(item=item, viewed_at__date__gte=start)
+        .annotate(day=TruncDate("viewed_at"))
+        .values("day")
+        .annotate(count=Count("id"))
+        .order_by("day")
+    )
+    counts_by_day = {row["day"]: row["count"] for row in rows}
+    values = [counts_by_day.get(start + timezone.timedelta(days=index), 0) for index in range(days)]
+    maximum = max(values) if values else 0
+    if not maximum:
+        return {"values": values, "points": "", "max": 0}
+    width = 120
+    height = 32
+    step = width / max(days - 1, 1)
+    points = []
+    for index, value in enumerate(values):
+        x = round(index * step, 2)
+        y = round(height - ((value / maximum) * (height - 4)) - 2, 2)
+        points.append(f"{x},{y}")
+    return {"values": values, "points": " ".join(points), "max": maximum}
 
 
 def can_view_item_queryset(user):
@@ -366,7 +412,7 @@ def ordered_sections(sections):
 
 
 def channel_context(channel, items, params, include_private=True, viewer_user=None):
-    all_items = channel.items.select_related("channel", "user").prefetch_related("tags")
+    all_items = channel.items.select_related("channel", "user").prefetch_related("tags", "ratings")
     if not include_private:
         all_items = all_items.filter(visibility=ContentItem.Visibility.PUBLIC)
     if viewer_user:
@@ -433,7 +479,7 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         self.channel = get_or_create_channel(self.request.user)
-        queryset = self.channel.items.select_related("channel", "user").prefetch_related("tags")
+        queryset = self.channel.items.select_related("channel", "user").prefetch_related("tags", "ratings")
         queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
@@ -469,7 +515,7 @@ class ExploreView(ListView):
         queryset = (
             public_items_queryset()
             .select_related("channel", "user")
-            .prefetch_related("tags")
+            .prefetch_related("tags", "ratings")
         )
         queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
@@ -725,8 +771,15 @@ class ContentItemDetailView(DetailView):
     context_object_name = "item"
 
     def get_queryset(self):
-        queryset = ContentItem.objects.select_related("channel", "user").prefetch_related("tags")
+        queryset = with_item_metrics(ContentItem.objects.select_related("channel", "user").prefetch_related("tags", "ratings"))
         return queryset.filter(pk__in=can_view_item_queryset(self.request.user).values("pk"))
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        mark_item_visited(self.request.user, self.object)
+        self.object.view_count = getattr(self.object, "view_count", 0) + 1
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -735,6 +788,15 @@ class ContentItemDetailView(DetailView):
             self.request.user.is_authenticated
             and ContentItemVisit.objects.filter(user=self.request.user, item=self.object).exists()
         )
+        context["can_rate_item"] = self.request.user.is_authenticated
+        context["item_rating"] = (
+            ContentItemRating.objects.filter(user=self.request.user, item=self.object).first()
+            if context["can_rate_item"]
+            else None
+        )
+        context["view_sparkline"] = item_view_sparkline(self.object)
+        context["rating_main_options"] = ContentItemRating.main_options()
+        context["rating_nuance_options"] = ContentItemRating.nuance_options()
         return context
 
 
@@ -756,6 +818,35 @@ class ContentItemVisitToggleView(LoginRequiredMixin, View):
         return redirect(item.get_absolute_url())
 
 
+class ContentItemRatingView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(can_view_item_queryset(request.user), pk=kwargs["pk"])
+        main_value = request.POST.get("main_value", "")
+        valid_main_values = {value for value, _ in ContentItemRating.MainValue.choices}
+        if main_value not in valid_main_values:
+            messages.warning(request, "Tria una valoracio principal.")
+            return redirect(item.get_absolute_url())
+
+        valid_nuances = {value for value, _ in ContentItemRating.Nuance.choices}
+        nuance_values = []
+        for value in request.POST.getlist("nuance_values"):
+            if value in valid_nuances and value not in nuance_values:
+                nuance_values.append(value)
+            if len(nuance_values) == 3:
+                break
+
+        ContentItemRating.objects.update_or_create(
+            user=request.user,
+            item=item,
+            defaults={
+                "main_value": main_value,
+                "nuance_values": nuance_values,
+            },
+        )
+        messages.success(request, "Valoracio desada.")
+        return redirect(item.get_absolute_url())
+
+
 class PublicChannelView(ListView):
     model = ContentItem
     template_name = "core/public_channel.html"
@@ -766,7 +857,7 @@ class PublicChannelView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = self.channel.items.filter(visibility=ContentItem.Visibility.PUBLIC).select_related("channel", "user").prefetch_related("tags")
+        queryset = self.channel.items.filter(visibility=ContentItem.Visibility.PUBLIC).select_related("channel", "user").prefetch_related("tags", "ratings")
         queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
@@ -865,7 +956,7 @@ class PublicUserChannelShareView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        return public_items_queryset().filter(channel=self.channel).select_related("channel", "user").prefetch_related("tags")
+        return public_items_queryset().filter(channel=self.channel).select_related("channel", "user").prefetch_related("tags", "ratings")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

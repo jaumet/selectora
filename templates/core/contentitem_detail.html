@@ -4,28 +4,139 @@
 
 {% block content %}
 <article class="detail-layout">
-  <div class="detail-media{% if item.is_vertical_embed %} vertical-embed{% endif %}">
-    {% if item.embed_url %}
-      <iframe
-        src="{{ item.embed_url }}"
-        title="{{ item.title }}"
-        data-mark-visited-url="{% url 'contentitem_visited' item.pk %}"
-        data-mark-visited-on-interaction
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen></iframe>
-      <p class="embed-help">Si la reproduccio queda bloquejada per la plataforma, obre l'enllac original.</p>
-    {% elif item.display_image_url %}
-      <img src="{{ item.display_image_url }}" alt="">
-    {% else %}
-      <div class="placeholder large text-placeholder" aria-hidden="true">
-        <span>{{ item.get_content_type_display }}</span>
-        <strong>{{ item.title }}</strong>
-        {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
+  <div class="detail-main-column">
+    <div class="detail-media{% if item.is_vertical_embed %} vertical-embed{% endif %}">
+      {% if item.embed_url %}
+        <iframe
+          src="{{ item.embed_url }}"
+          title="{{ item.title }}"
+          data-mark-visited-url="{% url 'contentitem_visited' item.pk %}"
+          data-mark-visited-on-interaction
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen></iframe>
+        <p class="embed-help">Si la reproduccio queda bloquejada per la plataforma, obre l'enllac original.</p>
+      {% elif item.display_image_url %}
+        <img src="{{ item.display_image_url }}" alt="">
+      {% else %}
+        <div class="placeholder large text-placeholder" aria-hidden="true">
+          <span>{{ item.get_content_type_display }}</span>
+          <strong>{{ item.title }}</strong>
+          {% if item.display_source %}<em>{{ item.display_source }}</em>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="item-visit-panel" aria-label="Mètriques de l'item">
+      <div>
+        <span class="item-visit-count">{{ item.view_count|default:0 }}</span>
+        <span class="item-visit-label">visites</span>
+      </div>
+      <svg class="item-sparkline" viewBox="0 0 120 32" role="img" aria-label="Visites dels darrers dies">
+        {% if view_sparkline.points %}
+          <polyline points="{{ view_sparkline.points }}" vector-effect="non-scaling-stroke"></polyline>
+        {% else %}
+          <line x1="0" y1="28" x2="120" y2="28" vector-effect="non-scaling-stroke"></line>
+        {% endif %}
+      </svg>
+      <div class="item-rating-summary" aria-label="Valoracions de l'item">
+        {% for rating in item.rating_breakdown %}
+          <span title="{{ rating.label }}" aria-label="{{ rating.label }}: {{ rating.count }}">{{ rating.icon }} {{ rating.count }}</span>
+        {% endfor %}
+        {% for nuance in item.nuance_breakdown %}
+          <span class="item-rating-nuance" title="{{ nuance.label }}" aria-label="{{ nuance.label }}: {{ nuance.count }}">{{ nuance.icon }} {{ nuance.count }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% if can_rate_item %}
+      <form class="selectora-vote" method="post" action="{% url 'contentitem_rating' item.pk %}" data-rating-form aria-label="Valora aquesta publicació">
+        {% csrf_token %}
+        <input type="hidden" name="main_value" value="{% if item_rating %}{{ item_rating.main_value }}{% endif %}" data-rating-main-input>
+        <div class="vote-heading">
+          <p class="eyebrow">Valora aquesta publicació</p>
+          <h2>Què et sembla?</h2>
+          <p>1 com a màxim.</p>
+        </div>
+        <div class="vote-row vote-row-main" role="radiogroup" aria-label="Valoració principal">
+          {% for option in rating_main_options %}
+            <button
+              type="button"
+              class="vote-option{% if item_rating and item_rating.main_value == option.value %} is-selected{% endif %}"
+              data-rating-main="{{ option.value }}"
+              aria-pressed="{% if item_rating and item_rating.main_value == option.value %}true{% else %}false{% endif %}"
+              aria-label="{{ option.label }}">
+              <span class="vote-icon" aria-hidden="true">{{ option.icon }}</span>
+              <span class="vote-label">{{ option.label }}</span>
+            </button>
+          {% endfor %}
+        </div>
+        <div class="vote-heading secondary">
+          <h3>Per què?</h3>
+          <p>Matisos opcionals, màxim 3.</p>
+        </div>
+        <div class="vote-row vote-row-tags" aria-label="Matisos de la valoració">
+          {% for option in rating_nuance_options %}
+            <button
+              type="button"
+              class="vote-tag{% if item_rating and option.value in item_rating.nuance_values %} is-selected{% endif %}"
+              data-rating-nuance="{{ option.value }}"
+              aria-pressed="{% if item_rating and option.value in item_rating.nuance_values %}true{% else %}false{% endif %}"
+              aria-label="{{ option.label }}">
+              <span class="vote-icon" aria-hidden="true">{{ option.icon }}</span>
+              <span class="vote-label">{{ option.label }}</span>
+            </button>
+            <input
+              type="checkbox"
+              class="visually-hidden"
+              name="nuance_values"
+              value="{{ option.value }}"
+              data-rating-nuance-input="{{ option.value }}"
+              {% if item_rating and option.value in item_rating.nuance_values %}checked{% endif %}>
+          {% endfor %}
+        </div>
+        <div class="vote-actions">
+          <button class="button" type="submit" data-rating-submit {% if not item_rating %}disabled{% endif %}>Fet</button>
+        </div>
+      </form>
+    {% elif not user.is_authenticated %}
+      <div class="selectora-vote passive">
+        <p class="eyebrow">Valora aquesta publicació</p>
+        <p>Entra per valorar continguts.</p>
+        <a class="button secondary" href="{% url 'login' %}">Entrar</a>
       </div>
     {% endif %}
   </div>
   <div class="detail-content">
+    {% if item.channel.is_public %}
+      <a class="item-origin-card" href="{{ item.channel.get_absolute_url }}" aria-label="Veure canal {{ item.channel.name }}">
+    {% else %}
+      <div class="item-origin-card">
+    {% endif %}
+        <span class="item-origin-thumb">
+          {% if item.display_image_url %}
+            <img src="{{ item.display_image_url }}" alt="">
+          {% else %}
+            <strong>{{ item.channel.name|first }}</strong>
+          {% endif %}
+        </span>
+        <span class="item-origin-copy">
+          <span class="item-origin-kicker">Canal</span>
+          <strong>{{ item.channel.name }}</strong>
+          <span>
+            {% if item.author %}
+              {{ item.author }}
+            {% elif item.channel.owner.get_full_name %}
+              {{ item.channel.owner.get_full_name }}
+            {% else %}
+              @{{ item.channel.owner.username }}
+            {% endif %}
+          </span>
+        </span>
+      {% if item.channel.is_public %}
+        <span class="item-origin-action">Veure canal</span>
+      </a>
+    {% else %}
+      </div>
+    {% endif %}
     <p class="meta">{{ item.get_content_type_display }}{% if item.display_source %} · {{ item.display_source }}{% endif %}</p>
     <h1>{{ item.title }}</h1>
     {% if item.description %}
@@ -77,9 +188,7 @@
       {% if is_owner %}
         <a class="button secondary" href="{% url 'contentitem_update' item.pk %}">Editar</a>
       {% endif %}
-      {% if item.channel.is_public %}
-        <a class="text-link" href="{{ item.channel.get_absolute_url }}">Veure canal</a>
-      {% elif is_owner %}
+      {% if not item.channel.is_public and is_owner %}
         <a class="text-link" href="{% url 'dashboard' %}">Tornar al dashboard</a>
       {% endif %}
     </div>

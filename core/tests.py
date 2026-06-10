@@ -11,7 +11,7 @@ from django.urls import reverse
 from .metadata_fetcher import extract_metadata, fetch_url_metadata
 from .auth import create_magic_login
 from .forms import MagicLoginRequestForm
-from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
 HTML_WITH_METADATA = """
@@ -306,7 +306,9 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Cerca")
         self.assertContains(response, 'data-open-drawer="temes" aria-pressed="false"')
         self.assertContains(response, 'data-open-drawer="cerca" aria-pressed="false"')
-        self.assertContains(response, 'aria-label="Afegir contingut"')
+        self.assertContains(response, 'aria-label="Afegeix continguts"')
+        self.assertContains(response, 'title="Cerca per temes"')
+        self.assertContains(response, 'title="Cerca"')
         self.assertNotContains(response, 'summary>Temes<')
         self.assertNotContains(response, 'summary>Cerca<')
         self.assertContains(response, "curated content by humans")
@@ -442,9 +444,15 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("contentitem_create"))
-        self.assertContains(response, 'aria-label="Afegir contingut"')
-        self.assertContains(response, 'class="nav-user-menu"')
-        self.assertContains(response, 'aria-label="Opcions d\'usuari"')
+        self.assertContains(response, 'aria-label="Afegeix continguts"')
+        self.assertContains(response, 'title="Afegeix continguts"')
+        self.assertContains(response, 'class="nav-primary"')
+        self.assertContains(response, 'class="nav-secondary"')
+        self.assertContains(response, 'class="nav-search-menu"')
+        self.assertContains(response, 'title="Comparteix Selectora.cc"')
+        self.assertContains(response, 'title="Dashboard"')
+        self.assertContains(response, 'title="El meu canal"')
+        self.assertContains(response, 'title="Sortir"')
 
     def test_home_item_sections_are_ordered_by_item_count(self):
         self.channel.is_public = True
@@ -1008,7 +1016,7 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_item_detail_does_not_mark_authenticated_item_as_visited(self):
+    def test_item_detail_counts_authenticated_owner_visits(self):
         self.channel.is_public = True
         self.channel.save()
         item = ContentItem.objects.create(
@@ -1023,7 +1031,42 @@ class CoreViewsTests(TestCase):
         self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
         self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
 
-        self.assertFalse(ContentItemVisit.objects.filter(user=self.user, item=item).exists())
+        self.assertEqual(ContentItemVisit.objects.get(user=self.user, item=item).visit_count, 2)
+        self.assertEqual(ContentItemViewEvent.objects.filter(item=item, user=self.user).count(), 2)
+
+    def test_item_detail_records_public_visit_and_shows_sparkline(self):
+        self.channel.is_public = True
+        self.channel.save()
+        viewer = get_user_model().objects.create_user(username="lectora")
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item amb visites",
+            url="https://example.com/views",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        ContentItemRating.objects.create(
+            user=viewer,
+            item=item,
+            main_value=ContentItemRating.MainValue.MUST,
+            nuance_values=[ContentItemRating.Nuance.INSPIRADOR],
+        )
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ContentItemViewEvent.objects.filter(item=item, user__isnull=True).count(), 1)
+        event = ContentItemViewEvent.objects.get(item=item)
+        self.assertIsNotNone(event.viewed_at)
+        self.assertContains(response, 'class="item-visit-panel"')
+        self.assertContains(response, "1")
+        self.assertContains(response, "visites")
+        self.assertContains(response, 'class="item-sparkline"')
+        self.assertContains(response, 'class="item-rating-summary"')
+        self.assertContains(response, 'title="Must"')
+        self.assertContains(response, 'title="Inspirador"')
+        self.assertContains(response, "🔥 1")
+        self.assertContains(response, "◌ 1")
 
     def test_item_detail_shows_visit_toggle_state(self):
         self.channel.is_public = True
@@ -1044,19 +1087,162 @@ class CoreViewsTests(TestCase):
 
         response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
 
-        self.assertContains(response, "Marcar com a visitat")
-        self.assertNotContains(response, "Marcar com a pendent")
+        self.assertContains(response, "Marcar com a pendent")
+        self.assertNotContains(response, "Marcar com a visitat")
         self.assertContains(response, "Comentari personal")
         self.assertContains(response, "Context intern")
         self.assertContains(response, "Prioritat")
         self.assertContains(response, "Alta")
         self.assertContains(response, "3 dies")
 
-        ContentItemVisit.objects.create(user=self.user, item=item, visit_count=1)
         response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
 
         self.assertContains(response, "Marcar com a pendent")
         self.assertNotContains(response, "Marcar com a visitat")
+
+    def test_item_detail_shows_prominent_channel_origin(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Article amb origen",
+            url="https://example.com/origen",
+            image_url="https://example.com/origen.jpg",
+            author="Autora Externa",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="item-origin-card"')
+        self.assertContains(response, 'aria-label="Veure canal Canal de Jaume"')
+        self.assertContains(response, 'src="https://example.com/origen.jpg"')
+        self.assertContains(response, "Canal de Jaume")
+        self.assertContains(response, "Autora Externa")
+        self.assertContains(response, "Veure canal")
+
+    def test_section_cards_show_visit_and_rating_counts(self):
+        self.channel.is_public = True
+        self.channel.save()
+        viewer = get_user_model().objects.create_user(username="lectora")
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item amb estadistiques",
+            url="https://example.com/stats",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        ContentItemViewEvent.objects.create(item=item, user=viewer)
+        ContentItemViewEvent.objects.create(item=item)
+        ContentItemRating.objects.create(
+            user=viewer,
+            item=item,
+            main_value=ContentItemRating.MainValue.RECOMANARIA,
+            nuance_values=[ContentItemRating.Nuance.UTIL],
+        )
+        ContentItemRating.objects.create(
+            user=self.user,
+            item=item,
+            main_value=ContentItemRating.MainValue.PASSO,
+            nuance_values=[],
+        )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Item amb estadistiques")
+        self.assertContains(response, 'class="card-stats"')
+        self.assertContains(response, "2 v")
+        self.assertContains(response, 'title="Passo"')
+        self.assertContains(response, 'title="Recomanaria"')
+        self.assertContains(response, 'title="Útil"')
+        self.assertContains(response, "✋ 1")
+        self.assertContains(response, "↗ 1")
+        self.assertContains(response, "✓ 1")
+        self.assertNotContains(response, "1 val")
+        self.assertLess(response.content.decode().find("✋ 1"), response.content.decode().find("↗ 1"))
+
+    def test_authenticated_viewer_can_rate_other_user_item(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item per valorar",
+            url="https://example.com/rating",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        viewer = get_user_model().objects.create_user(username="lectora", password="test-password")
+        self.client.force_login(viewer)
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Valora aquesta publicació")
+        self.assertContains(response, "Què et sembla?")
+        self.assertContains(response, "1 com a màxim.")
+        self.assertContains(response, "Passo")
+        self.assertContains(response, "Must")
+        self.assertContains(response, "Ben explicat")
+        self.assertContains(response, "Matisos opcionals, màxim 3.")
+
+        response = self.client.post(
+            reverse("contentitem_rating", kwargs={"pk": item.pk}),
+            {
+                "main_value": ContentItemRating.MainValue.MUST,
+                "nuance_values": [
+                    ContentItemRating.Nuance.ORIGINAL,
+                    ContentItemRating.Nuance.UTIL,
+                    ContentItemRating.Nuance.BEN_EXPLICAT,
+                    ContentItemRating.Nuance.NECESSARI,
+                ],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        rating = ContentItemRating.objects.get(user=viewer, item=item)
+        self.assertEqual(rating.main_value, ContentItemRating.MainValue.MUST)
+        self.assertEqual(
+            rating.nuance_values,
+            [
+                ContentItemRating.Nuance.ORIGINAL,
+                ContentItemRating.Nuance.UTIL,
+                ContentItemRating.Nuance.BEN_EXPLICAT,
+            ],
+        )
+
+    def test_item_owner_can_rate_own_item(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item propi",
+            url="https://example.com/own-rating",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Valora aquesta publicació")
+
+        response = self.client.post(
+            reverse("contentitem_rating", kwargs={"pk": item.pk}),
+            {"main_value": ContentItemRating.MainValue.MUST},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            ContentItemRating.objects.filter(
+                user=self.user,
+                item=item,
+                main_value=ContentItemRating.MainValue.MUST,
+            ).exists()
+        )
 
     def test_contentitem_edit_shows_delete_confirmation_panel(self):
         item = ContentItem.objects.create(

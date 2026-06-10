@@ -251,6 +251,33 @@ class ContentItem(models.Model):
     def is_instagram_embed(self):
         return "instagram.com" in (self.embed_url or self.canonical_url or self.url)
 
+    @property
+    def rating_breakdown(self):
+        options = [
+            ("rating_passo_count", "Passo", "✋"),
+            ("rating_curios_count", "Curiós", "?"),
+            ("rating_val_la_pena_count", "Val la pena", "◆"),
+            ("rating_recomanaria_count", "Recomanaria", "↗"),
+            ("rating_must_count", "Must", "🔥"),
+        ]
+        return [
+            {"label": label, "icon": icon, "count": count}
+            for attr, label, icon in options
+            if (count := getattr(self, attr, 0))
+        ]
+
+    @property
+    def nuance_breakdown(self):
+        counts = {}
+        for rating in self.ratings.all():
+            for nuance in rating.nuance_values:
+                counts[nuance] = counts.get(nuance, 0) + 1
+        return [
+            {"label": option["label"], "icon": option["icon"], "count": counts.get(option["value"], 0)}
+            for option in ContentItemRating.nuance_options()
+            if counts.get(option["value"], 0)
+        ]
+
 
 class ContentItemVisit(models.Model):
     user = models.ForeignKey(
@@ -275,6 +302,97 @@ class ContentItemVisit(models.Model):
 
     def __str__(self):
         return f"{self.user} visited {self.item}"
+
+
+class ContentItemViewEvent(models.Model):
+    item = models.ForeignKey(
+        ContentItem,
+        on_delete=models.CASCADE,
+        related_name="view_events",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="content_item_view_events",
+        blank=True,
+        null=True,
+    )
+    viewed_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ["-viewed_at"]
+        indexes = [
+            models.Index(fields=["item", "viewed_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.item} viewed at {self.viewed_at:%Y-%m-%d %H:%M}"
+
+
+class ContentItemRating(models.Model):
+    class MainValue(models.TextChoices):
+        PASSO = "passo", "Passo"
+        CURIOS = "curios", "Curiós"
+        VAL_LA_PENA = "val_la_pena", "Val la pena"
+        RECOMANARIA = "recomanaria", "Recomanaria"
+        MUST = "must", "Must"
+
+    class Nuance(models.TextChoices):
+        ORIGINAL = "original", "Original"
+        UTIL = "util", "Útil"
+        BEN_EXPLICAT = "ben_explicat", "Ben explicat"
+        INSPIRADOR = "inspirador", "Inspirador"
+        NECESSARI = "necessari", "Necessari"
+        DISCUTIBLE = "discutible", "Discutible"
+        REPETIT = "repetit", "Repetit"
+        NO_ES_PER_MI = "no_es_per_mi", "No és per mi"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="content_item_ratings",
+    )
+    item = models.ForeignKey(
+        ContentItem,
+        on_delete=models.CASCADE,
+        related_name="ratings",
+    )
+    main_value = models.CharField(max_length=24, choices=MainValue.choices)
+    nuance_values = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "item"], name="unique_content_item_rating"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} rated {self.item}: {self.main_value}"
+
+    @classmethod
+    def main_options(cls):
+        return [
+            {"value": cls.MainValue.PASSO, "label": "Passo", "icon": "✋"},
+            {"value": cls.MainValue.CURIOS, "label": "Curiós", "icon": "?"},
+            {"value": cls.MainValue.VAL_LA_PENA, "label": "Val la pena", "icon": "◆"},
+            {"value": cls.MainValue.RECOMANARIA, "label": "Recomanaria", "icon": "↗"},
+            {"value": cls.MainValue.MUST, "label": "Must", "icon": "🔥"},
+        ]
+
+    @classmethod
+    def nuance_options(cls):
+        return [
+            {"value": cls.Nuance.ORIGINAL, "label": "Original", "icon": "✦"},
+            {"value": cls.Nuance.UTIL, "label": "Útil", "icon": "✓"},
+            {"value": cls.Nuance.BEN_EXPLICAT, "label": "Ben explicat", "icon": "☰"},
+            {"value": cls.Nuance.INSPIRADOR, "label": "Inspirador", "icon": "◌"},
+            {"value": cls.Nuance.NECESSARI, "label": "Necessari", "icon": "!"},
+            {"value": cls.Nuance.DISCUTIBLE, "label": "Discutible", "icon": "↔"},
+            {"value": cls.Nuance.REPETIT, "label": "Repetit", "icon": "↻"},
+            {"value": cls.Nuance.NO_ES_PER_MI, "label": "No és per mi", "icon": "∅"},
+        ]
 
 
 class Collection(models.Model):

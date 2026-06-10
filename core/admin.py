@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
 @admin.register(Channel)
@@ -59,3 +59,21 @@ class ContentItemVisitAdmin(admin.ModelAdmin):
     search_fields = ("item__title", "user__username", "user__email")
     autocomplete_fields = ("item", "user")
     readonly_fields = ("first_visited_at", "last_visited_at")
+
+
+@admin.register(ContentItemViewEvent)
+class ContentItemViewEventAdmin(admin.ModelAdmin):
+    list_display = ("item", "user", "viewed_at")
+    list_filter = ("viewed_at",)
+    search_fields = ("item__title", "user__username", "user__email")
+    autocomplete_fields = ("item", "user")
+    readonly_fields = ("viewed_at",)
+
+
+@admin.register(ContentItemRating)
+class ContentItemRatingAdmin(admin.ModelAdmin):
+    list_display = ("item", "user", "main_value", "updated_at")
+    list_filter = ("main_value", "created_at", "updated_at")
+    search_fields = ("item__title", "user__username", "user__email")
+    autocomplete_fields = ("item", "user")
+    readonly_fields = ("created_at", "updated_at")

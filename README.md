@@ -16,6 +16,8 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 - Metadades Open Graph i Twitter Card per compartir Selectora amb títol, descripció i logo PNG 1200x630 compatible amb WhatsApp.
 - Canals públics per defecte i visibilitat `public` / `private` per items i col·leccions.
 - Formulari d'item amb control de visibilitat destacat: verd per públic i vermell per privat, amb explicació de qui ho podrà veure.
+- Valoració d'items amb una opció principal i fins a 3 matisos.
+- Comptador de visites per item, registre temporal de visites i sparkline a la fitxa d'item.
 - Seguiment d’items visitats per usuari, amb marca visual a les cards, secció `Has estat veient` i secció d’items pendents de veure quan hi ha login.
 - Fitxa d’item amb vista pública, enllaç a l’origen, accions de compartir i interruptor per marcar visitat o pendent.
 - Edició d’items amb eliminació segura: cal obrir el panell d’alerta, marcar confirmació i tornar a clicar `Elimina`.

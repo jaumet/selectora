@@ -52,47 +52,45 @@
       </span>
     </a>
     <nav class="nav">
-      <a class="nav-pill" href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false">Temes</a>
-      <a class="nav-pill" href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false">Cerca</a>
+      {% url 'home' as selectora_home_url %}
+      <div class="nav-primary">
+        <a class="nav-pill nav-icon-button nav-topic-link" href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes">#</a>
+        {% if user.is_authenticated %}
+          <a class="nav-plus" href="{% url 'contentitem_create' %}" aria-label="Afegeix continguts" title="Afegeix continguts">+</a>
+        {% else %}
+          <details class="nav-add-menu">
+            <summary class="nav-plus" aria-label="Afegeix continguts" title="Afegeix continguts">+</summary>
+            <div class="nav-add-panel">
+              <a href="{% url 'login' %}">Entrar</a>
+              <a href="{% url 'login' %}">Registrar-se</a>
+            </div>
+          </details>
+        {% endif %}
+        <a class="nav-pill nav-icon-button nav-search-link" href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕</a>
+        <details class="nav-search-menu">
+          <summary class="nav-icon-button" aria-label="Temes i cerca" title="Temes i cerca">⌕</summary>
+          <div class="nav-search-panel">
+            <a href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes"># Temes</a>
+            <a href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕ Cerca</a>
+          </div>
+        </details>
+      </div>
+      <div class="nav-secondary">
       <button class="nav-pill nav-install" type="button" data-pwa-install hidden>Instal·la</button>
       <span class="nav-share">
-        {% url 'home' as selectora_home_url %}
-        {% include "core/includes/share_menu.html" with share_label="Compartir" share_aria_label="Compartir selectora.cc" share_type="site" share_title="Selectora" share_description="Col.lecciona, ordena i comparteix continguts escollits per humans. Crea el teu canal i descobreix seleccions d'altres persones." share_url=selectora_home_url share_curator="Selectora" %}
+        {% include "core/includes/share_menu.html" with share_label="↗" share_aria_label="Comparteix Selectora.cc" share_type="site" share_title="Selectora" share_description="Col.lecciona, ordena i comparteix continguts escollits per humans. Crea el teu canal i descobreix seleccions d'altres persones." share_url=selectora_home_url share_curator="Selectora" %}
       </span>
       {% if user.is_authenticated %}
-        <a class="nav-plus" href="{% url 'contentitem_create' %}" aria-label="Afegir contingut">+</a>
-      {% else %}
-        <details class="nav-add-menu">
-          <summary class="nav-plus" aria-label="Afegir contingut">+</summary>
-          <div class="nav-add-panel">
-            <a href="{% url 'login' %}">Entrar</a>
-            <a href="{% url 'login' %}">Registrar-se</a>
-          </div>
-        </details>
-      {% endif %}
-      {% if user.is_authenticated %}
-        <details class="nav-user-menu">
-          <summary class="nav-user-trigger" aria-label="Opcions d'usuari">⋯</summary>
-          <div class="nav-user-panel">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            {% if user.channel.is_public %}
-              <a href="{{ user.channel.get_absolute_url }}">Canal public</a>
-            {% endif %}
-            <form method="post" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button type="submit">Sortir</button>
-            </form>
-          </div>
-        </details>
-        <a class="nav-user-direct" href="{% url 'dashboard' %}">Dashboard</a>
+        <a class="nav-user-direct nav-icon-button" href="{% url 'dashboard' %}" aria-label="Dashboard" title="Dashboard">▦</a>
         {% if user.channel.is_public %}
-          <a class="nav-user-direct" href="{{ user.channel.get_absolute_url }}">Canal public</a>
+          <a class="nav-user-direct nav-icon-button" href="{{ user.channel.get_absolute_url }}" aria-label="El meu canal" title="El meu canal">◉</a>
         {% endif %}
         <form class="nav-user-direct" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
-          <button type="submit">Sortir</button>
+          <button class="nav-icon-button" type="submit" aria-label="Sortir" title="Sortir">⏻</button>
         </form>
       {% endif %}
+      </div>
     </nav>
   </header>
   <main class="page">

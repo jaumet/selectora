@@ -259,6 +259,67 @@
     });
   }
 
+  function initRatingForms() {
+    document.querySelectorAll("[data-rating-form]").forEach(function (form) {
+      const mainInput = form.querySelector("[data-rating-main-input]");
+      const submit = form.querySelector("[data-rating-submit]");
+      const limit = form.querySelector("[data-rating-limit]");
+      const mainButtons = Array.from(form.querySelectorAll("[data-rating-main]"));
+      const nuanceButtons = Array.from(form.querySelectorAll("[data-rating-nuance]"));
+
+      function selectedNuanceInputs() {
+        return Array.from(form.querySelectorAll("[data-rating-nuance-input]:checked"));
+      }
+
+      function syncSubmit() {
+        if (submit && mainInput) {
+          submit.disabled = !mainInput.value;
+        }
+        if (limit) {
+          const count = selectedNuanceInputs().length;
+          limit.textContent = count ? count + "/3 matisos seleccionats." : "Tria fins a 3 matisos.";
+        }
+      }
+
+      mainButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          if (!mainInput) {
+            return;
+          }
+          const wasSelected = button.classList.contains("is-selected");
+          mainInput.value = wasSelected ? "" : button.dataset.ratingMain;
+          mainButtons.forEach(function (otherButton) {
+            const selected = !wasSelected && otherButton === button;
+            otherButton.classList.toggle("is-selected", selected);
+            otherButton.setAttribute("aria-pressed", selected ? "true" : "false");
+          });
+          syncSubmit();
+        });
+      });
+
+      nuanceButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          const input = form.querySelector('[data-rating-nuance-input="' + button.dataset.ratingNuance + '"]');
+          if (!input) {
+            return;
+          }
+          if (!input.checked && selectedNuanceInputs().length >= 3) {
+            if (limit) {
+              limit.textContent = "Màxim 3 matisos.";
+            }
+            return;
+          }
+          input.checked = !input.checked;
+          button.classList.toggle("is-selected", input.checked);
+          button.setAttribute("aria-pressed", input.checked ? "true" : "false");
+          syncSubmit();
+        });
+      });
+
+      syncSubmit();
+    });
+  }
+
   function initHomeSectionSorting() {
     const container = document.querySelector("[data-home-sections]");
     if (!container) {
@@ -545,6 +606,7 @@
     initHomeIntro();
     initDeletePanel();
     initVisibilityControls();
+    initRatingForms();
     initHomeSectionSorting();
 
     document.querySelectorAll(".media-rail-shell").forEach(function (shell) {
