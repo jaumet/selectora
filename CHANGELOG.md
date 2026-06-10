@@ -19,6 +19,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Eliminació segura d'items propis des del formulari d'edició amb panell d'alerta i checkbox de confirmació.
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
 - Honeypot anti-spam ocult al formulari d'entrada/registre.
+- Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
 
 ### Canviat
 

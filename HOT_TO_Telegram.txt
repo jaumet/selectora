@@ -1,0 +1,196 @@
+HOW TO - Telegram Selectora
+==========================
+
+Bot actual
+----------
+
+- El bot actiu es diu:
+
+  @selectoracc_bot
+
+- El bot anterior va ser revocat. No reutilitzis el token antic.
+
+
+1. Crear o revisar el bot a Telegram
+------------------------------------
+
+1. Obre Telegram.
+2. Ves a:
+
+   @BotFather
+
+3. Si cal crear un bot nou:
+
+   /newbot
+
+4. Nom visible recomanat:
+
+   Selectora
+
+5. Username actual:
+
+   selectoracc_bot
+
+6. Desa el token nou que dona BotFather.
+
+
+2. Configurar variables al servidor
+-----------------------------------
+
+Al servidor de produccio, defineix:
+
+  export TELEGRAM_BOT_TOKEN='TOKEN_NOU_DEL_BOT'
+  export TELEGRAM_WEBHOOK_SECRET='SECRET_LLARG_I_DIFICIL'
+
+Important:
+
+- Aquests export nomes duren en la sessio actual.
+- Tambe cal posar aquestes variables a l'entorn real del servei Django/Gunicorn.
+- Despres cal reiniciar el servei.
+
+
+3. Registrar el webhook
+-----------------------
+
+Si el domini es selectora.cc:
+
+  curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+    -d "url=https://selectora.cc/integrations/telegram/webhook/" \
+    -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+
+
+4. Comprovar el webhook
+-----------------------
+
+  curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
+
+Ha de sortir:
+
+- "ok": true
+- url: "https://selectora.cc/integrations/telegram/webhook/"
+
+
+5. Vincular Telegram amb el teu canal Selectora
+-----------------------------------------------
+
+1. Entra a Selectora amb el teu usuari.
+2. Ves a:
+
+   /dashboard/channel/
+
+3. Copia el codi que surt a la seccio Telegram. Exemple:
+
+   /connect CODI
+
+4. Obre un xat directe amb:
+
+   @selectoracc_bot
+
+5. Envia:
+
+   /connect CODI
+
+6. El bot ha de respondre que Telegram ha quedat vinculat.
+
+
+6. Publicar URLs des del xat directe
+------------------------------------
+
+1. Obre el xat directe amb:
+
+   @selectoracc_bot
+
+2. Envia o comparteix una URL.
+3. Selectora creara un item al canal vinculat.
+
+
+7. Usar el bot dins un grup
+---------------------------
+
+Per defecte, Telegram pot tenir el bot en privacy mode.
+
+Aixo vol dir:
+
+- En xat directe, el bot rep tots els missatges.
+- En grup, el bot pot no rebre URLs normals.
+
+Opcio A: mencionar el bot
+
+  @selectoracc_bot https://exemple.com/article
+
+Opcio B: desactivar privacy mode
+
+1. Obre:
+
+   @BotFather
+
+2. Envia:
+
+   /setprivacy
+
+3. Tria:
+
+   @selectoracc_bot
+
+4. Selecciona:
+
+   Disable
+
+Despres el bot podra llegir missatges normals del grup.
+
+
+8. Com funciona el grup amb el codi actual
+------------------------------------------
+
+El grup no es un canal compartit independent.
+
+El comportament actual es:
+
+- El bot mira quin usuari Telegram envia la URL.
+- Selectora busca si aquest usuari Telegram esta vinculat.
+- Si esta vinculat, publica la URL al canal Selectora d'aquell usuari.
+- Si no esta vinculat, no publica.
+
+Per tant:
+
+- Si envies tu una URL al grup i el teu Telegram esta vinculat, pot publicar.
+- Si l'envia una altra persona, aquella persona tambe ha de fer /connect CODI.
+
+
+9. Errors habituals
+-------------------
+
+Error:
+
+  Bad Request: bad webhook: Failed to resolve host
+
+Causa:
+
+- Has deixat un placeholder tipus EL_TEU_DOMINI.
+
+Solucio:
+
+- Usa el domini real:
+
+  https://selectora.cc/integrations/telegram/webhook/
+
+
+Error:
+
+  El bot no publica des d'un grup
+
+Causes probables:
+
+- Privacy mode activat.
+- No has mencionat @selectoracc_bot.
+- L'usuari que envia la URL no esta vinculat amb /connect CODI.
+- El webhook no esta registrat amb el token nou.
+
+
+10. Seguretat
+-------------
+
+- No enganxis el token del bot en xats publics.
+- Si el token s'ha compartit, revoca'l a BotFather.
+- Despres de revocar-lo, actualitza TELEGRAM_BOT_TOKEN al servidor.
+- Torna a registrar el webhook amb el token nou.
