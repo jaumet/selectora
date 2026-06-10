@@ -20,6 +20,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
 - Honeypot anti-spam ocult al formulari d'entrada/registre.
 - Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
+- Ruta del Django admin canviada de `/admin/` a `/entra-per-darrere/`.
+- Fallback d'embed de YouTube ampliat per reconèixer URLs `/live/`, `/embed/`, `/v/` i `youtube-nocookie.com`, útil quan els items arriben des de Telegram i YouTube no retorna metadades completes.
 
 ### Canviat
 

@@ -85,7 +85,7 @@ Despres obre `http://127.0.0.1:8000/`.
 - Share target PWA: `/share/`
 - Webhook de Telegram: `/integrations/telegram/webhook/`
 - Canal public, si el canal esta marcat com a public: `/@<username>/`
-- Admin Django: `/admin/`
+- Admin Django: `/entra-per-darrere/`
 
 Els usuaris es creen ara mateix amb `createsuperuser` o des de l'admin. Quan un usuari entra al dashboard o afegeix contingut, Selectora crea automaticament el seu canal personal si encara no existeix.
 

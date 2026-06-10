@@ -467,9 +467,10 @@ def _youtube_video_id(url):
     host = parsed.netloc.lower()
     if "youtu.be" in host:
         return parsed.path.strip("/").split("/", 1)[0]
-    if "youtube.com" in host:
-        if parsed.path.startswith("/shorts/"):
-            return parsed.path.split("/")[2] if len(parsed.path.split("/")) > 2 else ""
+    if "youtube.com" in host or "youtube-nocookie.com" in host:
+        parts = [part for part in parsed.path.split("/") if part]
+        if parts and parts[0] in {"shorts", "live", "embed", "v"}:
+            return parts[1] if len(parts) > 1 else ""
         return parse_qs(parsed.query).get("v", [""])[0]
     return ""
 

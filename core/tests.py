@@ -129,6 +129,24 @@ class MetadataFetcherTests(TestCase):
 
         self.assertEqual(result.data["thumbnail_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
         self.assertEqual(result.data["image_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
+        self.assertEqual(result.data["embed_url"], "https://www.youtube.com/embed/eh1hrYQi4FY")
+
+    def test_youtube_fallback_supports_mobile_live_and_embed_urls(self):
+        def failing_get(*args, **kwargs):
+            raise TimeoutError("timeout")
+
+        cases = [
+            "https://www.youtube.com/live/eh1hrYQi4FY?si=abc",
+            "https://www.youtube.com/embed/eh1hrYQi4FY",
+            "https://www.youtube-nocookie.com/embed/eh1hrYQi4FY?rel=0",
+            "https://www.youtube.com/v/eh1hrYQi4FY",
+        ]
+
+        for url in cases:
+            with self.subTest(url=url):
+                result = fetch_url_metadata(url, http_get=failing_get)
+                self.assertEqual(result.data["embed_url"], "https://www.youtube.com/embed/eh1hrYQi4FY")
+                self.assertEqual(result.data["thumbnail_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
 
     def test_youtube_embed_iframe_has_referrer_policy(self):
         user = get_user_model().objects.create_user(username="owner", password="test-password")
@@ -502,6 +520,13 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+    def test_admin_uses_private_path(self):
+        response = self.client.get("/entra-per-darrere/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/entra-per-darrere/login/", response["Location"])
+        self.assertEqual(self.client.get("/admin/").status_code, 404)
 
     def test_contentitem_form_shows_expiry_phrase_inline(self):
         self.client.force_login(self.user)
