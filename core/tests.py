@@ -10,6 +10,7 @@ from django.urls import reverse
 
 from .metadata_fetcher import extract_metadata, fetch_url_metadata
 from .auth import create_magic_login
+from .forms import MagicLoginRequestForm
 from .models import Channel, Collection, ContentItem, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
@@ -569,13 +570,52 @@ class CoreViewsTests(TestCase):
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_magic_link_request_creates_user_token_and_sends_email(self):
-        response = self.client.post(reverse("login"), {"email": "Nova@Example.com"})
+        self.client.get(reverse("login"))
+        challenge = self.client.session[MagicLoginRequestForm.session_key]
+
+        response = self.client.post(
+            reverse("login"),
+            {"email": "Nova@Example.com", "captcha_answer": challenge["answer"]},
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertTrue(get_user_model().objects.filter(email__iexact="nova@example.com").exists())
         self.assertEqual(MagicLoginToken.objects.filter(email="nova@example.com").count(), 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("/accounts/magic/", mail.outbox[0].body)
+        self.assertNotIn(MagicLoginRequestForm.session_key, self.client.session)
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_magic_link_request_rejects_wrong_captcha(self):
+        self.client.get(reverse("login"))
+
+        response = self.client.post(
+            reverse("login"),
+            {"email": "bot@example.com", "captcha_answer": 999},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Resposta de verificacio incorrecta")
+        self.assertFalse(get_user_model().objects.filter(email__iexact="bot@example.com").exists())
+        self.assertEqual(len(mail.outbox), 0)
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_magic_link_request_rejects_honeypot(self):
+        self.client.get(reverse("login"))
+        challenge = self.client.session[MagicLoginRequestForm.session_key]
+
+        response = self.client.post(
+            reverse("login"),
+            {
+                "email": "bot@example.com",
+                "captcha_answer": challenge["answer"],
+                "website": "https://spam.example",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(get_user_model().objects.filter(email__iexact="bot@example.com").exists())
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_magic_link_logs_user_in_once(self):
         user, token, _ = create_magic_login("jaume@example.com")

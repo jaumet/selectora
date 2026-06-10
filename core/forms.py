@@ -1,11 +1,61 @@
 from django import forms
 from django.utils.text import slugify
+import secrets
 
 from .models import Channel, ContentItem, Tag
 
 
 class MagicLoginRequestForm(forms.Form):
     email = forms.EmailField(label="Email")
+    captcha_answer = forms.IntegerField(label="Verificacio", min_value=0)
+    website = forms.CharField(
+        required=False,
+        label="Website",
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "off",
+                "class": "captcha-honeypot",
+                "tabindex": "-1",
+            }
+        ),
+    )
+
+    session_key = "magic_login_captcha"
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+        challenge = self._challenge()
+        if challenge:
+            self.fields["captcha_answer"].label = f"Quant fan {challenge['a']} + {challenge['b']}?"
+
+    def _challenge(self):
+        if not self.request:
+            return None
+        challenge = self.request.session.get(self.session_key)
+        if not challenge:
+            random = secrets.SystemRandom()
+            challenge = {
+                "a": random.randint(2, 9),
+                "b": random.randint(2, 9),
+            }
+            challenge["answer"] = challenge["a"] + challenge["b"]
+            self.request.session[self.session_key] = challenge
+            self.request.session.modified = True
+        return challenge
+
+    def clean_website(self):
+        value = self.cleaned_data.get("website", "")
+        if value:
+            raise forms.ValidationError("No s'ha pogut validar el formulari.")
+        return value
+
+    def clean_captcha_answer(self):
+        answer = self.cleaned_data.get("captcha_answer")
+        challenge = self._challenge()
+        if not challenge or answer != challenge["answer"]:
+            raise forms.ValidationError("Resposta de verificacio incorrecta.")
+        return answer
 
 
 class ChannelForm(forms.ModelForm):

@@ -135,8 +135,14 @@ class MagicLoginRequestView(FormView):
     form_class = MagicLoginRequestForm
     success_url = "/accounts/check-email/"
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
     def form_valid(self, form):
         magic_url = send_magic_login_email(self.request, form.cleaned_data["email"])
+        self.request.session.pop(MagicLoginRequestForm.session_key, None)
         if self.request.user.is_staff or self.request.get_host().startswith(("127.0.0.1", "localhost")):
             self.request.session["last_magic_login_url"] = magic_url
         return super().form_valid(form)

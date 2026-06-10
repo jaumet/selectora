@@ -17,6 +17,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Reordenació de seccions de portada per a usuaris autenticats amb drag and drop i persistència a `localStorage`.
 - Menú compacte d'opcions d'usuari en mòbil, situat al costat del botó `+`.
 - Eliminació segura d'items propis des del formulari d'edició amb panell d'alerta i checkbox de confirmació.
+- Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
+- Honeypot anti-spam ocult al formulari d'entrada/registre.
 
 ### Canviat
 
@@ -32,6 +34,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Nova helper de queryset `with_viewer_visit_state` per anotar items visitats sense consultes per card.
 - El service worker es serveix amb capçalera `Service-Worker-Allowed: /`.
 - S'han afegit proves per PWA, menú d'usuari mòbil, reordenació de seccions, marca de visitat i eliminació d'items.
+- S'han afegit proves per validar captcha correcte, captcha incorrecte i honeypot omplert.
 
 ### Verificació
 

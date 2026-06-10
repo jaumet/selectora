@@ -49,6 +49,23 @@ select:focus-visible {
   white-space: nowrap;
 }
 
+.captcha-honeypot {
+  position: absolute;
+  left: -100vw;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form-panel p:has(.captcha-honeypot) {
+  position: absolute;
+  left: -100vw;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .site-header {
   position: sticky;
   top: 0;
