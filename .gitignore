@@ -24,5 +24,6 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+*.swp
 selectora_data.json
 notes.txt

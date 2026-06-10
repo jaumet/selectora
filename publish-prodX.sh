@@ -35,14 +35,11 @@ git push --force origin dev
 echo "==> Canviant a main..."
 git checkout main
 
-echo "==> Actualitzant main remota..."
-git pull origin main
-
-echo "==> Fusionant dev a main..."
-git merge dev
+echo "==> Alineant main amb dev..."
+git merge --ff-only dev
 
 echo "==> Pujant main..."
-git push origin main
+git push --force origin main
 
 echo "==> Tornant a dev..."
 git checkout dev
