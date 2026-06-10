@@ -1,9 +1,58 @@
 (function () {
+  let deferredInstallPrompt = null;
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("/sw.js").catch(function () {});
     });
   }
+
+  function isStandalonePwa() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+
+  function isIos() {
+    return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+  }
+
+  function setupInstallButton() {
+    const button = document.querySelector("[data-pwa-install]");
+    if (!button || isStandalonePwa()) {
+      return;
+    }
+    if (deferredInstallPrompt || isIos()) {
+      button.hidden = false;
+    }
+    button.addEventListener("click", async function () {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice.catch(function () {});
+        deferredInstallPrompt = null;
+        button.hidden = true;
+        return;
+      }
+      window.alert("Per instal·lar Selectora a iPhone o iPad: obre el botó de compartir del navegador i tria 'Afegir a pantalla d’inici'.");
+    });
+  }
+
+  window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    const button = document.querySelector("[data-pwa-install]");
+    if (button && !isStandalonePwa()) {
+      button.hidden = false;
+    }
+  });
+
+  window.addEventListener("appinstalled", function () {
+    deferredInstallPrompt = null;
+    const button = document.querySelector("[data-pwa-install]");
+    if (button) {
+      button.hidden = true;
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", setupInstallButton);
 })();
 
 (function () {
@@ -25,7 +74,47 @@
       return false;
     }
     drawer.scrollIntoView({ block: "start", behavior: "smooth" });
+    syncDrawerTriggers(id);
     return true;
+  }
+
+  function syncDrawerTriggers(activeId) {
+    document.querySelectorAll("[data-open-drawer]").forEach(function (trigger) {
+      const isActive = trigger.dataset.openDrawer === activeId;
+      trigger.classList.toggle("is-active", isActive);
+      trigger.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  function closeDrawer(id) {
+    const drawer = document.getElementById(id);
+    if (!drawer) {
+      return false;
+    }
+    if (drawer.tagName === "DETAILS") {
+      drawer.open = false;
+    } else if (drawer.classList.contains("compact-panel")) {
+      drawer.classList.remove("is-open");
+    } else {
+      return false;
+    }
+    syncDrawerTriggers("");
+    if (window.location.hash === `#${id}`) {
+      history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+    return true;
+  }
+
+  function toggleDrawer(id) {
+    const drawer = document.getElementById(id);
+    if (!drawer) {
+      return false;
+    }
+    const isOpen = drawer.tagName === "DETAILS" ? drawer.open : drawer.classList.contains("is-open");
+    if (isOpen) {
+      return closeDrawer(id);
+    }
+    return openDrawer(id);
   }
 
   function updateRailControls(shell) {
@@ -65,6 +154,184 @@
     });
   }
 
+  function initHomeIntro() {
+    const overlay = document.querySelector("[data-home-intro]");
+    if (!overlay) {
+      return;
+    }
+    const storageKey = "selectora:home-intro-dismissed";
+    try {
+      if (localStorage.getItem(storageKey) === "1") {
+        return;
+      }
+    } catch (error) {
+      // localStorage can be unavailable in some privacy modes.
+    }
+
+    const remember = overlay.querySelector("[data-home-intro-never]");
+
+    function closeIntro() {
+      if (remember && remember.checked) {
+        try {
+          localStorage.setItem(storageKey, "1");
+        } catch (error) {}
+      }
+      overlay.hidden = true;
+      document.removeEventListener("keydown", closeOnEscape);
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        closeIntro();
+      }
+    }
+
+    overlay.hidden = false;
+    document.addEventListener("keydown", closeOnEscape);
+    overlay.querySelectorAll("[data-home-intro-close]").forEach(function (button) {
+      button.addEventListener("click", closeIntro);
+    });
+  }
+
+  function initDeletePanel() {
+    const panel = document.querySelector("[data-delete-panel]");
+    const openButton = document.querySelector("[data-delete-panel-open]");
+    if (!panel || !openButton) {
+      return;
+    }
+    const closeButton = panel.querySelector("[data-delete-panel-close]");
+    const confirm = panel.querySelector("[data-delete-confirm]");
+    const submit = panel.querySelector("[data-delete-submit]");
+
+    openButton.addEventListener("click", function () {
+      panel.hidden = false;
+      panel.scrollIntoView({ block: "center", behavior: "smooth" });
+      if (confirm) {
+        confirm.focus();
+      }
+    });
+
+    if (closeButton) {
+      closeButton.addEventListener("click", function () {
+        panel.hidden = true;
+        if (confirm) {
+          confirm.checked = false;
+        }
+        if (submit) {
+          submit.disabled = true;
+        }
+        openButton.focus();
+      });
+    }
+
+    if (confirm && submit) {
+      confirm.addEventListener("change", function () {
+        submit.disabled = !confirm.checked;
+      });
+    }
+  }
+
+  function initHomeSectionSorting() {
+    const container = document.querySelector("[data-home-sections]");
+    if (!container) {
+      return;
+    }
+    const storageKey = "selectora:home-section-order";
+    let draggedSection = null;
+
+    function sortableSections() {
+      return Array.from(container.querySelectorAll("[data-home-sortable-section]"));
+    }
+
+    function saveSectionOrder() {
+      const order = sortableSections()
+        .map(function (section) {
+          return section.dataset.homeSectionKey;
+        })
+        .filter(Boolean);
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(order));
+      } catch (error) {}
+    }
+
+    function applySavedOrder() {
+      let order = [];
+      try {
+        order = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      } catch (error) {
+        order = [];
+      }
+      if (!Array.isArray(order) || !order.length) {
+        return;
+      }
+      const sectionsByKey = new Map(
+        sortableSections().map(function (section) {
+          return [section.dataset.homeSectionKey, section];
+        })
+      );
+      order.forEach(function (key) {
+        const section = sectionsByKey.get(key);
+        if (section) {
+          container.appendChild(section);
+        }
+      });
+    }
+
+    function sectionAfterPointer(y) {
+      return sortableSections()
+        .filter(function (section) {
+          return section !== draggedSection;
+        })
+        .reduce(
+          function (closest, section) {
+            const box = section.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+              return { offset, section };
+            }
+            return closest;
+          },
+          { offset: Number.NEGATIVE_INFINITY, section: null }
+        ).section;
+    }
+
+    applySavedOrder();
+
+    container.querySelectorAll("[data-section-drag-handle]").forEach(function (handle) {
+      handle.addEventListener("dragstart", function (event) {
+        draggedSection = handle.closest("[data-home-sortable-section]");
+        if (!draggedSection) {
+          return;
+        }
+        draggedSection.classList.add("is-dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", draggedSection.dataset.homeSectionKey || "");
+      });
+
+      handle.addEventListener("dragend", function () {
+        if (draggedSection) {
+          draggedSection.classList.remove("is-dragging");
+          draggedSection = null;
+          saveSectionOrder();
+          document.querySelectorAll(".media-rail-shell").forEach(updateRailControls);
+        }
+      });
+    });
+
+    container.addEventListener("dragover", function (event) {
+      if (!draggedSection) {
+        return;
+      }
+      event.preventDefault();
+      const nextSection = sectionAfterPointer(event.clientY);
+      if (nextSection) {
+        container.insertBefore(draggedSection, nextSection);
+      } else {
+        container.appendChild(draggedSection);
+      }
+    });
+  }
+
   document.addEventListener("click", function (event) {
     const prevRail = event.target.closest("[data-rail-prev]");
     if (prevRail) {
@@ -87,7 +354,7 @@
     if (!samePage) {
       return;
     }
-    if (openDrawer(targetId)) {
+    if (toggleDrawer(targetId)) {
       event.preventDefault();
     }
   });
@@ -140,6 +407,21 @@
     }
   }
 
+  function markCardVisited(card) {
+    if (!card) {
+      return;
+    }
+    card.classList.add("is-visited");
+    const image = card.querySelector(".card-image");
+    if (image && !image.querySelector(".visited-badge")) {
+      const badge = document.createElement("span");
+      badge.className = "visited-badge";
+      badge.setAttribute("aria-label", "Item visitat");
+      badge.setAttribute("title", "Item visitat");
+      image.appendChild(badge);
+    }
+  }
+
   async function markVisited(url, card) {
     if (!url) {
       return;
@@ -158,6 +440,7 @@
       },
     });
     if (response.ok) {
+      markCardVisited(card);
       removePendingCard(card);
       syncVisitToggle(true);
     }
@@ -231,6 +514,10 @@
   );
 
   document.addEventListener("DOMContentLoaded", function () {
+    initHomeIntro();
+    initDeletePanel();
+    initHomeSectionSorting();
+
     document.querySelectorAll(".media-rail-shell").forEach(function (shell) {
       const rail = shell.querySelector("[data-media-rail]");
       updateRailControls(shell);
@@ -299,6 +586,10 @@
     return absoluteUrl(user.url);
   }
 
+  function buildSiteShareText(site, url) {
+    return [site.title, "", site.description, "", url].filter(Boolean).join("\n");
+  }
+
   async function copyToClipboard(text) {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -350,6 +641,7 @@
       item: { url: buildPublicItemUrl, text: buildItemShareText },
       collection: { url: buildPublicCollectionUrl, text: buildCollectionShareText },
       channel: { url: buildPublicChannelUrl, text: buildChannelShareText },
+      site: { url: buildPublicChannelUrl, text: buildSiteShareText },
     };
     const builder = builders[type] || builders.item;
     const url = builder.url(data);
@@ -443,5 +735,6 @@
     buildItemShareText,
     buildCollectionShareText,
     buildChannelShareText,
+    buildSiteShareText,
   };
 })();

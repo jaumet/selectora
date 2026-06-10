@@ -2,6 +2,7 @@ from django.urls import path, re_path
 
 from .views import (
     ContentItemCreateView,
+    ContentItemDeleteView,
     ContentItemDetailView,
     ContentItemUpdateView,
     ContentItemVisitToggleView,
@@ -41,6 +42,7 @@ urlpatterns = [
     path("items/<int:pk>/visited/", ContentItemVisitedView.as_view(), name="contentitem_visited"),
     path("items/<int:pk>/visit-toggle/", ContentItemVisitToggleView.as_view(), name="contentitem_visit_toggle"),
     path("items/<int:pk>/edit/", ContentItemUpdateView.as_view(), name="contentitem_update"),
+    path("items/<int:pk>/delete/", ContentItemDeleteView.as_view(), name="contentitem_delete"),
     path("public/i/<int:pk>/", PublicItemShareView.as_view(), name="public_item"),
     path("public/c/<int:pk>/", PublicCollectionShareView.as_view(), name="public_collection"),
     path("public/u/<int:pk>/", PublicUserChannelShareView.as_view(), name="public_user_channel"),

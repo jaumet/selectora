@@ -6,15 +6,23 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 
 - Afegir una URL des del dashboard privat i enriquir-la automàticament amb metadades.
 - Registre i entrada sense contrasenya amb `magic link` per email.
+- Portada compacta amb rails horitzontals, fletxes de navegació, canals públics i seccions dinàmiques.
+- Panell inicial de presentació de Selectora amb logo, vídeo, tancament amb `ESC` i opció de no tornar-lo a mostrar.
+- Botons `Temes` i `Cerca` en mode toggle: activen i amaguen els panells de filtres sense recarregar la pàgina.
+- Usuaris autenticats poden reordenar les seccions de portada arrossegant-les; l'ordre queda recordat al navegador.
 - Canal personal compacte amb capçalera visual, rails, seccions dinàmiques i filtres per text, tipus, plataforma, autor, idioma i ordre.
 - Col·leccions públiques i privades amb pàgina pròpia, collage de portada i suport per compartir.
-- Share module amb URL públiques per item, col·lecció i canal, botó de compartir, `copy link` i Web Share API quan existeix.
+- Share module amb URL públiques per item, col·lecció, canal i la pròpia Selectora, botó de compartir, `copy link`, `copy text` i Web Share API quan existeix.
+- Metadades Open Graph i Twitter Card per compartir Selectora amb títol, descripció i logo.
 - Visibilitat bàsica `public` / `private` per items, col·leccions i canals.
-- Seguiment d’items visitats per usuari, amb secció d’items pendents de veure quan hi ha login.
+- Seguiment d’items visitats per usuari, amb marca visual a les cards, secció `Has estat veient` i secció d’items pendents de veure quan hi ha login.
 - Fitxa d’item amb vista pública, enllaç a l’origen, accions de compartir i interruptor per marcar visitat o pendent.
+- Edició d’items amb eliminació segura: cal obrir el panell d’alerta, marcar confirmació i tornar a clicar `Elimina`.
+- PWA instal·lable en mòbil amb manifest, icones PNG, service worker, share target i botó `Instal·la` a la navegació.
+- Navegació responsive amb menú d’usuari compacte en mòbil.
 - Publicació al canal propi des de Telegram mitjançant bot i webhook.
 - Admin millorat per `Channel`, `ContentItem`, `Collection`, `Tag` i visites d’items.
-- Tests de metadades, creació, filtres, accés public/privat, share module i visites.
+- Tests de metadades, creació, filtres, accés public/privat, share module, visites, PWA, reordenació de seccions i eliminació d’items.
 
 ## Estructura
 
@@ -38,9 +46,11 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 │       └── prod.py
 ├── static/css/styles.css
 ├── templates/
+├── media/pwa/                # Icones PWA generades per instal·lació mòbil
 ├── manage.py
 ├── requirements.txt
 ├── .env.example
+├── CHANGELOG.md
 └── .gitignore
 ```
 
@@ -67,7 +77,12 @@ Despres obre `http://127.0.0.1:8000/`.
 - Afegir contingut: `/items/new/`
 - Detall d'item: `/items/<id>/`
 - Editar item propi: `/items/<id>/edit/`
+- Eliminar item propi: `POST /items/<id>/delete/`
 - Configuracio del canal i vinculacio Telegram: `/dashboard/channel/`
+- Explorar continguts públics: `/explore/`
+- Manifest PWA: `/manifest.webmanifest`
+- Service worker: `/sw.js`
+- Share target PWA: `/share/`
 - Webhook de Telegram: `/integrations/telegram/webhook/`
 - Canal public, si el canal esta marcat com a public: `/@<username>/`
 - Admin Django: `/admin/`
@@ -129,6 +144,12 @@ Si la URL falla, triga massa o no te metadades, l'aplicacio no es trenca: crea u
 ```bash
 python manage.py test
 ```
+
+La suite actual cobreix 58 tests.
+
+## Changelog
+
+Mantingues `CHANGELOG.md` actualitzat amb tots els canvis rellevants abans de cada push. L'entrada `Unreleased` resumeix el que hi ha al working tree des del darrer push.
 
 ## Variables d'entorn
 

@@ -268,19 +268,67 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "selectora.cc")
         self.assertContains(response, "Temes")
         self.assertContains(response, "Cerca")
+        self.assertContains(response, 'data-open-drawer="temes" aria-pressed="false"')
+        self.assertContains(response, 'data-open-drawer="cerca" aria-pressed="false"')
         self.assertContains(response, 'aria-label="Afegir contingut"')
         self.assertNotContains(response, 'summary>Temes<')
         self.assertNotContains(response, 'summary>Cerca<')
         self.assertContains(response, "curated content by humans")
         self.assertContains(response, "/media/channel_covers/selectora_icon_dark.svg")
+        self.assertContains(response, "/media/pwa/selectora-icon-192.png")
+        self.assertContains(response, "/media/pwa/selectora-icon-512.png")
+        self.assertContains(response, "/media/pwa/apple-touch-icon.png")
         self.assertContains(response, "/media/channel_covers/selectora_compact_dark.svg")
         self.assertContains(response, "/media/channel_covers/selectora_horizontal_dark.svg")
         self.assertContains(response, "/media/channel_covers/Log-2.detail.svg")
         self.assertContains(response, reverse("pwa_manifest"))
+        self.assertContains(response, 'data-pwa-install')
         self.assertNotContains(response, "compact-hero")
         self.assertNotContains(response, "Canals humans, lectura rapida")
         self.assertNotContains(response, "/media/channel_covers/Log-2.detail.jpg")
         self.assertNotContains(response, "/media/channel_covers/logo2-V-open.png")
+
+    def test_home_page_marks_visited_items(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Ja vist",
+            url="https://example.com/ja-vist",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        ContentItemVisit.objects.create(user=self.user, item=item, visit_count=1)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "Ja vist")
+        self.assertContains(response, "Has estat veient")
+        self.assertContains(response, 'class="visual-card is-visited"')
+        self.assertContains(response, 'aria-label="Item visitat"')
+
+    def test_home_sections_are_sortable_for_authenticated_users(self):
+        self.channel.is_public = True
+        self.channel.save()
+        ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Ordenable",
+            url="https://example.com/ordenable",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "data-home-sections")
+        self.assertNotContains(response, "data-section-drag-handle")
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "data-home-sections")
+        self.assertContains(response, 'data-home-section-key="pending"')
+        self.assertContains(response, "data-section-drag-handle")
 
     def test_legacy_html_urls_redirect_to_home(self):
         response = self.client.get("/el-mtode.html")
@@ -355,6 +403,8 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("contentitem_create"))
         self.assertContains(response, 'aria-label="Afegir contingut"')
+        self.assertContains(response, 'class="nav-user-menu"')
+        self.assertContains(response, 'aria-label="Opcions d\'usuari"')
 
     def test_home_item_sections_are_ordered_by_item_count(self):
         self.channel.is_public = True
@@ -472,6 +522,10 @@ class CoreViewsTests(TestCase):
         manifest = response.json()
         self.assertEqual(manifest["display"], "standalone")
         self.assertEqual(manifest["start_url"], "/")
+        self.assertEqual(manifest["orientation"], "portrait-primary")
+        self.assertIn("/media/pwa/selectora-icon-192.png", {icon["src"] for icon in manifest["icons"]})
+        self.assertIn("/media/pwa/selectora-icon-512.png", {icon["src"] for icon in manifest["icons"]})
+        self.assertEqual(manifest["shortcuts"][0]["url"], "/items/new/")
         self.assertEqual(manifest["share_target"]["action"], "/share/")
         self.assertEqual(manifest["share_target"]["params"]["url"], "url")
 
@@ -480,7 +534,10 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/javascript")
-        self.assertIn('self.addEventListener("fetch"', response.content.decode())
+        self.assertEqual(response["Service-Worker-Allowed"], "/")
+        script = response.content.decode()
+        self.assertIn('self.addEventListener("fetch"', script)
+        self.assertIn('caches.open("selectora-shell-v1")', script)
 
     def test_contentitem_create_prefills_shared_url(self):
         self.client.force_login(self.user)
@@ -814,6 +871,59 @@ class CoreViewsTests(TestCase):
 
         self.assertContains(response, "Marcar com a pendent")
         self.assertNotContains(response, "Marcar com a visitat")
+
+    def test_contentitem_edit_shows_delete_confirmation_panel(self):
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item per eliminar",
+            url="https://example.com/delete-me",
+        )
+        self.client.force_login(self.user)
+
+        create_response = self.client.get(reverse("contentitem_create"))
+        self.assertNotContains(create_response, "data-delete-panel")
+
+        response = self.client.get(reverse("contentitem_update", kwargs={"pk": item.pk}))
+
+        self.assertContains(response, "Desa")
+        self.assertContains(response, "Cancel·la")
+        self.assertContains(response, "Elimina")
+        self.assertContains(response, "data-delete-panel")
+        self.assertContains(response, "Confirmo que vull eliminar aquest item")
+
+    def test_contentitem_delete_requires_confirmation(self):
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="No confirmat",
+            url="https://example.com/no-confirm",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse("contentitem_delete", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("contentitem_update", kwargs={"pk": item.pk}))
+        self.assertTrue(ContentItem.objects.filter(pk=item.pk).exists())
+
+    def test_contentitem_delete_removes_owned_item(self):
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Confirmat",
+            url="https://example.com/confirm",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_delete", kwargs={"pk": item.pk}),
+            {"confirm_delete": "1"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("dashboard"))
+        self.assertFalse(ContentItem.objects.filter(pk=item.pk).exists())
 
     def test_item_visit_toggle_updates_visit_state(self):
         self.channel.is_public = True

@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -39,6 +39,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         public_items = ContentItem.objects.filter(channel__is_public=True, visibility=ContentItem.Visibility.PUBLIC)
+        public_items = with_viewer_visit_state(public_items, self.request.user)
         public_channels = (
             Channel.objects.filter(is_public=True)
             .select_related("owner")
@@ -55,13 +56,21 @@ class HomeView(TemplateView):
         )
         context["public_collections"] = public_collections
         pending_public_items = []
+        visited_public_items = []
         if self.request.user.is_authenticated:
+            visited_public_items = list(
+                public_items.filter(visits__user=self.request.user)
+                .select_related("channel", "user")
+                .prefetch_related("tags")
+                .order_by("-visits__last_visited_at")[:12]
+            )
             pending_public_items = list(
                 public_items.exclude(visits__user=self.request.user)
                 .select_related("channel", "user")
                 .prefetch_related("tags")
                 .order_by("-created_at")[:12]
             )
+        context["visited_public_items"] = visited_public_items
         context["pending_public_items"] = pending_public_items
         recent_public_items = list(
             public_items
@@ -89,12 +98,13 @@ class HomeView(TemplateView):
         )
         context["home_sections"] = ordered_sections(
             [
-                {"title": "Col.leccions", "type": "collections", "collections": public_collections},
-                {"title": "Items pendents de veure", "type": "items", "items": pending_public_items},
-                {"title": "Ultimes seleccions", "type": "items", "items": recent_public_items, "link_url": reverse("explore"), "link_label": "Veure tot"},
-                {"title": "Videos i socials", "type": "items", "items": video_public_items},
-                {"title": "Articles", "type": "items", "items": article_public_items},
-                {"title": "Podcasts", "type": "items", "items": podcast_public_items},
+                {"key": "visited", "title": "Has estat veient", "type": "items", "items": visited_public_items, "order": 10},
+                {"key": "pending", "title": "Items pendents de veure", "type": "items", "items": pending_public_items, "order": 20},
+                {"key": "collections", "title": "Col.leccions", "type": "collections", "collections": public_collections, "order": 30},
+                {"key": "recent", "title": "Ultimes seleccions", "type": "items", "items": recent_public_items, "link_url": reverse("explore"), "link_label": "Veure tot", "order": 40},
+                {"key": "videos", "title": "Videos i socials", "type": "items", "items": video_public_items, "order": 50},
+                {"key": "articles", "title": "Articles", "type": "items", "items": article_public_items, "order": 60},
+                {"key": "podcasts", "title": "Podcasts", "type": "items", "items": podcast_public_items, "order": 70},
             ]
         )
         context["global_tags"] = ordered_tags(
@@ -261,6 +271,16 @@ def public_items_queryset():
     )
 
 
+def with_viewer_visit_state(queryset, user):
+    if not user.is_authenticated:
+        return queryset
+    return queryset.annotate(
+        is_visited_by_viewer=Exists(
+            ContentItemVisit.objects.filter(user=user, item=OuterRef("pk"))
+        )
+    )
+
+
 def public_collections_queryset():
     return Collection.objects.filter(
         channel__is_public=True,
@@ -335,7 +355,7 @@ def section_size(section):
 def ordered_sections(sections):
     return sorted(
         [section for section in sections if section_size(section)],
-        key=lambda section: (-section_size(section), section["title"]),
+        key=lambda section: (section.get("order", 100), -section_size(section), section["title"]),
     )
 
 
@@ -343,6 +363,8 @@ def channel_context(channel, items, params, include_private=True, viewer_user=No
     all_items = channel.items.select_related("channel", "user").prefetch_related("tags")
     if not include_private:
         all_items = all_items.filter(visibility=ContentItem.Visibility.PUBLIC)
+    if viewer_user:
+        all_items = with_viewer_visit_state(all_items, viewer_user)
     tag_queryset = Tag.objects.filter(content_items__channel=channel)
     if not include_private:
         tag_queryset = tag_queryset.filter(content_items__visibility=ContentItem.Visibility.PUBLIC)
@@ -406,6 +428,7 @@ class DashboardView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         self.channel = get_or_create_channel(self.request.user)
         queryset = self.channel.items.select_related("channel", "user").prefetch_related("tags")
+        queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
     def get_context_data(self, **kwargs):
@@ -442,6 +465,7 @@ class ExploreView(ListView):
             .select_related("channel", "user")
             .prefetch_related("tags")
         )
+        queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
     def get_context_data(self, **kwargs):
@@ -468,22 +492,63 @@ class ExploreView(ListView):
 class PwaManifestView(View):
     def get(self, request, *args, **kwargs):
         manifest = {
-            "name": "Selectora",
+            "name": "Selectora - continguts triats per humans",
             "short_name": "Selectora",
-            "description": "Curated content by humans.",
+            "description": "Col.lecciona, ordena i comparteix continguts escollits per humans.",
             "id": "/",
             "start_url": "/",
             "scope": "/",
             "display": "standalone",
+            "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+            "orientation": "portrait-primary",
             "background_color": "#0e1116",
             "theme_color": "#0e1116",
             "lang": "ca",
+            "dir": "ltr",
+            "categories": ["social", "productivity", "news"],
             "icons": [
+                {
+                    "src": "/media/pwa/selectora-icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any maskable",
+                },
+                {
+                    "src": "/media/pwa/selectora-icon-512.png",
+                    "sizes": "512x512",
+                    "type": "image/png",
+                    "purpose": "any maskable",
+                },
                 {
                     "src": "/media/channel_covers/selectora_icon_dark.svg?v=20260604",
                     "sizes": "any",
                     "type": "image/svg+xml",
                     "purpose": "any maskable",
+                }
+            ],
+            "shortcuts": [
+                {
+                    "name": "Afegir item",
+                    "short_name": "Afegir",
+                    "description": "Guarda un nou contingut a Selectora.",
+                    "url": "/items/new/",
+                    "icons": [{"src": "/media/pwa/selectora-icon-192.png", "sizes": "192x192"}],
+                },
+                {
+                    "name": "Explorar",
+                    "short_name": "Explorar",
+                    "description": "Descobreix continguts i canals publics.",
+                    "url": "/explore/",
+                    "icons": [{"src": "/media/pwa/selectora-icon-192.png", "sizes": "192x192"}],
+                },
+            ],
+            "screenshots": [
+                {
+                    "src": "/media/logos/04_selectora_logo_horizontal_exact.svg",
+                    "sizes": "1200x630",
+                    "type": "image/svg+xml",
+                    "form_factor": "wide",
+                    "label": "Selectora",
                 }
             ],
             "share_target": {
@@ -503,16 +568,60 @@ class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
         script = """
 self.addEventListener("install", function (event) {
+  event.waitUntil(
+    caches.open("selectora-shell-v1").then(function (cache) {
+      return cache.addAll([
+        "/",
+        "/manifest.webmanifest",
+        "/static/css/styles.css",
+        "/static/js/app.js",
+        "/media/pwa/selectora-icon-192.png",
+        "/media/pwa/selectora-icon-512.png"
+      ]);
+    }).catch(function () {})
+  );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", function (event) {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(
+        keys.filter(function (key) {
+          return key !== "selectora-shell-v1";
+        }).map(function (key) {
+          return caches.delete(key);
+        })
+      );
+    }).then(function () {
+      return self.clients.claim();
+    })
+  );
 });
 
-self.addEventListener("fetch", function () {});
+self.addEventListener("fetch", function (event) {
+  const requestUrl = new URL(event.request.url);
+  if (event.request.method !== "GET" || requestUrl.origin !== self.location.origin) {
+    return;
+  }
+  event.respondWith(
+    fetch(event.request).then(function (response) {
+      const copy = response.clone();
+      caches.open("selectora-shell-v1").then(function (cache) {
+        cache.put(event.request, copy).catch(function () {});
+      });
+      return response;
+    }).catch(function () {
+      return caches.match(event.request).then(function (cached) {
+        return cached || caches.match("/");
+      });
+    })
+  );
+});
 """.strip()
-        return HttpResponse(script, content_type="text/javascript")
+        response = HttpResponse(script, content_type="text/javascript")
+        response["Service-Worker-Allowed"] = "/"
+        return response
 
 
 class PwaShareTargetView(LoginRequiredMixin, RedirectView):
@@ -593,6 +702,17 @@ class ContentItemUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
+class ContentItemDeleteView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        item = get_object_or_404(ContentItem.objects.filter(user=request.user), pk=kwargs["pk"])
+        if request.POST.get("confirm_delete") != "1":
+            messages.warning(request, "Marca la confirmacio abans d'eliminar l'item.")
+            return redirect("contentitem_update", pk=item.pk)
+        item.delete()
+        messages.success(request, "Item eliminat.")
+        return redirect("dashboard")
+
+
 class ContentItemDetailView(DetailView):
     model = ContentItem
     template_name = "core/contentitem_detail.html"
@@ -641,6 +761,7 @@ class PublicChannelView(ListView):
 
     def get_queryset(self):
         queryset = self.channel.items.filter(visibility=ContentItem.Visibility.PUBLIC).select_related("channel", "user").prefetch_related("tags")
+        queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
     def get_context_data(self, **kwargs):

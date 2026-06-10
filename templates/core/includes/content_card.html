@@ -1,4 +1,4 @@
-<article class="visual-card">
+<article class="visual-card{% if item.is_visited_by_viewer %} is-visited{% endif %}">
   <a class="card-image{% if item.display_image_url %} has-image{% endif %}" href="{% if public_links %}{{ item.get_public_url }}{% else %}{{ item.get_absolute_url }}{% endif %}" aria-label="{{ item.title }}">
     {% if item.display_image_url %}
       <img src="{{ item.display_image_url }}" alt="" loading="lazy" decoding="async" data-image-fallback>
@@ -10,6 +10,9 @@
     </div>
     {% if item.embed_url %}
       <span class="embed-badge">Embed</span>
+    {% endif %}
+    {% if item.is_visited_by_viewer %}
+      <span class="visited-badge" aria-label="Item visitat" title="Item visitat"></span>
     {% endif %}
     <span class="card-image-title">{{ item.title }}</span>
   </a>

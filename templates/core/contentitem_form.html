@@ -92,9 +92,27 @@
       {% if form.tag_list.help_text %}<span class="helptext">{{ form.tag_list.help_text }}</span>{% endif %}
     </p>
     <div class="form-actions">
-      <button class="button" type="submit">Guardar</button>
-      <a href="{% url 'dashboard' %}">Cancel.lar</a>
+      <button class="button" type="submit">Desa</button>
+      <a href="{% url 'dashboard' %}">Cancel·la</a>
+      {% if object %}
+        <button class="button danger-button" type="button" data-delete-panel-open>Elimina</button>
+      {% endif %}
     </div>
   </form>
+  {% if object %}
+    <form method="post" action="{% url 'contentitem_delete' object.pk %}" class="delete-alert" data-delete-panel hidden>
+      {% csrf_token %}
+      <h2>Eliminar item?</h2>
+      <p>Aquesta accio eliminara l'item del teu canal i no es pot desfer.</p>
+      <label class="delete-confirm-check">
+        <input type="checkbox" name="confirm_delete" value="1" data-delete-confirm>
+        <span>Confirmo que vull eliminar aquest item</span>
+      </label>
+      <div class="form-actions">
+        <button class="button danger-button" type="submit" data-delete-submit disabled>Elimina</button>
+        <button class="button secondary" type="button" data-delete-panel-close>Cancel·lar</button>
+      </div>
+    </form>
+  {% endif %}
 </section>
 {% endblock %}

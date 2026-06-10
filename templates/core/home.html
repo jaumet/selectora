@@ -4,7 +4,42 @@
 {% block title %}Selectora - Canals{% endblock %}
 
 {% block content %}
-<section class="compact-home">
+<div class="home-intro-overlay" data-home-intro hidden>
+  <div class="home-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="home-intro-title">
+    <button class="home-intro-close" type="button" aria-label="Tanca" data-home-intro-close>&times;</button>
+    <div class="home-intro-main">
+      <div class="home-intro-copy">
+        <img
+          class="home-intro-logo"
+          src="/media/logos/04_selectora_logo_horizontal_exact.svg"
+          alt="Selectora">
+        <h1 id="home-intro-title">Continguts triats per persones</h1>
+        <p class="home-intro-lead">
+          Col.lecciona allò que val la pena, no ho perdis i comparteix-ho amb criteri.
+          Selectora et permet guardar items, ordenar-los amb etiquetes i obrir el teu propi canal.
+        </p>
+        <div class="home-intro-features" aria-label="Que pots fer amb Selectora">
+          <span>Guardar enllaços, videos, podcasts i textos</span>
+          <span>Crear un canal public amb la teva seleccio</span>
+          <span>Descobrir canals d'altres persones</span>
+          <span>Multiplicar continguts escollits per humans</span>
+        </div>
+      </div>
+      <div class="home-intro-video">
+        <video controls playsinline preload="metadata">
+          <source src="/media/videos/video-jaume-selectora-ORIG.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <label class="home-intro-choice">
+      <input type="checkbox" data-home-intro-never>
+      <span>No mostris mes aquest missatge</span>
+    </label>
+    <button class="button home-intro-action" type="button" data-home-intro-close>Entrar a Selectora</button>
+  </div>
+</div>
+
+<section class="compact-home"{% if user.is_authenticated %} data-home-sections{% endif %}>
   {% if global_tags %}
     <section class="compact-section compact-panel" id="temes">
       <div class="section-heading">
@@ -85,9 +120,14 @@
   </section>
 
   {% if public_channels %}
-    <section class="compact-section" id="canals">
+    <section class="compact-section"{% if user.is_authenticated %} data-home-sortable-section data-home-section-key="channels"{% endif %} id="canals">
       <div class="section-heading">
-        <h2>Canals publics</h2>
+        <div class="section-title-group">
+          {% if user.is_authenticated %}
+            <button class="section-drag-handle" type="button" draggable="true" aria-label="Reordena seccio" data-section-drag-handle></button>
+          {% endif %}
+          <h2>Canals publics</h2>
+        </div>
         <p>{{ public_channels|length }} oberts</p>
       </div>
       <div class="compact-channel-rail">
@@ -107,9 +147,14 @@
   {% endif %}
 
   {% for section in home_sections %}
-    <section class="compact-section">
+    <section class="compact-section"{% if user.is_authenticated %} data-home-sortable-section data-home-section-key="{{ section.key }}"{% endif %}>
       <div class="section-heading">
-        <h2>{{ section.title }}</h2>
+        <div class="section-title-group">
+          {% if user.is_authenticated %}
+            <button class="section-drag-handle" type="button" draggable="true" aria-label="Reordena seccio" data-section-drag-handle></button>
+          {% endif %}
+          <h2>{{ section.title }}</h2>
+        </div>
         {% if section.type == "collections" %}
           <p>{{ section.collections|length }} publiques</p>
         {% else %}
