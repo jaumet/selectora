@@ -52,6 +52,16 @@ def create_content_item_from_url(user, url, manual_data=None, manual_tags=None):
     channel = get_or_create_channel(user)
     existing = ContentItem.objects.filter(channel=channel, url=url).first()
     if existing:
+        if not existing.embed_url:
+            metadata = fetch_url_metadata(url)
+            apply_metadata_to_item(existing, metadata, manual_data)
+            existing.save()
+            if not existing.tags.exists():
+                tag_names = list(metadata.data.get("tags", []))
+                if manual_tags:
+                    tag_names.extend(manual_tags)
+                set_item_tags(existing, tag_names)
+            return existing, False, metadata.error
         return existing, False, ""
 
     metadata = fetch_url_metadata(url)

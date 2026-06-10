@@ -22,6 +22,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
 - Ruta del Django admin canviada de `/admin/` a `/entra-per-darrere/`.
 - Fallback d'embed de YouTube ampliat per reconèixer URLs `/live/`, `/embed/`, `/v/` i `youtube-nocookie.com`, útil quan els items arriben des de Telegram i YouTube no retorna metadades completes.
+- Els items existents sense `embed_url` es refresquen quan es torna a afegir la mateixa URL, evitant que un YouTube creat prèviament des de Telegram quedi sense reproductor incrustat.
 
 ### Canviat
 

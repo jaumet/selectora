@@ -789,6 +789,45 @@ class CoreViewsTests(TestCase):
         self.assertTrue(item.tags.filter(slug="telegram").exists())
         send_mock.assert_called()
 
+    @patch("core.content_services.fetch_url_metadata")
+    @patch("core.telegram.send_telegram_message")
+    def test_telegram_webhook_completes_existing_youtube_without_embed(self, send_mock, metadata_mock):
+        url = "https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf"
+        TelegramAccount.objects.create(user=self.user, telegram_user_id=12345, chat_id=67890)
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="YouTube sense embed",
+            url=url,
+            content_type=ContentItem.ContentType.VIDEO,
+        )
+        metadata_mock.return_value.data = {
+            "embed_url": "https://www.youtube.com/embed/b2KMtLmItwo",
+            "thumbnail_url": "https://i.ytimg.com/vi/b2KMtLmItwo/hqdefault.jpg",
+            "image_url": "https://i.ytimg.com/vi/b2KMtLmItwo/hqdefault.jpg",
+            "content_type": ContentItem.ContentType.VIDEO,
+        }
+        metadata_mock.return_value.error = ""
+        payload = {
+            "message": {
+                "text": f"Mira aixo {url}",
+                "from": {"id": 12345, "username": "jaume"},
+                "chat": {"id": 67890},
+            }
+        }
+
+        response = self.client.post(
+            reverse("telegram_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        item.refresh_from_db()
+        self.assertEqual(item.embed_url, "https://www.youtube.com/embed/b2KMtLmItwo")
+        self.assertEqual(ContentItem.objects.filter(channel=self.channel, url=url).count(), 1)
+        send_mock.assert_called()
+
     @override_settings(TELEGRAM_WEBHOOK_SECRET="expected-secret")
     def test_telegram_webhook_rejects_wrong_secret(self):
         response = self.client.post(
@@ -853,6 +892,7 @@ class CoreViewsTests(TestCase):
             channel=self.channel,
             title="Existing",
             url="https://example.com/repeated",
+            embed_url="https://example.com/embed",
         )
 
         response = self.client.post(
@@ -874,6 +914,41 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.url, existing.get_absolute_url())
         self.assertEqual(ContentItem.objects.filter(channel=self.channel, url="https://example.com/repeated").count(), 1)
         metadata_mock.assert_not_called()
+
+    @patch("core.content_services.fetch_url_metadata")
+    def test_duplicate_url_with_missing_embed_refreshes_existing_item(self, metadata_mock):
+        metadata_mock.return_value.data = {
+            "embed_url": "https://www.youtube.com/embed/b2KMtLmItwo",
+            "thumbnail_url": "https://i.ytimg.com/vi/b2KMtLmItwo/hqdefault.jpg",
+        }
+        metadata_mock.return_value.error = ""
+        self.client.force_login(self.user)
+        existing = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Existing YouTube",
+            url="https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf",
+        )
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        existing.refresh_from_db()
+        self.assertEqual(existing.embed_url, "https://www.youtube.com/embed/b2KMtLmItwo")
+        metadata_mock.assert_called_once()
 
     def test_private_item_detail_is_not_public(self):
         item = ContentItem.objects.create(
