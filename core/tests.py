@@ -148,6 +148,23 @@ class MetadataFetcherTests(TestCase):
                 self.assertEqual(result.data["embed_url"], "https://www.youtube.com/embed/eh1hrYQi4FY")
                 self.assertEqual(result.data["thumbnail_url"], "https://i.ytimg.com/vi/eh1hrYQi4FY/hqdefault.jpg")
 
+    def test_youtube_original_url_supplies_embed_when_response_lacks_metadata(self):
+        class Response:
+            url = "https://consent.youtube.com/"
+            text = "<html><head><title>Before you continue</title></head><body></body></html>"
+            headers = {"content-type": "text/html"}
+
+            def raise_for_status(self):
+                return None
+
+        result = fetch_url_metadata(
+            "https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf",
+            http_get=lambda *args, **kwargs: Response(),
+        )
+
+        self.assertEqual(result.data["embed_url"], "https://www.youtube.com/embed/b2KMtLmItwo")
+        self.assertEqual(result.data["thumbnail_url"], "https://i.ytimg.com/vi/b2KMtLmItwo/hqdefault.jpg")
+
     def test_youtube_embed_iframe_has_referrer_policy(self):
         user = get_user_model().objects.create_user(username="owner", password="test-password")
         channel = Channel.objects.create(owner=user, name="Canal", is_public=True)

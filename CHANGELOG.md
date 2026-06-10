@@ -23,6 +23,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Ruta del Django admin canviada de `/admin/` a `/entra-per-darrere/`.
 - Fallback d'embed de YouTube ampliat per reconèixer URLs `/live/`, `/embed/`, `/v/` i `youtube-nocookie.com`, útil quan els items arriben des de Telegram i YouTube no retorna metadades completes.
 - Els items existents sense `embed_url` es refresquen quan es torna a afegir la mateixa URL, evitant que un YouTube creat prèviament des de Telegram quedi sense reproductor incrustat.
+- El fallback de YouTube ara també s'aplica quan YouTube retorna HTML sense metadades útils o una pàgina intermèdia, usant sempre la URL original enviada.
 
 ### Canviat
 

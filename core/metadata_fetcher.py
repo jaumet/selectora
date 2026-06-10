@@ -47,6 +47,7 @@ def fetch_url_metadata(url: str, http_get=None) -> MetadataResult:
     data = extract_metadata(response.text, response.url)
     if _is_tiktok_url(response.url):
         data = _merge_metadata(data, _fetch_tiktok_oembed_metadata(response.url, http_get))
+    data = _merge_metadata(data, _platform_completion_metadata(url))
     data = _merge_metadata(data, _platform_image_metadata(response.url))
     return MetadataResult(data=data, error="")
 
@@ -179,6 +180,15 @@ def _fallback_metadata(url: str) -> dict[str, Any]:
         **_platform_image_metadata(url),
         "embed_url": _youtube_embed(url) or _instagram_embed(url) or _tiktok_embed(url),
         "metadata_json": {},
+    }
+
+
+def _platform_completion_metadata(url: str) -> dict[str, Any]:
+    metadata = _fallback_metadata(url)
+    return {
+        key: value
+        for key, value in metadata.items()
+        if key in {"canonical_url", "source_platform", "content_type", "image_url", "thumbnail_url", "embed_url"}
     }
 
 
