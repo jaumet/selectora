@@ -20,13 +20,16 @@
   <meta property="og:url" content="{% block og_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}{% endblock %}">
   <meta property="og:title" content="{% block og_title %}Selectora{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Col.lecciona allò que val la pena, no ho perdis i comparteix-ho amb criteri. Canals de continguts escollits per humans.{% endblock %}">
-  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}/media/logos/04_selectora_logo_horizontal_exact.svg{% endblock %}">
-  <meta property="og:image:type" content="image/svg+xml">
+  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}/media/logos/selectora-og-horizontal.png{% endblock %}">
+  <meta property="og:image:secure_url" content="{% block og_image_secure_url %}{{ request.scheme }}://{{ request.get_host }}/media/logos/selectora-og-horizontal.png{% endblock %}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="{% block og_image_alt %}Logo de Selectora{% endblock %}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% block twitter_title %}Selectora{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}Col.lecciona, ordena i comparteix continguts escollits per humans.{% endblock %}">
-  <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}/media/logos/04_selectora_logo_horizontal_exact.svg{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}/media/logos/selectora-og-horizontal.png{% endblock %}">
   <link rel="manifest" href="{% url 'pwa_manifest' %}">
   <link rel="icon" type="image/svg+xml" href="/media/channel_covers/selectora_icon_dark.svg?v=20260604">
   <link rel="icon" type="image/png" sizes="192x192" href="/media/pwa/selectora-icon-192.png">
