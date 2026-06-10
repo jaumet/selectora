@@ -3,6 +3,7 @@ set -e
 
 SERVER="root@165.22.16.53"
 REMOTE_DEPLOY="/server/selectora.cc/deploy.sh"
+REMOTE_APP="/server/selectora.cc/prod"
 
 COMMIT_MESSAGE="$1"
 
@@ -30,22 +31,22 @@ else
 fi
 
 echo "==> Pujant dev..."
-git push origin dev
+git push --force origin dev
 
 echo "==> Canviant a main..."
 git checkout main
 
-echo "==> Actualitzant main remota..."
-git pull origin main
-
-echo "==> Fusionant dev a main..."
-git merge dev
+echo "==> Alineant main amb dev..."
+git merge --ff-only dev
 
 echo "==> Pujant main..."
-git push origin main
+git push --force origin main
 
 echo "==> Tornant a dev..."
 git checkout dev
+
+echo "==> Sincronitzant codi al servidor..."
+ssh "$SERVER" "cd '$REMOTE_APP' && git fetch origin main && git checkout main && git reset --hard origin/main"
 
 echo "==> Executant deploy al servidor..."
 ssh "$SERVER" "$REMOTE_DEPLOY"

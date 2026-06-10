@@ -43,6 +43,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Nova ruta `POST /items/<id>/delete/` per eliminar items propis.
 - Nova helper de queryset `with_viewer_visit_state` per anotar items visitats sense consultes per card.
 - El model `Channel` força `is_public=True` en desar i l'admin ja no exposa aquest camp.
+- Els scripts de publicació alineen `main` amb `dev`, fan push forçat quan cal i sincronitzen el clon de producció amb `origin/main` abans del deploy.
 - El service worker es serveix amb capçalera `Service-Worker-Allowed: /`.
 - S'han afegit proves per PWA, menú d'usuari mòbil, reordenació de seccions, marca de visitat i eliminació d'items.
 - S'han afegit proves per validar captcha correcte, captcha incorrecte i honeypot omplert.

@@ -3,6 +3,7 @@ set -e
 
 SERVER="root@165.22.16.53"
 REMOTE_DEPLOY="/server/selectora.cc/deploy.sh"
+REMOTE_APP="/server/selectora.cc/prod"
 
 COMMIT_MESSAGE="$1"
 
@@ -43,6 +44,9 @@ git push --force origin main
 
 echo "==> Tornant a dev..."
 git checkout dev
+
+echo "==> Sincronitzant codi al servidor..."
+ssh "$SERVER" "cd '$REMOTE_APP' && git fetch origin main && git checkout main && git reset --hard origin/main"
 
 echo "==> Executant deploy al servidor..."
 ssh "$SERVER" "$REMOTE_DEPLOY"
