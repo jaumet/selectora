@@ -345,6 +345,7 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "/media/videos/video-jaume-selectora-ORIG.mp4")
         self.assertContains(response, "Privats ben marcats")
         self.assertContains(response, "llaç vermell")
+        self.assertContains(response, "canals de continguts digitals seleccionats per humans")
 
     def test_home_page_marks_visited_items(self):
         self.channel.is_public = True
