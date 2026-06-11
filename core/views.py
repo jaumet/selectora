@@ -26,6 +26,32 @@ URL_RE = re.compile(r"https?://[^\s<>\"]+")
 MAGIC_LOGIN_SESSION_AGE_SECONDS = 60 * 24 * 60 * 60
 
 
+SELECTORA_FEATURES = [
+    ("🔗", "Guardar enllaços", "Afegeix una URL i Selectora en recupera la informació principal."),
+    ("✉️", "Entrar sense contrasenya", "Accés amb magic link per email i sessió persistent."),
+    ("🏠", "Explorar una portada visual", "Canals i continguts en rails horitzontals fàcils de navegar."),
+    ("🎬", "Veure una presentació inicial", "Panell amb logo, vídeo i opció de no tornar-lo a mostrar."),
+    ("🧭", "Filtrar per temes i cerca", "Filtres sense recarregar la pàgina."),
+    ("↕️", "Ordenar la portada", "Reordena seccions i conserva el teu ordre."),
+    ("👤", "Tenir un canal propi", "Canal personal amb capçalera, seccions i filtres."),
+    ("🗂️", "Crear col·leccions", "Col·leccions públiques o privades amb pàgina pròpia."),
+    ("📣", "Compartir fàcilment", "Comparteix items, col·leccions, canals o Selectora."),
+    ("🖼️", "Bona previsualització", "Títol, descripció i imatge en xarxes i missatgeria."),
+    ("🌍", "Control públic o privat", "Visibilitat per items i col·leccions."),
+    ("🟢", "Visibilitat clara", "Verd per públic i vermell per privat."),
+    ("⭐", "Valorar amb matisos", "Una valoració principal i fins a tres matisos."),
+    ("📈", "Veure visites", "Comptador i sparkline d’evolució."),
+    ("👁️", "Recordar què has vist", "Marca de visitats i separació de pendents."),
+    ("📄", "Fitxa d’un item", "Pàgina pròpia amb informació i accions."),
+    ("🗑️", "Eliminar amb seguretat", "Confirmació abans d’esborrar."),
+    ("📱", "Instal·lar al mòbil", "PWA instal·lable al telèfon."),
+    ("📲", "Pantalla petita", "Navegació responsive per mòbil."),
+    ("🤖", "Publicar des de Telegram", "Envia enllaços mitjançant el bot."),
+    ("🛠️", "Gestionar contingut", "Administra canals, items, col·leccions, tags i visites."),
+    ("✅", "Créixer amb seguretat", "Tests per mantenir estable el sistema."),
+]
+
+
 def first_url_from_share_payload(params):
     for key in ("url", "text"):
         value = params.get(key, "")
@@ -130,6 +156,15 @@ class HomeView(TemplateView):
 class LegacyHtmlRedirectView(RedirectView):
     pattern_name = "home"
     permanent = False
+
+
+class AboutSelectoraView(TemplateView):
+    template_name = "core/about_selectora.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["features"] = SELECTORA_FEATURES
+        return context
 
 
 class MagicLoginRequestView(FormView):

@@ -308,6 +308,9 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, 'data-open-drawer="temes" aria-pressed="false"')
         self.assertContains(response, 'data-open-drawer="cerca" aria-pressed="false"')
         self.assertContains(response, 'aria-label="Afegeix continguts"')
+        self.assertContains(response, 'title="Què és Selectora?"')
+        self.assertContains(response, 'title="Comparteix Selectora.cc"')
+        self.assertContains(response, "⤴")
         self.assertContains(response, 'title="Cerca per temes"')
         self.assertContains(response, 'title="Cerca"')
         self.assertNotContains(response, 'summary>Temes<')
@@ -330,6 +333,16 @@ class CoreViewsTests(TestCase):
         self.assertNotContains(response, "Canals humans, lectura rapida")
         self.assertNotContains(response, "/media/channel_covers/Log-2.detail.jpg")
         self.assertNotContains(response, "/media/channel_covers/logo2-V-open.png")
+
+    def test_about_selectora_page_loads(self):
+        response = self.client.get(reverse("about_selectora"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Què és Selectora?")
+        self.assertContains(response, "Jaume Nu a l’art")
+        self.assertContains(response, "curated content by humans")
+        self.assertContains(response, "/media/logos/04_selectora_logo_horizontal_exact.svg")
+        self.assertContains(response, "/media/videos/video-jaume-selectora-ORIG.mp4")
 
     def test_home_page_marks_visited_items(self):
         self.channel.is_public = True
@@ -454,6 +467,11 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, 'title="Dashboard"')
         self.assertContains(response, 'title="El meu canal"')
         self.assertContains(response, 'title="Sortir"')
+        nav_html = response.content.decode()
+        self.assertLess(nav_html.find("Què és?"), nav_html.find("⤴"))
+        self.assertLess(nav_html.find("⤴"), nav_html.find('aria-label="Afegeix continguts"'))
+        self.assertLess(nav_html.find('aria-label="Afegeix continguts"'), nav_html.find('aria-label="Cerca"'))
+        self.assertLess(nav_html.find('aria-label="Cerca"'), nav_html.find('aria-label="Cerca per temes"'))
 
     def test_home_item_sections_are_ordered_by_item_count(self):
         self.channel.is_public = True

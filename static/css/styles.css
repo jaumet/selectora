@@ -175,6 +175,12 @@ select:focus-visible {
   color: #06100d;
 }
 
+.nav-about-link {
+  min-height: 2.4rem;
+  padding-inline: 0.72rem;
+  white-space: nowrap;
+}
+
 .nav-plus {
   min-width: 2.4rem;
   padding-inline: 0.75rem;
@@ -1111,6 +1117,170 @@ select {
   left: 1rem;
   bottom: 1rem;
   z-index: 1;
+}
+
+.about-selectora {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.about-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 1rem;
+  min-height: min(72vh, 42rem);
+  align-content: center;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(14, 17, 22, 0.98), rgba(14, 17, 22, 0.84), rgba(14, 17, 22, 0.62)),
+    linear-gradient(135deg, rgba(255, 204, 102, 0.16), rgba(55, 194, 154, 0.14) 56%, rgba(21, 26, 34, 0.92));
+  padding: clamp(2rem, 7vw, 5rem) clamp(1rem, 4vw, 3rem);
+}
+
+.about-logo {
+  width: min(23rem, 78vw);
+  height: auto;
+  margin-bottom: 0.4rem;
+}
+
+.about-hero-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 31rem);
+  gap: clamp(1.2rem, 4vw, 3rem);
+  align-items: center;
+}
+
+.about-hero-copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.about-hero-video {
+  align-self: center;
+  min-width: 0;
+}
+
+.about-hero-video video {
+  display: block;
+  width: 100%;
+  max-height: 24rem;
+  border: 1px solid rgba(255, 204, 102, 0.3);
+  border-radius: 8px;
+  background: #05080c;
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.36);
+}
+
+.about-hero h1 {
+  max-width: 900px;
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  line-height: 0.94;
+}
+
+.about-lead,
+.about-principle {
+  max-width: 760px;
+  color: var(--text);
+  font-size: clamp(1.08rem, 2.1vw, 1.55rem);
+  line-height: 1.42;
+}
+
+.about-lead {
+  color: #dbe4ef;
+}
+
+.about-principle {
+  color: var(--danger);
+  font-weight: 900;
+}
+
+.about-tagline {
+  width: fit-content;
+  border: 1px solid rgba(255, 204, 102, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 204, 102, 0.1);
+  color: #ffe0a1;
+  font-weight: 900;
+  padding: 0.55rem 0.85rem;
+}
+
+.about-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.about-section-heading {
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+.about-section-heading h2,
+.about-closing h2 {
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+}
+
+.about-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 0.8rem;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+.about-feature-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.45rem;
+  min-height: 10.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(27, 34, 45, 0.78);
+  padding: 1rem;
+}
+
+.about-feature-card:nth-child(3n + 1) {
+  border-color: rgba(255, 204, 102, 0.28);
+}
+
+.about-feature-card:nth-child(3n + 2) {
+  border-color: rgba(55, 194, 154, 0.25);
+}
+
+.about-feature-icon {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 1.35rem;
+}
+
+.about-feature-card h3 {
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.about-feature-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.38;
+}
+
+.about-closing {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0 clamp(1rem, 4vw, 3rem) 3rem;
+  border: 1px solid rgba(55, 194, 154, 0.3);
+  border-radius: 8px;
+  background: rgba(55, 194, 154, 0.08);
+  padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.about-closing p {
+  max-width: 780px;
+  margin: 0;
+  color: #dbe4ef;
+  font-size: 1.08rem;
 }
 
 .avatar.small {
@@ -2816,10 +2986,6 @@ select {
     justify-content: flex-end;
   }
 
-  .nav-share {
-    display: none;
-  }
-
   .nav-user-direct {
     display: inline-flex;
   }
@@ -2846,6 +3012,27 @@ select {
 
   .home-intro-features {
     grid-template-columns: 1fr;
+  }
+
+  .about-hero {
+    min-height: auto;
+    padding-block: 2rem;
+  }
+
+  .about-hero-main {
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero-video video {
+    max-height: 16rem;
+  }
+
+  .about-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-feature-card {
+    min-height: 0;
   }
 
   .channel-hero {

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Què és Selectora? - Selectora{% endblock %}
+{% block meta_description %}Selectora és un canal de continguts triats per persones: guarda, ordena i comparteix vídeos, articles, podcasts, música, newsletters i altres enllaços amb criteri humà.{% endblock %}
+{% block og_title %}Què és Selectora?{% endblock %}
+{% block og_description %}Un canal de continguts triats per persones. Curated content by humans.{% endblock %}
+{% block twitter_title %}Què és Selectora?{% endblock %}
+{% block twitter_description %}Guarda, ordena i comparteix continguts digitals amb criteri humà.{% endblock %}
+
+{% block content %}
+<article class="about-selectora">
+  <section class="about-hero" aria-labelledby="about-title">
+    <img class="about-logo" src="/media/logos/04_selectora_logo_horizontal_exact.svg" alt="Selectora">
+    <div class="about-hero-main">
+      <div class="about-hero-copy">
+        <p class="eyebrow">Autor de Selectora: Jaume Nu a l’art</p>
+        <h1 id="about-title">Què és Selectora?</h1>
+        <p class="about-lead">
+          <strong>Selectora és un canal de continguts triats per persones.</strong>
+          Et permet guardar, ordenar i compartir vídeos, articles, podcasts, música, newsletters i altres enllaços que vols conservar o recomanar.
+        </p>
+        <p class="about-principle">No funciona per algoritmes. Funciona per criteri humà.</p>
+        <p class="about-tagline">Selectora.cc — curated content by humans.</p>
+      </div>
+      <div class="about-hero-video">
+        <video controls playsinline preload="metadata">
+          <source src="/media/videos/video-jaume-selectora-ORIG.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section" aria-labelledby="about-features-title">
+    <div class="about-section-heading">
+      <p class="eyebrow">Funcionalitats</p>
+      <h2 id="about-features-title">Què pots fer amb Selectora?</h2>
+    </div>
+    <div class="about-feature-grid">
+      {% for icon, title, description in features %}
+        <section class="about-feature-card" aria-labelledby="feature-{{ forloop.counter }}">
+          <span class="about-feature-icon" aria-hidden="true">{{ icon }}</span>
+          <h3 id="feature-{{ forloop.counter }}">{{ title }}</h3>
+          <p>{{ description }}</p>
+        </section>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="about-closing" aria-labelledby="about-summary-title">
+    <h2 id="about-summary-title">En resum</h2>
+    <p><strong>Selectora és una manera humana de construir i compartir canals de continguts digitals.</strong></p>
+    <p>Selectora.cc — curated content by humans.</p>
+  </section>
+</article>
+{% endblock %}

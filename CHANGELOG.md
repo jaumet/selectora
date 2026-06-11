@@ -9,6 +9,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 ### Afegit
 
 - Capa informativa inicial a la portada amb logo, vídeo, botó de tancament, suport per `ESC` i opció `No mostris mes aquest missatge` persistida al navegador.
+- Pàgina pública `/que-es-selectora/` amb hero visual, logo horitzontal, autor i graella de funcionalitats de Selectora.
+- La pàgina `Què és Selectora?` incorpora el vídeo de presentació al costat del text de la hero.
 - Botó global `Compartir` a la navegació per compartir Selectora.
 - Metadades `description`, canonical, Open Graph i Twitter Card per millorar la previsualització quan es comparteix Selectora.
 - Suport PWA més complet: manifest enriquit, icones PNG `192x192`, `512x512`, `apple-touch-icon`, service worker amb cache bàsic, share target i botó `Instal·la`.
@@ -45,6 +47,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - La navegació reparteix les accions principals al centre (`Temes`, `+`, `Cerca`), agrupa `Temes`/`Cerca` sota una lupa en mòbil i mostra Dashboard, canal i sortir com a icones amb hover.
 - El botó global de compartir Selectora passa a icona amb hover `Comparteix Selectora.cc`.
 - `Temes` i `Cerca` passen a icones amb hover `Cerca per temes` i `Cerca`; el botó `+` mostra hover `Afegeix continguts`.
+- El grup central de la nav queda ordenat com `Què és?`, compartir, `+`, lupa i `#`; el compartir surt de la dreta i usa icona de compartir.
 - El botó `Instal·la` mostra hover `Instal·la al mòbil` i les visites a les cards usen icona amb hover `Visites`.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
 - La navegació de compartir tanca el panell després de copiar enllaç o text.
@@ -67,4 +70,4 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 
 ### Verificació
 
-- `python manage.py test`: 71 tests OK.
+- `python manage.py test`: 72 tests OK.

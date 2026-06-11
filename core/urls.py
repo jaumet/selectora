@@ -1,6 +1,7 @@
 from django.urls import path, re_path
 
 from .views import (
+    AboutSelectoraView,
     ContentItemCreateView,
     ContentItemDeleteView,
     ContentItemDetailView,
@@ -29,6 +30,7 @@ from .views import (
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
+    path("que-es-selectora/", AboutSelectoraView.as_view(), name="about_selectora"),
     path("manifest.webmanifest", PwaManifestView.as_view(), name="pwa_manifest"),
     path("sw.js", ServiceWorkerView.as_view(), name="service_worker"),
     path("share/", PwaShareTargetView.as_view(), name="pwa_share_target"),

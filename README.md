@@ -8,6 +8,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 - Registre i entrada sense contrasenya amb `magic link` per email, sessió de 60 dies després d'entrar, captcha aritmètic server-side i honeypot anti-spam.
 - Portada compacta amb rails horitzontals, fletxes de navegació, canals públics i seccions dinàmiques.
 - Panell inicial de presentació de Selectora amb logo, vídeo, tancament amb `ESC` i opció de no tornar-lo a mostrar.
+- Pàgina pública `Què és Selectora?` amb explicació visual, logo horitzontal i cards de funcionalitats.
 - Botons `Temes` i `Cerca` en mode toggle: activen i amaguen els panells de filtres sense recarregar la pàgina.
 - Usuaris autenticats poden reordenar les seccions de portada arrossegant-les; l'ordre queda recordat al navegador.
 - Canal personal compacte amb capçalera visual, rails, seccions dinàmiques i filtres per text, tipus, plataforma, autor, idioma i ordre.
@@ -74,6 +75,7 @@ Despres obre `http://127.0.0.1:8000/`.
 ## Us local
 
 - Pagina publica inicial: `/`
+- Què és Selectora?: `/que-es-selectora/`
 - Login: `/accounts/login/`
 - Magic link enviat: `/accounts/check-email/`
 - Dashboard privat: `/dashboard/`

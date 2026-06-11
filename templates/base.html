@@ -54,7 +54,10 @@
     <nav class="nav">
       {% url 'home' as selectora_home_url %}
       <div class="nav-primary">
-        <a class="nav-pill nav-icon-button nav-topic-link" href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes">#</a>
+        <a class="nav-pill nav-about-link" href="{% url 'about_selectora' %}" aria-label="Què és Selectora?" title="Què és Selectora?">Què és?</a>
+        <span class="nav-share">
+          {% include "core/includes/share_menu.html" with share_label="⤴" share_aria_label="Comparteix Selectora.cc" share_type="site" share_title="Selectora" share_description="Col.lecciona, ordena i comparteix continguts escollits per humans. Crea el teu canal i descobreix seleccions d'altres persones." share_url=selectora_home_url share_curator="Selectora" %}
+        </span>
         {% if user.is_authenticated %}
           <a class="nav-plus" href="{% url 'contentitem_create' %}" aria-label="Afegeix continguts" title="Afegeix continguts">+</a>
         {% else %}
@@ -67,19 +70,17 @@
           </details>
         {% endif %}
         <a class="nav-pill nav-icon-button nav-search-link" href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕</a>
+        <a class="nav-pill nav-icon-button nav-topic-link" href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes">#</a>
         <details class="nav-search-menu">
           <summary class="nav-icon-button" aria-label="Temes i cerca" title="Temes i cerca">⌕</summary>
           <div class="nav-search-panel">
-            <a href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes"># Temes</a>
             <a href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕ Cerca</a>
+            <a href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes"># Temes</a>
           </div>
         </details>
       </div>
       <div class="nav-secondary">
       <button class="nav-pill nav-install" type="button" data-pwa-install title="Instal·la al mòbil" hidden>Instal·la</button>
-      <span class="nav-share">
-        {% include "core/includes/share_menu.html" with share_label="↗" share_aria_label="Comparteix Selectora.cc" share_type="site" share_title="Selectora" share_description="Col.lecciona, ordena i comparteix continguts escollits per humans. Crea el teu canal i descobreix seleccions d'altres persones." share_url=selectora_home_url share_curator="Selectora" %}
-      </span>
       {% if user.is_authenticated %}
         <a class="nav-user-direct nav-icon-button" href="{% url 'dashboard' %}" aria-label="Dashboard" title="Dashboard">▦</a>
         {% if user.channel.is_public %}
