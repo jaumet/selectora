@@ -22,6 +22,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Eliminació segura d'items propis des del formulari d'edició amb panell d'alerta i checkbox de confirmació.
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
 - Honeypot anti-spam ocult al formulari d'entrada/registre.
+- La sessió iniciada amb magic link dura 60 dies.
 - Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
 - Documents `HOW_TO-selectora-hierarqui.txt`, `HOW_TO-set-resend.txt` i `HOW_TO_Telegram.txt` reformatejats amb Markdown ric.
 - Ruta del Django admin canviada de `/admin/` a `/entra-per-darrere/`.
@@ -44,6 +45,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - La navegació reparteix les accions principals al centre (`Temes`, `+`, `Cerca`), agrupa `Temes`/`Cerca` sota una lupa en mòbil i mostra Dashboard, canal i sortir com a icones amb hover.
 - El botó global de compartir Selectora passa a icona amb hover `Comparteix Selectora.cc`.
 - `Temes` i `Cerca` passen a icones amb hover `Cerca per temes` i `Cerca`; el botó `+` mostra hover `Afegeix continguts`.
+- El botó `Instal·la` mostra hover `Instal·la al mòbil` i les visites a les cards usen icona amb hover `Visites`.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
 - La navegació de compartir tanca el panell després de copiar enllaç o text.
 - El formulari d'edició usa `Desa` i `Cancel·la` i afegeix `Elimina` només quan s'edita un item existent.

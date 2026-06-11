@@ -12,6 +12,7 @@ from .metadata_fetcher import extract_metadata, fetch_url_metadata
 from .auth import create_magic_login
 from .forms import MagicLoginRequestForm
 from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
+from .views import MAGIC_LOGIN_SESSION_AGE_SECONDS
 
 
 HTML_WITH_METADATA = """
@@ -690,6 +691,7 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(int(self.client.session["_auth_user_id"]), user.pk)
+        self.assertEqual(self.client.session.get_expiry_age(), MAGIC_LOGIN_SESSION_AGE_SECONDS)
 
         second_response = self.client.get(reverse("magic_login_confirm", kwargs={"token": token}))
 
@@ -1154,7 +1156,8 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Item amb estadistiques")
         self.assertContains(response, 'class="card-stats"')
-        self.assertContains(response, "2 v")
+        self.assertContains(response, 'title="Visites"')
+        self.assertContains(response, "👁 2")
         self.assertContains(response, 'title="Passo"')
         self.assertContains(response, 'title="Recomanaria"')
         self.assertContains(response, 'title="Útil"')

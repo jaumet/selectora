@@ -23,6 +23,7 @@ from .telegram import process_telegram_update
 
 
 URL_RE = re.compile(r"https?://[^\s<>\"]+")
+MAGIC_LOGIN_SESSION_AGE_SECONDS = 60 * 24 * 60 * 60
 
 
 def first_url_from_share_payload(params):
@@ -162,6 +163,7 @@ class MagicLoginConfirmView(TemplateView):
             messages.warning(request, "Aquest enllaç ja no és valid. Demana'n un de nou.")
             return redirect("login")
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        request.session.set_expiry(MAGIC_LOGIN_SESSION_AGE_SECONDS)
         messages.success(request, "Has entrat a Selectora.")
         return redirect("dashboard")
 
