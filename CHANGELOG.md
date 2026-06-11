@@ -11,6 +11,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Capa informativa inicial a la portada amb logo, vídeo, botó de tancament, suport per `ESC` i opció `No mostris mes aquest missatge` persistida al navegador.
 - Pàgina pública `/que-es-selectora/` amb hero visual, logo horitzontal, autor i graella de funcionalitats de Selectora.
 - La pàgina `Què és Selectora?` incorpora el vídeo de presentació al costat del text de la hero.
+- La pàgina `Què és Selectora?` afegeix la feature d'items privats marcats amb llaç vermell.
 - Botó global `Compartir` a la navegació per compartir Selectora.
 - Metadades `description`, canonical, Open Graph i Twitter Card per millorar la previsualització quan es comparteix Selectora.
 - Suport PWA més complet: manifest enriquit, icones PNG `192x192`, `512x512`, `apple-touch-icon`, service worker amb cache bàsic, share target i botó `Instal·la`.

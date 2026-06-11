@@ -39,6 +39,7 @@ SELECTORA_FEATURES = [
     ("🖼️", "Bona previsualització", "Títol, descripció i imatge en xarxes i missatgeria."),
     ("🌍", "Control públic o privat", "Visibilitat per items i col·leccions."),
     ("🟢", "Visibilitat clara", "Verd per públic i vermell per privat."),
+    ("🎀", "Privats ben marcats", "Els teus items privats es mostren només per a tu amb un llaç vermell."),
     ("⭐", "Valorar amb matisos", "Una valoració principal i fins a tres matisos."),
     ("📈", "Veure visites", "Comptador i sparkline d’evolució."),
     ("👁️", "Recordar què has vist", "Marca de visitats i separació de pendents."),
