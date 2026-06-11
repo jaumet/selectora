@@ -11,6 +11,9 @@
     {% if item.embed_url %}
       <span class="embed-badge">Embed</span>
     {% endif %}
+    {% if is_owner and item.visibility == "private" %}
+      <span class="private-ribbon">Privat</span>
+    {% endif %}
     {% if item.is_visited_by_viewer %}
       <span class="visited-badge" aria-label="Item visitat" title="Item visitat"></span>
     {% endif %}

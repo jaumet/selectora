@@ -891,10 +891,13 @@ class PublicChannelView(ListView):
 
     def dispatch(self, request, *args, **kwargs):
         self.channel = get_object_or_404(Channel, owner__username=kwargs["username"], is_public=True)
+        self.is_owner = request.user.is_authenticated and self.channel.owner == request.user
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = self.channel.items.filter(visibility=ContentItem.Visibility.PUBLIC).select_related("channel", "user").prefetch_related("tags", "ratings")
+        queryset = self.channel.items.select_related("channel", "user").prefetch_related("tags", "ratings")
+        if not self.is_owner:
+            queryset = queryset.filter(visibility=ContentItem.Visibility.PUBLIC)
         queryset = with_viewer_visit_state(queryset, self.request.user)
         return filtered_items(queryset, self.request.GET)
 
@@ -905,11 +908,11 @@ class PublicChannelView(ListView):
                 self.channel,
                 context["items"],
                 self.request.GET,
-                include_private=False,
+                include_private=self.is_owner,
                 viewer_user=self.request.user,
             )
         )
-        context["is_owner"] = self.request.user.is_authenticated and self.channel.owner == self.request.user
+        context["is_owner"] = self.is_owner
         public_collections = list(
             public_collections_queryset()
             .filter(channel=self.channel)

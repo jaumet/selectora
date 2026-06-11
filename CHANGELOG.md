@@ -49,6 +49,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - `Temes` i `Cerca` passen a icones amb hover `Cerca per temes` i `Cerca`; el botó `+` mostra hover `Afegeix continguts`.
 - El grup central de la nav queda ordenat com `Què és?`, compartir, `+`, lupa i `#`; el compartir surt de la dreta i usa icona de compartir.
 - El botó `Instal·la` mostra hover `Instal·la al mòbil` i les visites a les cards usen icona amb hover `Visites`.
+- Les cards d'items privats mostren un ribbon vermell `Privat` només al propietari.
+- El propietari veu els seus items privats també al seu canal, marcats amb el ribbon `Privat`.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
 - La navegació de compartir tanca el panell després de copiar enllaç o text.
 - El formulari d'edició usa `Desa` i `Cancel·la` i afegeix `Elimina` només quan s'edita un item existent.
@@ -70,4 +72,4 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 
 ### Verificació
 
-- `python manage.py test`: 72 tests OK.
+- `python manage.py test`: 74 tests OK.

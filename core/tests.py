@@ -569,6 +569,28 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
 
+    def test_owner_sees_private_ribbon_on_private_item_cards(self):
+        private_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item privat",
+            url="https://example.com/private-card",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Item privat")
+        self.assertContains(response, 'class="private-ribbon"')
+        self.assertContains(response, "Privat")
+
+        public_response = self.client.get(reverse("public_item", kwargs={"pk": private_item.pk}))
+
+        self.assertEqual(public_response.status_code, 404)
+        self.assertNotContains(public_response, "private-ribbon", status_code=404)
+
     def test_admin_uses_private_path(self):
         response = self.client.get("/entra-per-darrere/")
 
@@ -1395,6 +1417,32 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Public")
         self.assertContains(response, "Compartir canal")
         self.assertContains(response, reverse("contentitem_visited", kwargs={"pk": item.pk}), html=False)
+
+    def test_channel_owner_sees_private_items_with_ribbon(self):
+        self.channel.is_public = True
+        self.channel.save()
+        private_item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Privat al meu canal",
+            url="https://example.com/private-channel",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+
+        response = self.client.get(reverse("public_channel", kwargs={"username": self.user.username}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Privat al meu canal")
+        self.assertNotContains(response, "private-ribbon")
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("public_channel", kwargs={"username": self.user.username}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Privat al meu canal")
+        self.assertContains(response, 'class="private-ribbon"')
+        self.assertContains(response, "Privat")
+        self.assertContains(response, private_item.get_absolute_url())
 
     def test_public_channel_item_sections_are_ordered_by_item_count(self):
         self.channel.is_public = True

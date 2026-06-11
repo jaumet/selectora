@@ -1536,6 +1536,26 @@ select {
   pointer-events: none;
 }
 
+.private-ribbon {
+  position: absolute;
+  left: -1.95rem;
+  top: 0.85rem;
+  z-index: 5;
+  width: 7.4rem;
+  transform: rotate(-38deg);
+  background: rgba(196, 42, 55, 0.94);
+  box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.28);
+  color: #fff5f5;
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0.28rem 0;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .visited-badge {
   position: absolute;
   top: 0.45rem;
