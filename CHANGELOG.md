@@ -45,6 +45,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - La fitxa d'item incorpora una zona visual de vot sota el media/embed per valorar publicacions.
 - Les cards de seccions mostren comptadors compactes de visites i valoracions a l'esquerra d'`Obrir` i `Compartir`.
 - Les valoracions i matisos a les cards es mostren desglossats per icona i contador, amb el nom de cada valoració o matís al hover.
+- Les etiquetes de valoracions passen a `Imprescindible`, `Conspiratiu`, `Dubtós` i `Spam/Fals` on abans es mostraven textos antics.
 - La fitxa d'item mostra també les valoracions i matisos al costat del sparkline de visites.
 - El botó `Instal·la` de la navegació queda destacat amb el taronja del logo.
 - La navegació reparteix les accions principals al centre (`Temes`, `+`, `Cerca`), agrupa `Temes`/`Cerca` sota una lupa en mòbil i mostra Dashboard, canal i sortir com a icones amb hover.

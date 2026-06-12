@@ -258,7 +258,7 @@ class ContentItem(models.Model):
             ("rating_curios_count", "Curiós", "?"),
             ("rating_val_la_pena_count", "Val la pena", "◆"),
             ("rating_recomanaria_count", "Recomanaria", "↗"),
-            ("rating_must_count", "Must", "🔥"),
+            ("rating_must_count", "Imprescindible", "🔥"),
         ]
         return [
             {"label": label, "icon": icon, "count": count}
@@ -335,17 +335,17 @@ class ContentItemRating(models.Model):
         CURIOS = "curios", "Curiós"
         VAL_LA_PENA = "val_la_pena", "Val la pena"
         RECOMANARIA = "recomanaria", "Recomanaria"
-        MUST = "must", "Must"
+        MUST = "must", "Imprescindible"
 
     class Nuance(models.TextChoices):
         ORIGINAL = "original", "Original"
         UTIL = "util", "Útil"
         BEN_EXPLICAT = "ben_explicat", "Ben explicat"
         INSPIRADOR = "inspirador", "Inspirador"
-        NECESSARI = "necessari", "Necessari"
-        DISCUTIBLE = "discutible", "Discutible"
+        NECESSARI = "necessari", "Conspiratiu"
+        DISCUTIBLE = "discutible", "Dubtós"
         REPETIT = "repetit", "Repetit"
-        NO_ES_PER_MI = "no_es_per_mi", "No és per mi"
+        NO_ES_PER_MI = "no_es_per_mi", "Spam/Fals"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -378,7 +378,7 @@ class ContentItemRating(models.Model):
             {"value": cls.MainValue.CURIOS, "label": "Curiós", "icon": "?"},
             {"value": cls.MainValue.VAL_LA_PENA, "label": "Val la pena", "icon": "◆"},
             {"value": cls.MainValue.RECOMANARIA, "label": "Recomanaria", "icon": "↗"},
-            {"value": cls.MainValue.MUST, "label": "Must", "icon": "🔥"},
+            {"value": cls.MainValue.MUST, "label": "Imprescindible", "icon": "🔥"},
         ]
 
     @classmethod
@@ -388,10 +388,10 @@ class ContentItemRating(models.Model):
             {"value": cls.Nuance.UTIL, "label": "Útil", "icon": "✓"},
             {"value": cls.Nuance.BEN_EXPLICAT, "label": "Ben explicat", "icon": "☰"},
             {"value": cls.Nuance.INSPIRADOR, "label": "Inspirador", "icon": "◌"},
-            {"value": cls.Nuance.NECESSARI, "label": "Necessari", "icon": "!"},
-            {"value": cls.Nuance.DISCUTIBLE, "label": "Discutible", "icon": "↔"},
+            {"value": cls.Nuance.NECESSARI, "label": "Conspiratiu", "icon": "!"},
+            {"value": cls.Nuance.DISCUTIBLE, "label": "Dubtós", "icon": "↔"},
             {"value": cls.Nuance.REPETIT, "label": "Repetit", "icon": "↻"},
-            {"value": cls.Nuance.NO_ES_PER_MI, "label": "No és per mi", "icon": "∅"},
+            {"value": cls.Nuance.NO_ES_PER_MI, "label": "Spam/Fals", "icon": "∅"},
         ]
 
 
