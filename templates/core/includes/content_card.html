@@ -17,6 +17,9 @@
     {% if item.is_visited_by_viewer %}
       <span class="visited-badge" aria-label="Item visitat" title="Item visitat"></span>
     {% endif %}
+    {% if item.top_rank %}
+      <span class="top-rank-overlay" aria-label="Posició {{ item.top_rank }} al Top 10">{{ item.top_rank }}</span>
+    {% endif %}
     <span class="card-image-title">{{ item.title }}</span>
   </a>
   <div class="card-body">

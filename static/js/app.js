@@ -1,4 +1,180 @@
 (function () {
+  function setupChannelTopConfig(root) {
+    const selectedContainer = root.querySelector("[data-channel-top-selected]");
+    const emptyState = root.querySelector("[data-channel-top-empty]");
+    const searchInput = root.querySelector("[data-channel-top-search]");
+    const countLabel = root.querySelector("[data-channel-top-count]");
+    const pageLabel = root.querySelector("[data-channel-top-page]");
+    const pagination = root.querySelector("[data-channel-top-pagination]");
+    const prevButton = root.querySelector("[data-channel-top-prev]");
+    const nextButton = root.querySelector("[data-channel-top-next]");
+    const itemNodes = Array.from(root.querySelectorAll("[data-channel-top-item]"));
+    const pageSize = 12;
+    let page = 0;
+    let selectedIds = itemNodes
+      .filter(function (node) {
+        const checkbox = node.querySelector("[data-channel-top-checkbox]");
+        return checkbox && checkbox.checked;
+      })
+      .map(function (node) {
+        return node.dataset.itemId;
+      });
+
+    function itemData(id) {
+      const item = itemNodes.find(function (node) {
+        return node.dataset.itemId === id;
+      });
+      if (!item) {
+        return null;
+      }
+      return {
+        id,
+        title: item.dataset.itemTitle || "",
+        image: item.dataset.itemImage || "",
+      };
+    }
+
+    function selectedCard(data, rank) {
+      const article = document.createElement("article");
+      article.className = "channel-top-selected-card";
+      article.dataset.selectedItemId = data.id;
+      const rankElement = document.createElement("span");
+      rankElement.className = "channel-top-rank";
+      rankElement.textContent = String(rank);
+      const thumb = document.createElement("div");
+      thumb.className = `channel-top-thumb${data.image ? " has-image" : ""}`;
+      if (data.image) {
+        const image = document.createElement("img");
+        image.src = data.image;
+        image.alt = "";
+        image.loading = "lazy";
+        image.decoding = "async";
+        thumb.appendChild(image);
+      }
+      const title = document.createElement("strong");
+      title.textContent = data.title;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.channelTopRemove = data.id;
+      button.textContent = "Treure";
+      button.setAttribute("aria-label", `Treure ${data.title} del Top 10`);
+      article.append(rankElement, thumb, title, button);
+      return article;
+    }
+
+    function syncSelected() {
+      itemNodes.forEach(function (node) {
+        const isSelected = selectedIds.includes(node.dataset.itemId);
+        node.classList.toggle("is-selected", isSelected);
+        const toggle = node.querySelector("[data-channel-top-toggle]");
+        const checkbox = node.querySelector("[data-channel-top-checkbox]");
+        if (toggle) {
+          toggle.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        }
+        if (checkbox) {
+          checkbox.checked = isSelected;
+        }
+      });
+      selectedContainer.querySelectorAll("[data-selected-item-id]").forEach(function (node) {
+        node.remove();
+      });
+      selectedIds.forEach(function (id, index) {
+        const data = itemData(id);
+        if (data) {
+          selectedContainer.appendChild(selectedCard(data, index + 1));
+        }
+      });
+      if (emptyState) {
+        emptyState.hidden = selectedIds.length > 0;
+      }
+      if (countLabel) {
+        countLabel.textContent = String(selectedIds.length);
+      }
+    }
+
+    function visibleItems() {
+      const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+      return itemNodes.filter(function (node) {
+        return !query || (node.dataset.itemTitle || "").toLowerCase().includes(query);
+      });
+    }
+
+    function renderPage() {
+      const visible = visibleItems();
+      const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+      page = Math.min(page, pageCount - 1);
+      itemNodes.forEach(function (node) {
+        node.hidden = true;
+      });
+      visible.slice(page * pageSize, page * pageSize + pageSize).forEach(function (node) {
+        node.hidden = false;
+      });
+      if (pagination) {
+        pagination.hidden = visible.length <= pageSize;
+      }
+      if (pageLabel) {
+        pageLabel.textContent = `${page + 1}/${pageCount}`;
+      }
+      if (prevButton) {
+        prevButton.disabled = page === 0;
+      }
+      if (nextButton) {
+        nextButton.disabled = page >= pageCount - 1;
+      }
+    }
+
+    root.addEventListener("click", function (event) {
+      const toggle = event.target.closest("[data-channel-top-toggle]");
+      const remove = event.target.closest("[data-channel-top-remove]");
+      if (toggle) {
+        event.preventDefault();
+        const id = toggle.dataset.channelTopToggle;
+        if (selectedIds.includes(id)) {
+          selectedIds = selectedIds.filter(function (value) {
+            return value !== id;
+          });
+        } else if (selectedIds.length < 10) {
+          selectedIds.push(id);
+        }
+        syncSelected();
+        return;
+      }
+      if (remove) {
+        selectedIds = selectedIds.filter(function (value) {
+          return value !== remove.dataset.channelTopRemove;
+        });
+        syncSelected();
+      }
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        page = 0;
+        renderPage();
+      });
+    }
+    if (prevButton) {
+      prevButton.addEventListener("click", function () {
+        page = Math.max(0, page - 1);
+        renderPage();
+      });
+    }
+      if (nextButton) {
+        nextButton.addEventListener("click", function () {
+          page += 1;
+          renderPage();
+        });
+    }
+    syncSelected();
+    renderPage();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[data-channel-top-config]").forEach(setupChannelTopConfig);
+  });
+})();
+
+(function () {
   let deferredInstallPrompt = null;
 
   if ("serviceWorker" in navigator) {
@@ -439,7 +615,8 @@
       return;
     }
     const targetId = trigger.dataset.openDrawer;
-    const samePage = new URL(trigger.href, window.location.href).pathname === window.location.pathname;
+    const triggerUrl = new URL(trigger.href, window.location.href);
+    const samePage = triggerUrl.pathname === window.location.pathname;
     if (!samePage) {
       return;
     }

@@ -12,6 +12,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 - Botons `Temes` i `Cerca` en mode toggle: activen i amaguen els panells de filtres sense recarregar la pàgina.
 - Usuaris autenticats poden reordenar les seccions de portada arrossegant-les; l'ordre queda recordat al navegador.
 - Canal personal compacte amb capçalera visual, rails, seccions dinàmiques i filtres per text, tipus, plataforma, autor, idioma i ordre.
+- Configuració de `Top 10 del canal` amb selecció d'items, cerca per títol i paginació sense recarregar.
 - Col·leccions públiques i privades amb pàgina pròpia, collage de portada i suport per compartir.
 - Share module amb URL públiques per item, col·lecció, canal i la pròpia Selectora, botó de compartir, `copy link`, `copy text` i Web Share API quan existeix.
 - Metadades Open Graph i Twitter Card per compartir Selectora amb títol, descripció i logo PNG 1200x630 compatible amb WhatsApp.

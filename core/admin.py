@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, ChannelTopItem, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 
 
 @admin.register(Channel)
@@ -9,6 +9,13 @@ class ChannelAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)
     search_fields = ("name", "description", "owner__username", "owner__email")
     exclude = ("is_public",)
+
+
+@admin.register(ChannelTopItem)
+class ChannelTopItemAdmin(admin.ModelAdmin):
+    list_display = ("channel", "position", "item")
+    list_filter = ("channel",)
+    search_fields = ("channel__name", "item__title")
 
 
 @admin.register(Tag)

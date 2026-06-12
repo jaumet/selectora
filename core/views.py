@@ -18,7 +18,7 @@ from django.conf import settings
 from .auth import consume_magic_token, send_magic_login_email
 from .content_services import create_content_item_from_url, get_or_create_channel
 from .forms import ChannelForm, ContentItemForm, MagicLoginRequestForm
-from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, Tag
+from .models import Channel, ChannelTopItem, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, Tag
 from .telegram import process_telegram_update
 
 
@@ -474,6 +474,9 @@ def channel_context(channel, items, params, include_private=True, viewer_user=No
     music_items = list(all_items.filter(content_type=ContentItem.ContentType.MUSIC)[:12])
     recommended_items = list(all_items.filter(tags__slug="recomanat")[:12])
     recent_items = list(all_items.order_by("-created_at")[:12])
+    top_items = list(all_items.filter(channel_top_entries__channel=channel).order_by("channel_top_entries__position")[:10])
+    for index, item in enumerate(top_items, start=1):
+        item.top_rank = index
     pending_items = []
     if viewer_user and viewer_user.is_authenticated:
         pending_items = list(all_items.exclude(visits__user=viewer_user).order_by("-created_at")[:12])
@@ -486,6 +489,7 @@ def channel_context(channel, items, params, include_private=True, viewer_user=No
         "podcast_items": podcast_items,
         "music_items": music_items,
         "recommended_items": recommended_items,
+        "top_items": top_items,
         "item_sections": ordered_sections(
             [
                 {"title": "Items pendents de veure", "type": "items", "items": pending_items},
@@ -540,8 +544,40 @@ class ChannelUpdateView(LoginRequiredMixin, UpdateView):
         return self.object.get_absolute_url() if self.object.is_public else reverse("dashboard")
 
     def form_valid(self, form):
+        response = super().form_valid(form)
+        selected_ids = form.cleaned_data["top_item_ids"]
+        ChannelTopItem.objects.filter(channel=self.object).delete()
+        ChannelTopItem.objects.bulk_create(
+            [
+                ChannelTopItem(channel=self.object, item_id=item_id, position=position)
+                for position, item_id in enumerate(selected_ids, start=1)
+            ]
+        )
         messages.success(self.request, "Canal actualitzat.")
-        return super().form_valid(form)
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        selected_ids = [
+            top_item.item_id for top_item in self.object.top_items.order_by("position")
+        ]
+        items = list(
+            self.object.items
+            .select_related("channel")
+            .prefetch_related("tags")
+            .order_by("-created_at")
+        )
+        selected_set = set(selected_ids)
+        ordered_items = sorted(
+            items,
+            key=lambda item: (
+                selected_ids.index(item.pk) if item.pk in selected_set else 999,
+                item.title.lower(),
+            ),
+        )
+        context["top_item_ids"] = selected_ids
+        context["top_item_choices"] = ordered_items
+        return context
 
 
 class ExploreView(ListView):
@@ -657,11 +693,11 @@ class PwaManifestView(View):
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
         script = """
-const CACHE_NAME = "selectora-shell-v20260612-2";
+const CACHE_NAME = "selectora-shell-v20260612-9";
 const SHELL_ASSETS = [
   "/manifest.webmanifest",
-  "/static/css/styles.css?v=20260612-2",
-  "/static/js/app.js?v=20260612-2",
+  "/static/css/styles.css?v=20260612-9",
+  "/static/js/app.js?v=20260612-9",
   "/media/pwa/selectora-icon-192.png",
   "/media/pwa/selectora-icon-512.png"
 ];

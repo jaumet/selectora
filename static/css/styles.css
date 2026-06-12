@@ -924,6 +924,184 @@ button.danger-button:hover {
   font-weight: 700;
 }
 
+.channel-top-config {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.channel-top-selected {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.65rem;
+  min-height: 3.5rem;
+}
+
+.channel-top-selected:has([data-selected-item-id]) [data-channel-top-empty] {
+  display: none;
+}
+
+.channel-top-selected-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.8rem 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 4.6rem;
+  padding: 0.45rem;
+  border: 1px solid rgba(55, 194, 154, 0.34);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.channel-top-selected-card strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.channel-top-selected-card button,
+.channel-top-pagination button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.32rem 0.48rem;
+}
+
+.channel-top-rank {
+  position: absolute;
+  left: 0.2rem;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 3.2rem;
+  font-weight: 1000;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow: 0 0.18rem 0.65rem rgba(0, 0, 0, 0.75);
+}
+
+.channel-top-thumb,
+.channel-top-pick-thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #233246, #14202e);
+}
+
+.channel-top-thumb {
+  width: 3.8rem;
+  height: 3.4rem;
+}
+
+.channel-top-thumb img,
+.channel-top-pick-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.channel-top-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.channel-top-tools label {
+  min-width: min(24rem, 100%);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.channel-top-tools p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.channel-top-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.55rem;
+}
+
+.channel-top-pick[hidden] {
+  display: none;
+}
+
+.channel-top-toggle {
+  display: grid;
+  grid-template-columns: 3.3rem 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  width: 100%;
+  min-height: 3.6rem;
+  padding: 0.38rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.channel-top-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.channel-top-pick.is-selected .channel-top-toggle,
+.channel-top-pick:has([data-channel-top-checkbox]:checked) .channel-top-toggle {
+  border-color: rgba(55, 194, 154, 0.72);
+  background: rgba(55, 194, 154, 0.16);
+}
+
+.channel-top-pick-thumb {
+  width: 3.3rem;
+  height: 2.9rem;
+}
+
+.channel-top-toggle > span:last-child {
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.channel-top-pagination {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 input,
 textarea,
 select {
@@ -1377,6 +1555,22 @@ select {
 .card-image.image-missing .poster-placeholder {
   position: relative;
   visibility: visible;
+}
+
+.top-rank-overlay {
+  position: absolute;
+  left: -0.16rem;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: clamp(4.5rem, 8vw, 7.4rem);
+  font-weight: 1000;
+  line-height: 0.78;
+  letter-spacing: 0;
+  text-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .placeholder {

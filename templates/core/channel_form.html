@@ -25,7 +25,83 @@
   </aside>
   <form method="post" enctype="multipart/form-data" class="form-panel">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% if form.non_field_errors %}
+      {{ form.non_field_errors }}
+    {% endif %}
+    {% for field in form.visible_fields %}
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </p>
+    {% endfor %}
+    <section class="channel-top-config" data-channel-top-config>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Llista del canal</p>
+          <h2>Top 10 del canal</h2>
+        </div>
+        <p>Selecciona fins a 10 items. Es mostraran en aquest ordre al teu canal.</p>
+      </div>
+      {{ form.top_item_ids.errors }}
+      <div class="channel-top-selected" data-channel-top-selected aria-label="Items seleccionats al Top 10">
+        {% for item_id in top_item_ids %}
+          {% for item in top_item_choices %}
+            {% if item.pk == item_id %}
+              <article class="channel-top-selected-card" data-selected-item-id="{{ item.pk }}">
+                <span class="channel-top-rank">{{ forloop.parentloop.counter }}</span>
+                <div class="channel-top-thumb{% if item.display_image_url %} has-image{% endif %}">
+                  {% if item.display_image_url %}<img src="{{ item.display_image_url }}" alt="" loading="lazy" decoding="async">{% endif %}
+                </div>
+                <strong>{{ item.title }}</strong>
+                <button type="button" data-channel-top-remove="{{ item.pk }}" aria-label="Treure {{ item.title }} del Top 10">Treure</button>
+              </article>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        <p class="muted" data-channel-top-empty{% if top_item_ids %} hidden{% endif %}>Encara no has seleccionat cap item.</p>
+      </div>
+      <div class="channel-top-tools">
+        <label>
+          Filtra per títol
+          <input type="search" placeholder="Cerca items..." data-channel-top-search>
+        </label>
+        <p><span data-channel-top-count>0</span>/10 seleccionats</p>
+      </div>
+      <div class="channel-top-picker" data-channel-top-picker>
+        {% for item in top_item_choices %}
+          <article
+            class="channel-top-pick{% if item.pk in top_item_ids %} is-selected{% endif %}"
+            data-channel-top-item
+            data-item-id="{{ item.pk }}"
+            data-item-title="{{ item.title|escape }}"
+            data-item-image="{{ item.display_image_url|default:'' }}"
+            data-item-url="{{ item.get_absolute_url }}"
+          >
+            <label class="channel-top-toggle" data-channel-top-toggle="{{ item.pk }}" aria-pressed="{% if item.pk in top_item_ids %}true{% else %}false{% endif %}">
+              <input
+                type="checkbox"
+                name="top_item_ids"
+                value="{{ item.pk }}"
+                data-channel-top-checkbox
+                {% if item.pk in top_item_ids %}checked{% endif %}>
+              <span class="channel-top-pick-thumb{% if item.display_image_url %} has-image{% endif %}">
+                {% if item.display_image_url %}<img src="{{ item.display_image_url }}" alt="" loading="lazy" decoding="async">{% endif %}
+              </span>
+              <span>{{ item.title }}</span>
+            </label>
+          </article>
+        {% empty %}
+          <p class="muted">Encara no tens items al canal.</p>
+        {% endfor %}
+      </div>
+      <div class="channel-top-pagination" data-channel-top-pagination hidden>
+        <button type="button" data-channel-top-prev>Anterior</button>
+        <span data-channel-top-page>1/1</span>
+        <button type="button" data-channel-top-next>Següent</button>
+      </div>
+    </section>
     <div class="form-actions">
       <button class="button" type="submit">Guardar canal</button>
       <a href="{% url 'dashboard' %}">Cancel.lar</a>

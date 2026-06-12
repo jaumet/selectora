@@ -11,7 +11,7 @@ from django.urls import reverse
 from .metadata_fetcher import extract_metadata, fetch_url_metadata
 from .auth import create_magic_login
 from .forms import MagicLoginRequestForm
-from .models import Channel, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
+from .models import Channel, ChannelTopItem, Collection, ContentItem, ContentItemRating, ContentItemViewEvent, ContentItemVisit, MagicLoginToken, Tag, TelegramAccount
 from .views import MAGIC_LOGIN_SESSION_AGE_SECONDS
 
 
@@ -307,6 +307,8 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Cerca")
         self.assertContains(response, 'data-open-drawer="temes" aria-pressed="false"')
         self.assertContains(response, 'data-open-drawer="cerca" aria-pressed="false"')
+        self.assertContains(response, 'href="#temes"')
+        self.assertContains(response, 'href="#cerca"')
         self.assertContains(response, 'aria-label="Entrar o registrar-se"')
         self.assertContains(response, 'title="Entrar o registrar-se"')
         self.assertContains(response, 'class="nav-plus nav-auth-choice"')
@@ -652,8 +654,8 @@ class CoreViewsTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
         script = response.content.decode()
         self.assertIn('self.addEventListener("fetch"', script)
-        self.assertIn('const CACHE_NAME = "selectora-shell-v20260612-2"', script)
-        self.assertIn('"/static/css/styles.css?v=20260612-2"', script)
+        self.assertIn('const CACHE_NAME = "selectora-shell-v20260612-9"', script)
+        self.assertIn('"/static/css/styles.css?v=20260612-9"', script)
         self.assertNotIn('"/",', script)
 
     def test_contentitem_create_prefills_shared_url(self):
@@ -802,6 +804,113 @@ class CoreViewsTests(TestCase):
         self.assertEqual(self.channel.name, "Canal public")
         self.assertEqual(response.status_code, 302)
 
+    def test_channel_update_configures_top_10_items(self):
+        self.client.force_login(self.user)
+        first = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Primer top",
+            url="https://example.com/primer",
+            image_url="https://example.com/primer.jpg",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        second = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Segon top",
+            url="https://example.com/segon",
+            image_url="https://example.com/segon.jpg",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(reverse("channel_update"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Top 10 del canal")
+        self.assertContains(response, 'data-channel-top-config')
+        self.assertContains(response, 'data-channel-top-search')
+        self.assertContains(response, 'data-channel-top-pagination')
+        self.assertContains(response, 'data-channel-top-checkbox')
+        self.assertContains(response, 'name="top_item_ids"')
+        self.assertNotContains(response, 'name="top_item_order"')
+        self.assertContains(response, "Primer top")
+
+        response = self.client.post(
+            reverse("channel_update"),
+            {
+                "name": "Canal public",
+                "description": "Amb top 10.",
+                "cover_image_url": "",
+                "top_item_ids": [str(second.pk), str(first.pk)],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            list(ChannelTopItem.objects.filter(channel=self.channel).values_list("item_id", "position")),
+            [(second.pk, 1), (first.pk, 2)],
+        )
+
+        response = self.client.get(self.channel.get_absolute_url())
+        html = response.content.decode()
+
+        self.assertContains(response, "Top 10 del canal")
+        self.assertContains(response, 'class="top-rank-overlay"')
+        self.assertContains(response, "Posició 1 al Top 10")
+        self.assertNotContains(response, "<h2>Resultats</h2>", html=True)
+        self.assertContains(response, 'id="cerca"')
+        self.assertContains(response, 'id="temes"')
+        self.assertLess(html.find('id="temes"'), html.find("Top 10 del canal"))
+        self.assertLess(html.find('id="cerca"'), html.find("Top 10 del canal"))
+        self.assertLess(html.find("Segon top"), html.find("Primer top"))
+
+        response = self.client.get(reverse("channel_update"))
+        self.assertContains(response, 'data-selected-item-id')
+
+    def test_channel_top_10_rejects_items_from_other_channels(self):
+        other_user = get_user_model().objects.create_user(username="altra")
+        other_channel = Channel.objects.create(owner=other_user, name="Altre canal")
+        other_item = ContentItem.objects.create(
+            user=other_user,
+            channel=other_channel,
+            title="No es del canal",
+            url="https://example.com/fora",
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("channel_update"),
+            {
+                "name": "Canal public",
+                "description": "",
+                "cover_image_url": "",
+                "top_item_ids": str(other_item.pk),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "El Top 10 nomes pot contenir items del teu canal")
+        self.assertFalse(ChannelTopItem.objects.filter(channel=self.channel).exists())
+
+    def test_public_channel_collections_are_horizontal_rails(self):
+        self.channel.is_public = True
+        self.channel.save()
+        Collection.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Col.leccio destacada",
+            visibility=Collection.Visibility.PUBLIC,
+        )
+
+        response = self.client.get(self.channel.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Col.leccions")
+        self.assertContains(response, 'class="rail media-rail collection-rail"')
+        self.assertContains(response, "data-rail-prev")
+        self.assertContains(response, "data-rail-next")
+        self.assertNotContains(response, 'class="collection-grid"')
+
     def test_user_can_upload_channel_cover_image(self):
         with TemporaryDirectory() as media_root:
             with override_settings(MEDIA_ROOT=media_root):
@@ -862,6 +971,41 @@ class CoreViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "ha d&#x27;apuntar directament a una imatge")
+
+    def test_channel_top_10_can_save_when_existing_cover_url_is_not_image(self):
+        self.channel.cover_image_url = "https://research.nualart.cat"
+        self.channel.save()
+        first = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Top amb portada antiga",
+            url="https://example.com/top-antiga",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        second = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Top dos",
+            url="https://example.com/top-dos",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("channel_update"),
+            {
+                "name": self.channel.name,
+                "description": self.channel.description,
+                "cover_image_url": "https://research.nualart.cat",
+                "top_item_ids": [str(first.pk), str(second.pk)],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            list(ChannelTopItem.objects.filter(channel=self.channel).values_list("item_id", flat=True)),
+            [first.pk, second.pk],
+        )
 
     @patch("core.telegram.send_telegram_message")
     def test_telegram_webhook_connects_account_with_channel_code(self, send_mock):

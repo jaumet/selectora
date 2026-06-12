@@ -22,6 +22,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Registre de visites per item, incloses les visites pròpies, amb data, comptador total i sparkline temporal a la fitxa d'item.
 - Els usuaris poden valorar també els seus propis items.
 - Reordenació de seccions de portada per a usuaris autenticats amb drag and drop i persistència a `localStorage`.
+- Configuració de `Top 10 del canal` amb selecció de fins a 10 items, filtre per títol i paginació client-side sense recarregar.
 - Menú compacte d'opcions d'usuari en mòbil, situat al costat del botó `+`.
 - Eliminació segura d'items propis des del formulari d'edició amb panell d'alerta i checkbox de confirmació.
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
@@ -57,6 +58,12 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - El botó central `+` només es mostra per usuaris autenticats; sense login es mostra un botó compacte amb icones d'entrar i registrar-se, sense signe `+`.
 - Les cards d'items privats mostren un ribbon vermell `Privat` només al propietari.
 - El propietari veu els seus items privats també al seu canal, marcats amb el ribbon `Privat`.
+- El canal mostra la secció `Top 10 del canal` com a primera secció sota la capçalera, amb números grans translúcids sobre la part esquerra de la imatge de cada item.
+- Les col·leccions del canal també es mostren en una sola línia horitzontal amb scroll i fletxes, igual que la resta de llistes.
+- La secció `Resultats` del canal només apareix quan hi ha filtres actius; sense filtres totes les llistes són rails horitzontals.
+- Als canals, els panells `Cerca` i `Temes` queden amagats per defecte sobre el `Top 10` i s'obren/tanquen amb els mateixos botons de la nav sense canviar de pàgina.
+- El formulari del `Top 10 del canal` queda simplificat a una única font de veritat: checkboxes `top_item_ids`, sense `MultipleChoiceField` ni camp ocult d'ordre que poguessin desincronitzar o rebutjar seleccions vàlides.
+- El formulari de canal ja no bloqueja el guardat del `Top 10` quan conserva una URL de portada antiga que no apunta directament a una imatge; només valida aquest requisit quan la URL es modifica.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
 - La navegació de compartir tanca el panell després de copiar enllaç o text.
 - El formulari d'edició usa `Desa` i `Cancel·la` i afegeix `Elimina` només quan s'edita un item existent.
@@ -71,6 +78,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Els scripts de publicació alineen `main` amb `dev`, fan push forçat quan cal i sincronitzen el clon de producció amb `origin/main` abans del deploy.
 - Nou model `ContentItemRating`, ruta `POST /items/<id>/rating/` i admin per consultar valoracions.
 - Nou model `ContentItemViewEvent` per desar cada visita amb data i generar mètriques temporals.
+- Nou model `ChannelTopItem` per guardar l'ordre dels items destacats del canal.
 - El service worker es serveix amb capçalera `Service-Worker-Allowed: /`.
 - El service worker usa cache versionada d'assets, no precacheja la pàgina `/` i es serveix amb `Cache-Control: no-store` per evitar HTML/CSS vell en local i PWA.
 - S'han afegit proves per PWA, menú d'usuari mòbil, reordenació de seccions, marca de visitat i eliminació d'items.
@@ -80,4 +88,4 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 
 ### Verificació
 
-- `python manage.py test`: 75 tests OK.
+- `python manage.py test`: 79 tests OK.

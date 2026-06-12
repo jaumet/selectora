@@ -59,6 +59,8 @@ class MagicLoginRequestForm(forms.Form):
 
 
 class ChannelForm(forms.ModelForm):
+    top_item_ids = forms.Field(required=False, widget=forms.MultipleHiddenInput)
+
     class Meta:
         model = Channel
         fields = ["name", "description", "cover_image", "cover_image_url"]
@@ -72,6 +74,31 @@ class ChannelForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 4}),
             "cover_image": forms.ClearableFileInput(attrs={"accept": "image/*"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["top_item_ids"].initial = [
+                str(top_item.item_id) for top_item in self.instance.top_items.order_by("position")
+            ]
+
+    def clean_top_item_ids(self):
+        values = self.cleaned_data.get("top_item_ids", [])
+        ids = []
+        for value in values:
+            if not str(value).isdigit():
+                raise forms.ValidationError("La llista Top 10 conte un item invalid.")
+            item_id = int(value)
+            if item_id not in ids:
+                ids.append(item_id)
+
+        if len(ids) > 10:
+            raise forms.ValidationError("El Top 10 del canal no pot tenir mes de 10 items.")
+        if ids and self.instance and self.instance.pk:
+            existing_count = ContentItem.objects.filter(channel=self.instance, pk__in=ids).count()
+            if existing_count != len(ids):
+                raise forms.ValidationError("El Top 10 nomes pot contenir items del teu canal.")
+        return ids
 
     def clean_cover_image(self):
         image = self.cleaned_data.get("cover_image")
@@ -87,6 +114,8 @@ class ChannelForm(forms.ModelForm):
     def clean_cover_image_url(self):
         url = self.cleaned_data.get("cover_image_url", "").strip()
         if not url:
+            return url
+        if self.instance and self.instance.pk and url == (self.instance.cover_image_url or ""):
             return url
         image_extensions = (".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif")
         if not url.lower().split("?", 1)[0].endswith(image_extensions):

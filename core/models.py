@@ -48,6 +48,31 @@ class Channel(models.Model):
         return self.cover_image_url
 
 
+class ChannelTopItem(models.Model):
+    channel = models.ForeignKey(
+        Channel,
+        on_delete=models.CASCADE,
+        related_name="top_items",
+    )
+    item = models.ForeignKey(
+        "ContentItem",
+        on_delete=models.CASCADE,
+        related_name="channel_top_entries",
+    )
+    position = models.PositiveSmallIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["channel", "position"], name="unique_channel_top_position"),
+            models.UniqueConstraint(fields=["channel", "item"], name="unique_channel_top_item"),
+        ]
+
+    def __str__(self):
+        return f"{self.channel} top {self.position}: {self.item}"
+
+
 class Tag(models.Model):
     name = models.CharField(max_length=80, unique=True)
     slug = models.SlugField(max_length=90, unique=True)

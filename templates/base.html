@@ -39,8 +39,8 @@
   <link rel="preload" as="image" href="/media/channel_covers/selectora_horizontal_dark.svg?v=20260604">
   <link rel="preload" as="image" href="/media/channel_covers/selectora_compact_dark.svg?v=20260604">
   <link rel="preload" as="image" href="/media/channel_covers/Log-2.detail.svg?v=20260604">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=20260612-2">
-  <script src="{% static 'js/app.js' %}?v=20260612-2" defer></script>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=20260612-9">
+  <script src="{% static 'js/app.js' %}?v=20260612-9" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -82,13 +82,13 @@
             </div>
           </details>
         {% endif %}
-        <a class="nav-pill nav-icon-button nav-search-link" href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕</a>
-        <a class="nav-pill nav-icon-button nav-topic-link" href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes">#</a>
+        <a class="nav-pill nav-icon-button nav-search-link" href="#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕</a>
+        <a class="nav-pill nav-icon-button nav-topic-link" href="#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes">#</a>
         <details class="nav-search-menu">
           <summary class="nav-icon-button" aria-label="Temes i cerca" title="Temes i cerca">⌕</summary>
           <div class="nav-search-panel">
-            <a href="{% url 'home' %}#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕ Cerca</a>
-            <a href="{% url 'home' %}#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes"># Temes</a>
+            <a href="#cerca" data-open-drawer="cerca" aria-pressed="false" aria-label="Cerca" title="Cerca">⌕ Cerca</a>
+            <a href="#temes" data-open-drawer="temes" aria-pressed="false" aria-label="Cerca per temes" title="Cerca per temes"># Temes</a>
           </div>
         </details>
       </div>
