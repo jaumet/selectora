@@ -15,6 +15,7 @@ from .models import MagicLoginToken
 
 TOKEN_BYTES = 32
 TOKEN_TTL_MINUTES = 30
+NEW_USER_NOTIFICATION_EMAIL = "jaume@selectora.cc"
 
 
 def normalize_email(email):
@@ -62,6 +63,36 @@ def create_magic_login(email):
     return user, token, created
 
 
+def get_client_ip(request):
+    forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip()
+    return request.META.get("REMOTE_ADDR", "")
+
+
+def send_new_user_notification_email(request, user):
+    local_now = timezone.localtime(timezone.now())
+    subject = f"nou usuari selectors {user.username}"
+    body_lines = [
+        "S'ha registrat un nou usuari a Selectora.",
+        "",
+        f"Data/hora: {local_now:%Y-%m-%d %H:%M:%S %Z}",
+        f"Nom usuari: {user.username}",
+        f"Email: {user.email or '(sense email)'}",
+        f"IP: {get_client_ip(request) or '(desconeguda)'}",
+        f"User-Agent: {request.META.get('HTTP_USER_AGENT', '(desconegut)')}",
+        f"Host: {request.get_host()}",
+        f"Ruta: {request.path}",
+    ]
+    send_mail(
+        subject,
+        "\n".join(body_lines),
+        getattr(settings, "DEFAULT_FROM_EMAIL", "selectora@localhost"),
+        [NEW_USER_NOTIFICATION_EMAIL],
+        fail_silently=False,
+    )
+
+
 def send_magic_login_email(request, email):
     user, token, created = create_magic_login(email)
     magic_url = request.build_absolute_uri(reverse("magic_login_confirm", kwargs={"token": token}))
@@ -80,6 +111,8 @@ def send_magic_login_email(request, email):
         [normalize_email(email)],
         fail_silently=False,
     )
+    if created:
+        send_new_user_notification_email(request, user)
     return magic_url
 
 

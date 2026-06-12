@@ -26,6 +26,7 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Eliminació segura d'items propis des del formulari d'edició amb panell d'alerta i checkbox de confirmació.
 - Captcha aritmètic server-side al formulari d'entrada/registre amb resposta guardada en sessió.
 - Honeypot anti-spam ocult al formulari d'entrada/registre.
+- Notificació interna a `jaume@selectora.cc` quan es crea un usuari nou via magic link, amb data/hora, usuari, email, IP, user-agent, host i ruta.
 - La sessió iniciada amb magic link dura 60 dies.
 - Document `HOT_TO_Telegram.txt` amb passes per configurar `@selectoracc_bot`, webhook, vinculació i ús en grups.
 - Documents `HOW_TO-selectora-hierarqui.txt`, `HOW_TO-set-resend.txt` i `HOW_TO_Telegram.txt` reformatejats amb Markdown ric.
@@ -51,6 +52,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - `Temes` i `Cerca` passen a icones amb hover `Cerca per temes` i `Cerca`; el botó `+` mostra hover `Afegeix continguts`.
 - El grup central de la nav queda ordenat com `Què és?`, compartir, `+`, lupa i `#`; el compartir surt de la dreta i usa icona de compartir.
 - El botó `Instal·la` mostra hover `Instal·la al mòbil` i les visites a les cards usen icona amb hover `Visites`.
+- La icona de `Sortir` de la navegació passa a una icona explícita de porta amb fletxa de sortida.
+- El botó central `+` només es mostra per usuaris autenticats; sense login es mostra un botó compacte amb icones d'entrar i registrar-se, sense signe `+`.
 - Les cards d'items privats mostren un ribbon vermell `Privat` només al propietari.
 - El propietari veu els seus items privats també al seu canal, marcats amb el ribbon `Privat`.
 - Els botons `Temes` i `Cerca` ara són toggles: s'activen en clicar, es desactiven si es tornen a clicar i amaguen el panell corresponent.
@@ -68,10 +71,12 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Nou model `ContentItemRating`, ruta `POST /items/<id>/rating/` i admin per consultar valoracions.
 - Nou model `ContentItemViewEvent` per desar cada visita amb data i generar mètriques temporals.
 - El service worker es serveix amb capçalera `Service-Worker-Allowed: /`.
+- El service worker usa cache versionada d'assets, no precacheja la pàgina `/` i es serveix amb `Cache-Control: no-store` per evitar HTML/CSS vell en local i PWA.
 - S'han afegit proves per PWA, menú d'usuari mòbil, reordenació de seccions, marca de visitat i eliminació d'items.
 - S'han afegit proves per validar captcha correcte, captcha incorrecte i honeypot omplert.
+- S'han afegit proves per validar la notificació de registre d'usuari nou i que no s'envia per usuaris existents.
 - S'han afegit proves per validar canals públics per defecte i el nou control visual de visibilitat dels items.
 
 ### Verificació
 
-- `python manage.py test`: 74 tests OK.
+- `python manage.py test`: 75 tests OK.

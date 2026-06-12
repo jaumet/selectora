@@ -307,7 +307,10 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Cerca")
         self.assertContains(response, 'data-open-drawer="temes" aria-pressed="false"')
         self.assertContains(response, 'data-open-drawer="cerca" aria-pressed="false"')
-        self.assertContains(response, 'aria-label="Afegeix continguts"')
+        self.assertContains(response, 'aria-label="Entrar o registrar-se"')
+        self.assertContains(response, 'title="Entrar o registrar-se"')
+        self.assertContains(response, 'class="nav-plus nav-auth-choice"')
+        self.assertContains(response, 'class="nav-auth-separator"')
         self.assertContains(response, 'title="Què és Selectora?"')
         self.assertContains(response, 'title="Comparteix Selectora.cc"')
         self.assertContains(response, "⤴")
@@ -646,9 +649,12 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/javascript")
         self.assertEqual(response["Service-Worker-Allowed"], "/")
+        self.assertIn("no-store", response["Cache-Control"])
         script = response.content.decode()
         self.assertIn('self.addEventListener("fetch"', script)
-        self.assertIn('caches.open("selectora-shell-v1")', script)
+        self.assertIn('const CACHE_NAME = "selectora-shell-v20260612-2"', script)
+        self.assertIn('"/static/css/styles.css?v=20260612-2"', script)
+        self.assertNotIn('"/",', script)
 
     def test_contentitem_create_prefills_shared_url(self):
         self.client.force_login(self.user)
@@ -679,21 +685,46 @@ class CoreViewsTests(TestCase):
         self.assertIn("title=Shared+title", response.url)
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-    def test_magic_link_request_creates_user_token_and_sends_email(self):
+    def test_magic_link_request_creates_user_token_and_sends_emails(self):
         self.client.get(reverse("login"))
         challenge = self.client.session[MagicLoginRequestForm.session_key]
 
         response = self.client.post(
             reverse("login"),
             {"email": "Nova@Example.com", "captcha_answer": challenge["answer"]},
+            HTTP_X_FORWARDED_FOR="203.0.113.7, 10.0.0.1",
+            HTTP_USER_AGENT="SelectoraTest/1.0",
         )
 
         self.assertEqual(response.status_code, 302)
         self.assertTrue(get_user_model().objects.filter(email__iexact="nova@example.com").exists())
         self.assertEqual(MagicLoginToken.objects.filter(email="nova@example.com").count(), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 2)
         self.assertIn("/accounts/magic/", mail.outbox[0].body)
+        self.assertEqual(mail.outbox[1].to, ["jaume@selectora.cc"])
+        self.assertEqual(mail.outbox[1].subject, "nou usuari selectors nova")
+        self.assertIn("Data/hora:", mail.outbox[1].body)
+        self.assertIn("Nom usuari: nova", mail.outbox[1].body)
+        self.assertIn("Email: nova@example.com", mail.outbox[1].body)
+        self.assertIn("IP: 203.0.113.7", mail.outbox[1].body)
+        self.assertIn("User-Agent: SelectoraTest/1.0", mail.outbox[1].body)
         self.assertNotIn(MagicLoginRequestForm.session_key, self.client.session)
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_magic_link_request_for_existing_user_does_not_send_new_user_notification(self):
+        get_user_model().objects.create_user(username="existent", email="existent@example.com")
+        self.client.get(reverse("login"))
+        challenge = self.client.session[MagicLoginRequestForm.session_key]
+
+        response = self.client.post(
+            reverse("login"),
+            {"email": "existent@example.com", "captcha_answer": challenge["answer"]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(MagicLoginToken.objects.filter(email="existent@example.com").count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["existent@example.com"])
 
     @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
     def test_magic_link_request_rejects_wrong_captcha(self):

@@ -39,8 +39,8 @@
   <link rel="preload" as="image" href="/media/channel_covers/selectora_horizontal_dark.svg?v=20260604">
   <link rel="preload" as="image" href="/media/channel_covers/selectora_compact_dark.svg?v=20260604">
   <link rel="preload" as="image" href="/media/channel_covers/Log-2.detail.svg?v=20260604">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-  <script src="{% static 'js/app.js' %}" defer></script>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=20260612-2">
+  <script src="{% static 'js/app.js' %}?v=20260612-2" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -62,7 +62,20 @@
           <a class="nav-plus" href="{% url 'contentitem_create' %}" aria-label="Afegeix continguts" title="Afegeix continguts">+</a>
         {% else %}
           <details class="nav-add-menu">
-            <summary class="nav-plus" aria-label="Afegeix continguts" title="Afegeix continguts">+</summary>
+            <summary class="nav-plus nav-auth-choice" aria-label="Entrar o registrar-se" title="Entrar o registrar-se">
+              <svg class="nav-auth-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M14 5h3.2A1.8 1.8 0 0 1 19 6.8v10.4a1.8 1.8 0 0 1-1.8 1.8H14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 12H4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <span class="nav-auth-separator" aria-hidden="true">/</span>
+              <svg class="nav-auth-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9.5 11.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M4.2 19.2c.55-3.15 2.5-5 5.3-5s4.75 1.85 5.3 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M16.4 6.4h3.2v3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19.4 6.6l-4.8 4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </summary>
             <div class="nav-add-panel">
               <a href="{% url 'login' %}">Entrar</a>
               <a href="{% url 'login' %}">Registrar-se</a>
@@ -88,7 +101,13 @@
         {% endif %}
         <form class="nav-user-direct" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
-          <button class="nav-icon-button" type="submit" aria-label="Sortir" title="Sortir">⏻</button>
+          <button class="nav-icon-button" type="submit" aria-label="Sortir" title="Sortir">
+            <svg class="nav-svg-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M10 4H6.8A1.8 1.8 0 0 0 5 5.8v12.4A1.8 1.8 0 0 0 6.8 20H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
         </form>
       {% endif %}
       </div>

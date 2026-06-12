@@ -5,7 +5,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 ## Funcionalitat actual
 
 - Afegir una URL des del dashboard privat i enriquir-la automàticament amb metadades.
-- Registre i entrada sense contrasenya amb `magic link` per email, sessió de 60 dies després d'entrar, captcha aritmètic server-side i honeypot anti-spam.
+- Registre i entrada sense contrasenya amb `magic link` per email, sessió de 60 dies després d'entrar, captcha aritmètic server-side, honeypot anti-spam i notificació interna quan es crea un usuari nou.
 - Portada compacta amb rails horitzontals, fletxes de navegació, canals públics i seccions dinàmiques.
 - Panell inicial de presentació de Selectora amb logo, vídeo, tancament amb `ESC` i opció de no tornar-lo a mostrar.
 - Pàgina pública `Què és Selectora?` amb explicació visual, logo horitzontal i cards de funcionalitats.
@@ -22,7 +22,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 - Seguiment d’items visitats per usuari, amb marca visual a les cards, secció `Has estat veient` i secció d’items pendents de veure quan hi ha login.
 - Fitxa d’item amb vista pública, enllaç a l’origen, accions de compartir i interruptor per marcar visitat o pendent.
 - Edició d’items amb eliminació segura: cal obrir el panell d’alerta, marcar confirmació i tornar a clicar `Elimina`.
-- PWA instal·lable en mòbil amb manifest, icones PNG, service worker, share target i botó `Instal·la` a la navegació.
+- PWA instal·lable en mòbil amb manifest, icones PNG, service worker amb cache versionada d'assets, share target i botó `Instal·la` a la navegació.
 - Navegació responsive amb menú d’usuari compacte en mòbil.
 - Publicació al canal propi des de Telegram mitjançant bot i webhook.
 - Admin millorat per `Channel`, `ContentItem`, `Collection`, `Tag` i visites d’items.

@@ -657,17 +657,19 @@ class PwaManifestView(View):
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
         script = """
+const CACHE_NAME = "selectora-shell-v20260612-2";
+const SHELL_ASSETS = [
+  "/manifest.webmanifest",
+  "/static/css/styles.css?v=20260612-2",
+  "/static/js/app.js?v=20260612-2",
+  "/media/pwa/selectora-icon-192.png",
+  "/media/pwa/selectora-icon-512.png"
+];
+
 self.addEventListener("install", function (event) {
   event.waitUntil(
-    caches.open("selectora-shell-v1").then(function (cache) {
-      return cache.addAll([
-        "/",
-        "/manifest.webmanifest",
-        "/static/css/styles.css",
-        "/static/js/app.js",
-        "/media/pwa/selectora-icon-192.png",
-        "/media/pwa/selectora-icon-512.png"
-      ]);
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.addAll(SHELL_ASSETS);
     }).catch(function () {})
   );
   self.skipWaiting();
@@ -678,7 +680,7 @@ self.addEventListener("activate", function (event) {
     caches.keys().then(function (keys) {
       return Promise.all(
         keys.filter(function (key) {
-          return key !== "selectora-shell-v1";
+          return key !== CACHE_NAME;
         }).map(function (key) {
           return caches.delete(key);
         })
@@ -694,16 +696,22 @@ self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET" || requestUrl.origin !== self.location.origin) {
     return;
   }
+  const isShellAsset = requestUrl.pathname.startsWith("/static/")
+    || requestUrl.pathname.startsWith("/media/pwa/")
+    || requestUrl.pathname === "/manifest.webmanifest";
+  if (!isShellAsset) {
+    return;
+  }
   event.respondWith(
     fetch(event.request).then(function (response) {
       const copy = response.clone();
-      caches.open("selectora-shell-v1").then(function (cache) {
+      caches.open(CACHE_NAME).then(function (cache) {
         cache.put(event.request, copy).catch(function () {});
       });
       return response;
     }).catch(function () {
       return caches.match(event.request).then(function (cached) {
-        return cached || caches.match("/");
+        return cached;
       });
     })
   );
@@ -711,6 +719,7 @@ self.addEventListener("fetch", function (event) {
 """.strip()
         response = HttpResponse(script, content_type="text/javascript")
         response["Service-Worker-Allowed"] = "/"
+        response["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return response
 
 
