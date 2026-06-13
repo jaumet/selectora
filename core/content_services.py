@@ -64,6 +64,19 @@ def create_content_item_from_url(user, url, manual_data=None, manual_tags=None):
             return existing, False, metadata.error
         return existing, False, ""
 
+    public_duplicate = (
+        ContentItem.objects
+        .filter(
+            channel__is_public=True,
+            visibility=ContentItem.Visibility.PUBLIC,
+            url=url,
+        )
+        .select_related("channel", "user")
+        .first()
+    )
+    if public_duplicate:
+        return public_duplicate, False, "public_duplicate"
+
     metadata = fetch_url_metadata(url)
     item = ContentItem(user=user, channel=channel, url=url)
     apply_metadata_to_item(item, metadata, manual_data)

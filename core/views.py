@@ -693,11 +693,11 @@ class PwaManifestView(View):
 class ServiceWorkerView(View):
     def get(self, request, *args, **kwargs):
         script = """
-const CACHE_NAME = "selectora-shell-v20260612-9";
+const CACHE_NAME = "selectora-shell-v20260613-3";
 const SHELL_ASSETS = [
   "/manifest.webmanifest",
-  "/static/css/styles.css?v=20260612-9",
-  "/static/js/app.js?v=20260612-9",
+  "/static/css/styles.css?v=20260613-3",
+  "/static/js/app.js?v=20260613-3",
   "/media/pwa/selectora-icon-192.png",
   "/media/pwa/selectora-icon-512.png"
 ];
@@ -816,7 +816,13 @@ class ContentItemCreateView(LoginRequiredMixin, CreateView):
         )
         self.object = item
         if not created:
-            messages.info(self.request, "Aquest contingut ja era al teu canal.")
+            if error == "public_duplicate":
+                messages.warning(
+                    self.request,
+                    "Aquest item ja existeix com a public a Selectora. Et mostrem l'item existent.",
+                )
+            else:
+                messages.info(self.request, "Aquest contingut ja era al teu canal.")
             return redirect(item.get_absolute_url())
         if error:
             messages.warning(self.request, "No s'han pogut obtenir totes les metadades. Pots editar-les manualment.")

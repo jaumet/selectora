@@ -5,6 +5,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 ## Funcionalitat actual
 
 - Afegir una URL des del dashboard privat i enriquir-la automàticament amb metadades.
+- Detecció de duplicats: si la URL ja existeix com a item públic en algun canal, es mostra l'item existent amb avís en lloc de crear-ne un de nou.
 - Registre i entrada sense contrasenya amb `magic link` per email, sessió de 60 dies després d'entrar, captcha aritmètic server-side, honeypot anti-spam i notificació interna quan es crea un usuari nou.
 - Portada compacta amb rails horitzontals, fletxes de navegació, canals públics i seccions dinàmiques.
 - Panell inicial de presentació de Selectora amb logo, vídeo, tancament amb `ESC` i opció de no tornar-lo a mostrar.

@@ -654,8 +654,8 @@ class CoreViewsTests(TestCase):
         self.assertIn("no-store", response["Cache-Control"])
         script = response.content.decode()
         self.assertIn('self.addEventListener("fetch"', script)
-        self.assertIn('const CACHE_NAME = "selectora-shell-v20260612-9"', script)
-        self.assertIn('"/static/css/styles.css?v=20260612-9"', script)
+        self.assertIn('const CACHE_NAME = "selectora-shell-v20260613-3"', script)
+        self.assertIn('"/static/css/styles.css?v=20260613-3"', script)
         self.assertNotIn('"/",', script)
 
     def test_contentitem_create_prefills_shared_url(self):
@@ -1189,6 +1189,77 @@ class CoreViewsTests(TestCase):
         metadata_mock.assert_not_called()
 
     @patch("core.content_services.fetch_url_metadata")
+    def test_public_duplicate_url_redirects_to_existing_item_with_warning(self, metadata_mock):
+        metadata_mock.return_value.data = {}
+        metadata_mock.return_value.error = ""
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal d'Anna")
+        existing = ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Duplicat public",
+            url="https://example.com/public-duplicate",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://example.com/public-duplicate",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, existing.get_absolute_url())
+        self.assertContains(response, "Aquest item ja existeix com a public a Selectora")
+        self.assertContains(response, 'class="message warning"')
+        self.assertEqual(ContentItem.objects.filter(url="https://example.com/public-duplicate").count(), 1)
+        metadata_mock.assert_not_called()
+
+    @patch("core.content_services.fetch_url_metadata")
+    def test_private_duplicate_url_does_not_block_new_item(self, metadata_mock):
+        metadata_mock.return_value.data = {"title": "Nova copia"}
+        metadata_mock.return_value.error = ""
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal d'Anna")
+        ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Duplicat privat",
+            url="https://example.com/private-duplicate",
+            visibility=ContentItem.Visibility.PRIVATE,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://example.com/private-duplicate",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ContentItem.objects.filter(url="https://example.com/private-duplicate").count(), 2)
+        metadata_mock.assert_called_once()
+
+    @patch("core.content_services.fetch_url_metadata")
     def test_duplicate_url_with_missing_embed_refreshes_existing_item(self, metadata_mock):
         metadata_mock.return_value.data = {
             "embed_url": "https://www.youtube.com/embed/b2KMtLmItwo",
@@ -1342,6 +1413,37 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "Canal de Jaume")
         self.assertContains(response, "Autora Externa")
         self.assertContains(response, "Veure canal")
+
+    def test_item_detail_sections_follow_requested_order(self):
+        self.channel.is_public = True
+        self.channel.save()
+        item = ContentItem.objects.create(
+            user=self.user,
+            channel=self.channel,
+            title="Item ordenat",
+            url="https://example.com/ordenat",
+            embed_url="https://example.com/embed",
+            description="Descripcio ordenada.",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("contentitem_detail", kwargs={"pk": item.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="detail-layout detail-layout-linear"')
+        self.assertContains(response, 'class="button edit-accent"')
+        html = response.content.decode()
+        order = [
+            'detail-media-section',
+            'detail-channel-section',
+            'detail-actions-section',
+            'detail-content',
+            'detail-rating-section',
+        ]
+        positions = [html.find(value) for value in order]
+        self.assertTrue(all(position >= 0 for position in positions))
+        self.assertEqual(positions, sorted(positions))
 
     def test_section_cards_show_visit_and_rating_counts(self):
         self.channel.is_public = True
