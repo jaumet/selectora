@@ -30,10 +30,26 @@
     </div>
   </section>
 
+  <section class="about-section about-use-cases" aria-labelledby="about-use-title">
+    <div class="about-section-heading">
+      <p class="eyebrow">Ús pràctic</p>
+      <h2 id="about-use-title">Com ho fas servir?</h2>
+    </div>
+    <div class="about-use-grid">
+      {% for title, description in use_cases %}
+        <section class="about-use-card" aria-labelledby="use-case-{{ forloop.counter }}">
+          <span class="about-use-step" aria-hidden="true">{{ forloop.counter }}</span>
+          <h3 id="use-case-{{ forloop.counter }}">{{ title }}</h3>
+          <p>{{ description }}</p>
+        </section>
+      {% endfor %}
+    </div>
+  </section>
+
   <section class="about-section" aria-labelledby="about-features-title">
     <div class="about-section-heading">
-      <p class="eyebrow">Funcionalitats</p>
-      <h2 id="about-features-title">Què pots fer amb Selectora?</h2>
+      <p class="eyebrow">Funcions principals</p>
+      <h2 id="about-features-title">Què pots fer?</h2>
     </div>
     <div class="about-feature-grid">
       {% for icon, title, description in features %}

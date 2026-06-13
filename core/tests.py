@@ -348,9 +348,13 @@ class CoreViewsTests(TestCase):
         self.assertContains(response, "curated content by humans")
         self.assertContains(response, "/media/logos/04_selectora_logo_horizontal_exact.svg")
         self.assertContains(response, "/media/videos/video-jaume-selectora-ORIG.mp4")
-        self.assertContains(response, "Privats ben marcats")
+        self.assertContains(response, "Com ho fas servir?")
+        self.assertContains(response, "Com a lector")
+        self.assertContains(response, "Construir el teu canal")
+        self.assertContains(response, "Top 10")
         self.assertContains(response, "llaç vermell")
         self.assertContains(response, "canals de continguts digitals seleccionats per humans")
+        self.assertNotContains(response, "Eliminar amb seguretat")
 
     def test_home_page_marks_visited_items(self):
         self.channel.is_public = True
@@ -1113,6 +1117,42 @@ class CoreViewsTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch("core.content_services.fetch_url_metadata")
+    @patch("core.telegram.send_telegram_message")
+    def test_telegram_public_duplicate_reports_original_channel_and_link(self, send_mock, metadata_mock):
+        metadata_mock.return_value.data = {}
+        metadata_mock.return_value.error = ""
+        TelegramAccount.objects.create(user=self.user, telegram_user_id=12345, chat_id=67890)
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal Anna")
+        existing = ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Duplicat Telegram",
+            url="https://www.youtube.com/watch?v=b2KMtLmItwo",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        payload = {
+            "message": {
+                "text": "Mira aixo https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf",
+                "from": {"id": 12345, "username": "jaume"},
+                "chat": {"id": 67890},
+            }
+        }
+
+        response = self.client.post(
+            reverse("telegram_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ContentItem.objects.filter(url__contains="b2KMtLmItwo").count(), 1)
+        sent_text = send_mock.call_args.args[1]
+        self.assertIn("Canal Anna", sent_text)
+        self.assertIn(existing.get_absolute_url(), sent_text)
+        metadata_mock.assert_not_called()
+
+    @patch("core.content_services.fetch_url_metadata")
     def test_authenticated_user_can_create_content_item_from_url_metadata(self, metadata_mock):
         metadata_mock.return_value.data = {
             "title": "Titol enriquit",
@@ -1220,9 +1260,122 @@ class CoreViewsTests(TestCase):
         )
 
         self.assertRedirects(response, existing.get_absolute_url())
-        self.assertContains(response, "Aquest item ja existeix com a public a Selectora")
+        self.assertContains(response, "Aquest item ja existeix al canal")
+        self.assertContains(response, "Canal d&#x27;Anna")
+        self.assertContains(response, "Obre l'item publicat anteriorment")
         self.assertContains(response, 'class="message warning"')
         self.assertEqual(ContentItem.objects.filter(url="https://example.com/public-duplicate").count(), 1)
+        metadata_mock.assert_not_called()
+
+    @patch("core.content_services.fetch_url_metadata")
+    def test_public_duplicate_tracking_url_redirects_to_existing_item(self, metadata_mock):
+        metadata_mock.return_value.data = {}
+        metadata_mock.return_value.error = ""
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal Anna")
+        existing = ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Duplicat tracking",
+            url="https://example.com/tracking-duplicate",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://example.com/tracking-duplicate?utm_source=newsletter",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, existing.get_absolute_url())
+        self.assertContains(response, "Canal Anna")
+        self.assertEqual(ContentItem.objects.filter(url__contains="tracking-duplicate").count(), 1)
+        metadata_mock.assert_not_called()
+
+    @patch("core.content_services.fetch_url_metadata")
+    def test_public_duplicate_metadata_canonical_url_redirects_to_existing_item(self, metadata_mock):
+        metadata_mock.return_value.data = {
+            "title": "Nova copia",
+            "canonical_url": "https://example.com/canonical-duplicate",
+        }
+        metadata_mock.return_value.error = ""
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal Anna")
+        existing = ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Duplicat canonical",
+            url="https://example.com/canonical-duplicate",
+            canonical_url="https://example.com/canonical-duplicate",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://m.example.com/article-copy",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, existing.get_absolute_url())
+        self.assertContains(response, "Canal Anna")
+        self.assertEqual(ContentItem.objects.filter(title="Nova copia").count(), 0)
+        metadata_mock.assert_called_once()
+
+    @patch("core.content_services.fetch_url_metadata")
+    def test_public_duplicate_youtube_variant_redirects_to_existing_item(self, metadata_mock):
+        metadata_mock.return_value.data = {}
+        metadata_mock.return_value.error = ""
+        owner = get_user_model().objects.create_user(username="anna")
+        public_channel = Channel.objects.create(owner=owner, name="Canal Anna")
+        existing = ContentItem.objects.create(
+            user=owner,
+            channel=public_channel,
+            title="Video duplicat",
+            url="https://www.youtube.com/watch?v=b2KMtLmItwo",
+            visibility=ContentItem.Visibility.PUBLIC,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("contentitem_create"),
+            {
+                "url": "https://youtu.be/b2KMtLmItwo?si=kfKhmrJ-FzNXAhtf",
+                "title": "",
+                "description": "",
+                "image_url": "",
+                "source_platform": "",
+                "content_type": ContentItem.ContentType.OTHER,
+                "author": "",
+                "language": "",
+                "tag_list": "",
+            },
+            follow=True,
+        )
+
+        self.assertRedirects(response, existing.get_absolute_url())
+        self.assertEqual(ContentItem.objects.filter(url__contains="b2KMtLmItwo").count(), 1)
         metadata_mock.assert_not_called()
 
     @patch("core.content_services.fetch_url_metadata")

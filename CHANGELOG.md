@@ -35,6 +35,8 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - Fallback d'embed de YouTube ampliat per reconèixer URLs `/live/`, `/embed/`, `/v/` i `youtube-nocookie.com`, útil quan els items arriben des de Telegram i YouTube no retorna metadades completes.
 - Els items existents sense `embed_url` es refresquen quan es torna a afegir la mateixa URL, evitant que un YouTube creat prèviament des de Telegram quedi sense reproductor incrustat.
 - En afegir una URL nova, Selectora comprova si ja existeix com a item públic en qualsevol canal públic; si existeix, no duplica i mostra la fitxa existent amb avís taronja.
+- La detecció de duplicats públics ara compara també URLs normalitzades, canòniques i variants de YouTube, i l'avís indica el canal on ja existeix l'item amb enllaç a la fitxa anterior.
+- Telegram també informa del canal i l'enllaç de l'item existent quan una URL enviada ja està publicada com a item públic en un altre canal.
 - El fallback de YouTube ara també s'aplica quan YouTube retorna HTML sense metadades útils o una pàgina intermèdia, usant sempre la URL original enviada.
 - `og:image` i `twitter:image` passen d'un SVG a `media/logos/selectora-og-horizontal.png` en format PNG 1200x630 per millorar la previsualització a WhatsApp.
 - Migració perquè tots els canals existents passin a públics i els canals nous neixin públics per defecte.
@@ -44,8 +46,10 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 - El formulari de canal ja no exposa el control `is_public`; la visibilitat del contingut es decideix a cada item o col·lecció.
 - El formulari d'item mostra la visibilitat al costat del títol amb estat visual verd `Públic` o vermell `Privat` i text explicatiu.
 - La fitxa d'item mostra de manera destacada el canal d'origen, amb miniatura, nom del canal i autor/a abans del títol.
+- La pàgina `Què és Selectora?` queda simplificada amb menys cards, una explicació més pràctica per perfils d'ús i focus en canal, col·leccions, privacitat, valoracions, visites i compartició.
 - La fitxa d'item es reordena en una sola seqüència: embed, canal, accions, informació de l'item i valoració; el botó `Editar` queda destacat amb taronja corporatiu.
 - En desktop, la fitxa d'item aprofita tota l'amplada: embed a l'esquerra i canal, accions, informació i valoració apilats a la dreta.
+- En desktop, els embeds verticals de la fitxa d'item redueixen l'amplada de la columna de media per evitar massa separació amb la columna d'informació.
 - La fitxa d'item incorpora una zona visual de vot al final de la pàgina per valorar publicacions.
 - Les cards de seccions mostren comptadors compactes de visites i valoracions a l'esquerra d'`Obrir` i `Compartir`.
 - Les valoracions i matisos a les cards es mostren desglossats per icona i contador, amb el nom de cada valoració o matís al hover.
@@ -91,4 +95,4 @@ Canvis acumulats des del darrer push (`28dcfe8`, `Ignore exported data file`).
 
 ### Verificació
 
-- `python manage.py test`: 82 tests OK.
+- `python manage.py test`: 86 tests OK.

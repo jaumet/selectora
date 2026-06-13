@@ -5,7 +5,7 @@ Selectora es un sistema personal i social de curadoria de continguts digitals. E
 ## Funcionalitat actual
 
 - Afegir una URL des del dashboard privat i enriquir-la automàticament amb metadades.
-- Detecció de duplicats: si la URL ja existeix com a item públic en algun canal, es mostra l'item existent amb avís en lloc de crear-ne un de nou.
+- Detecció de duplicats: si la URL ja existeix com a item públic en algun canal, també amb variants normalitzades, canòniques o de YouTube, es mostra l'item existent amb el canal d'origen i avís en lloc de crear-ne un de nou.
 - Registre i entrada sense contrasenya amb `magic link` per email, sessió de 60 dies després d'entrar, captcha aritmètic server-side, honeypot anti-spam i notificació interna quan es crea un usuari nou.
 - Portada compacta amb rails horitzontals, fletxes de navegació, canals públics i seccions dinàmiques.
 - Panell inicial de presentació de Selectora amb logo, vídeo, tancament amb `ESC` i opció de no tornar-lo a mostrar.
@@ -118,7 +118,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 5. Copia el comandament `/connect CODI` i envia'l al bot.
 6. A partir d'aqui, envia o comparteix una URL amb el bot i Selectora la publicara al teu canal.
 
-El webhook accepta missatges de text i captions amb URL. Si la URL ja existeix al mateix canal, no la duplica.
+El webhook accepta missatges de text i captions amb URL. Si la URL ja existeix al mateix canal, no la duplica; si ja existeix com a item públic en un altre canal, respon amb el canal d'origen i l'enllaç a l'item existent.
 
 ## Metadades
 
@@ -152,7 +152,7 @@ Si la URL falla, triga massa o no te metadades, l'aplicacio no es trenca: crea u
 python manage.py test
 ```
 
-La suite actual cobreix 58 tests.
+La suite actual cobreix 86 tests.
 
 ## Changelog
 

@@ -9,6 +9,7 @@ from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -27,29 +28,20 @@ MAGIC_LOGIN_SESSION_AGE_SECONDS = 60 * 24 * 60 * 60
 
 
 SELECTORA_FEATURES = [
-    ("🔗", "Guardar enllaços", "Afegeix una URL i Selectora en recupera la informació principal."),
-    ("✉️", "Entrar sense contrasenya", "Accés amb magic link per email i sessió persistent."),
-    ("🏠", "Explorar una portada visual", "Canals i continguts en rails horitzontals fàcils de navegar."),
-    ("🎬", "Veure una presentació inicial", "Panell amb logo, vídeo i opció de no tornar-lo a mostrar."),
-    ("🧭", "Filtrar per temes i cerca", "Filtres sense recarregar la pàgina."),
-    ("↕️", "Ordenar la portada", "Reordena seccions i conserva el teu ordre."),
-    ("👤", "Tenir un canal propi", "Canal personal amb capçalera, seccions i filtres."),
-    ("🗂️", "Crear col·leccions", "Col·leccions públiques o privades amb pàgina pròpia."),
-    ("📣", "Compartir fàcilment", "Comparteix items, col·leccions, canals o Selectora."),
-    ("🖼️", "Bona previsualització", "Títol, descripció i imatge en xarxes i missatgeria."),
-    ("🌍", "Control públic o privat", "Visibilitat per items i col·leccions."),
-    ("🟢", "Visibilitat clara", "Verd per públic i vermell per privat."),
-    ("🎀", "Privats ben marcats", "Els teus items privats es mostren només per a tu amb un llaç vermell."),
-    ("⭐", "Valorar amb matisos", "Una valoració principal i fins a tres matisos."),
-    ("📈", "Veure visites", "Comptador i sparkline d’evolució."),
-    ("👁️", "Recordar què has vist", "Marca de visitats i separació de pendents."),
-    ("📄", "Fitxa d’un item", "Pàgina pròpia amb informació i accions."),
-    ("🗑️", "Eliminar amb seguretat", "Confirmació abans d’esborrar."),
-    ("📱", "Instal·lar al mòbil", "PWA instal·lable al telèfon."),
-    ("📲", "Pantalla petita", "Navegació responsive per mòbil."),
-    ("🤖", "Publicar des de Telegram", "Envia enllaços mitjançant el bot."),
-    ("🛠️", "Gestionar contingut", "Administra canals, items, col·leccions, tags i visites."),
-    ("✅", "Créixer amb seguretat", "Tests per mantenir estable el sistema."),
+    ("🔗", "Guardar el que val la pena", "Enganxa una URL i Selectora recupera títol, imatge, tipus de contingut i font perquè no perdis aquell vídeo, article, podcast o newsletter."),
+    ("👤", "Construir el teu canal", "Cada usuari té un canal propi on pot ordenar les seves seleccions, destacar un Top 10 i agrupar continguts en col·leccions."),
+    ("🧭", "Trobar i revisar després", "La portada i els canals es naveguen en rails visuals, amb cerca, temes, visitats i pendents per recuperar continguts ràpidament."),
+    ("📣", "Compartir amb context", "Comparteix items, col·leccions, canals o Selectora amb bones previsualitzacions, text copiat o el sistema de compartir del mòbil."),
+    ("🌍", "Decidir què és públic", "Pots publicar continguts per al teu canal o mantenir items privats visibles només per a tu, marcats amb un llaç vermell."),
+    ("⭐", "Valorar amb criteri", "Marca una valoració principal i alguns matisos per explicar per què un contingut és útil, imprescindible, dubtós o repetit."),
+    ("📈", "Veure activitat", "Cada item pot mostrar visites, evolució temporal i valoracions perquè sàpigues què desperta interès."),
+    ("📱", "Usar-ho des del mòbil", "Selectora es pot instal·lar com a PWA i també pot rebre enllaços des de Telegram per publicar-los al teu canal."),
+]
+
+SELECTORA_USE_CASES = [
+    ("Com a lector", "Guarda allò que vols veure o llegir després, marca què ja has visitat i recupera-ho per temes o cerca."),
+    ("Com a curador", "Construeix un canal públic amb seleccions humanes, col·leccions i un Top 10 que resumeixi el teu criteri."),
+    ("Com a comunitat", "Descobreix canals d'altres persones, valora continguts i comparteix enllaços sense dependre d'un algoritme."),
 ]
 
 
@@ -165,6 +157,7 @@ class AboutSelectoraView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["features"] = SELECTORA_FEATURES
+        context["use_cases"] = SELECTORA_USE_CASES
         return context
 
 
@@ -819,7 +812,12 @@ class ContentItemCreateView(LoginRequiredMixin, CreateView):
             if error == "public_duplicate":
                 messages.warning(
                     self.request,
-                    "Aquest item ja existeix com a public a Selectora. Et mostrem l'item existent.",
+                    format_html(
+                        'Aquest item ja existeix al canal <strong>{}</strong>. '
+                        '<a href="{}">Obre l\'item publicat anteriorment</a>.',
+                        item.channel.name,
+                        item.get_absolute_url(),
+                    ),
                 )
             else:
                 messages.info(self.request, "Aquest contingut ja era al teu canal.")

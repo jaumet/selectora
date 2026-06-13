@@ -1,5 +1,6 @@
 import json
 import re
+from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
@@ -75,6 +76,10 @@ def publish_url_from_telegram(account, chat_id, url):
         text = f"Publicat a Selectora: {item.title}"
         if error:
             text += "\nNo s'han pogut obtenir totes les metadades."
+    elif error == "public_duplicate":
+        base_url = getattr(settings, "SELECTORA_PUBLIC_URL", "https://selectora.cc/")
+        item_url = urljoin(base_url, item.get_absolute_url())
+        text = f"Aquest contingut ja existeix al canal {item.channel.name}: {item.title}\n{item_url}"
     else:
         text = f"Aquest contingut ja era al teu canal: {item.title}"
     send_telegram_message(chat_id, text)
